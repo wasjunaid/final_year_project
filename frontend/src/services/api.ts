@@ -1,0 +1,81 @@
+import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import ROUTES from "../constants/routes";
+import EndPoints from "../constants/endpoints";
+import { useAuth } from "../hooks/useAuth";
+import StatusCodes from "../constants/StatusCodes";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+});
+
+// Attach access token to each request
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const { accessToken: token } = useAuth();
+
+  // Ensure headers object exists
+  config.headers = config.headers ?? {};
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+// Response interceptor to handle 401 (expired token)
+api.interceptors.response.use(
+  (response) => response, //successful response
+
+  //handle error
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean; //To avoid infinite retry
+    };
+
+    if (
+      error.response?.status === StatusCodes.UNAUTHORIZED &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+      const { refreshToken, signOut, signIn } = useAuth();
+
+      if (!refreshToken) {
+        signOut();
+        window.location.href = ROUTES.AUTH.SIGN_IN;
+        return Promise.reject(error);
+      }
+
+      try {
+        //get new access token using refresh token
+        const res = await api.post(EndPoints.auth.refreshToken, {
+          refreshToken,
+        });
+        const newAccessToken = res.data.accessToken;
+        const newRefreshToken = res.data.refreshToken;
+
+        if (!newAccessToken) throw new Error("No access token in refresh");
+
+        if (newRefreshToken) {
+          signIn({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+          });
+        }
+
+        // Retry original request
+        originalRequest.headers = originalRequest.headers ?? {};
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        return api(originalRequest);
+      } catch {
+        signOut();
+        window.location.href = ROUTES.AUTH.SIGN_IN;
+        return Promise.reject(error);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;
