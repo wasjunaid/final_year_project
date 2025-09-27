@@ -18,6 +18,11 @@ import HospitalPortalLayout from "./pages/hospital/HospitalPortalLayout";
 import FrontDeskPortalLayout from "./pages/front_desk/FrontDeskPortalLayout";
 import AdminPortalLayout from "./pages/admin/AdminPortalLayout";
 import MedicalCoderPortalLayout from "./pages/medical_coder/MedicalCoderPortalLayout";
+import SignUpPage from "./pages/auth/SignUpPage";
+import SignInPage from "./pages/auth/SignInPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import EmailVerification from "./pages/auth/EmailVerification";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -42,29 +47,24 @@ function App() {
     <Router>
       <div className="bg-background h-screen">
         <Routes>
-          {/* TODO: remove Tests */}
-          <Route
-            path={ROUTES.TABLE_COMPONENT_TEST}
-            element={<TableComponentTest />}
-          />
-          <Route
-            path={ROUTES.PATIENT_PORTAL_TEST}
-            element={<PatientPortalTest />}
-          />
-          <Route
-            path={ROUTES.COMPONENTS_TEST}
-            element={<ComponentsTestPage />}
-          />
-
           {/* Default to landing page */}
-          <Route path={ROUTES.HOME} element={<ComponentsTestPage />} />
+          <Route path={ROUTES.HOME} element={<LandingPage />} />
 
           {/* Auth Routes */}
-          <Route path={ROUTES.AUTH.VERIFY_EMAIL} element={<LandingPage />} />
-          <Route path={ROUTES.AUTH.FORGOT_PASSWORD} element={<LandingPage />} />
-          <Route path={ROUTES.AUTH.RESET_PASSWORD} element={<LandingPage />} />
-          <Route path={ROUTES.AUTH.SIGN_UP} element={<LandingPage />} />
-          <Route path={ROUTES.AUTH.SIGN_IN} element={<LandingPage />} />
+          <Route
+            path={ROUTES.AUTH.VERIFY_EMAIL}
+            element={<EmailVerification />}
+          />
+          <Route
+            path={ROUTES.AUTH.FORGOT_PASSWORD}
+            element={<ForgotPasswordPage />}
+          />
+          <Route
+            path={ROUTES.AUTH.RESET_PASSWORD}
+            element={<ResetPasswordPage />}
+          />
+          <Route path={ROUTES.AUTH.SIGN_UP} element={<SignUpPage />} />
+          <Route path={ROUTES.AUTH.SIGN_IN} element={<SignInPage />} />
 
           {/* Admin Routes */}
           <Route path={ROUTES.ADMIN} element={<AdminPortalLayout />} />
