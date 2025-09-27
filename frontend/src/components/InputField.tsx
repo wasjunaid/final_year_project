@@ -8,7 +8,8 @@ type InputProps = InputHTMLAttributes<HTMLInputElement>;
 type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export interface IInputFieldProps extends InputProps, TextAreaProps {
-  icon?: ReactNode;
+  leading?: ReactNode;
+  trailing?: ReactNode;
   multiline?: boolean;
 }
 
@@ -18,7 +19,8 @@ function InputField({
   disabled,
   multiline = false,
   rows = 3,
-  icon,
+  leading,
+  trailing,
   ...rest
 }: IInputFieldProps) {
   const baseClasses =
@@ -41,9 +43,9 @@ function InputField({
 
   return (
     <div className="relative w-full">
-      {icon && (
+      {leading && (
         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
-          {icon}
+          {leading}
         </span>
       )}
       <input
@@ -51,8 +53,17 @@ function InputField({
         placeholder={placeholder}
         disabled={disabled}
         {...rest}
-        className={`${baseClasses} ${icon ? "pl-10" : ""}`}
+        className={`
+          ${baseClasses} 
+          ${leading ? "pl-10" : ""} 
+          ${trailing ? "pr-10" : ""}
+        `}
       />
+      {trailing && (
+        <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+          {trailing}
+        </span>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import InputField, { type IInputFieldProps } from "./InputField";
 
-interface ILabeledInputFieldProps extends IInputFieldProps {
+export interface ILabeledInputFieldProps extends IInputFieldProps {
   title: string; // title text
   required?: boolean; // optional: show * if required
   hint?: string; // optional: small text below field

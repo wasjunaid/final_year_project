@@ -58,7 +58,7 @@ function ComponentsTestPage() {
         <InputField
           placeholder="Search"
           disabled={false}
-          icon={<BiSearch />}
+          leading={<BiSearch />}
           //   multiline={true}
           //   rows={3}
         />
