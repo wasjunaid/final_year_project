@@ -28,7 +28,7 @@ function DropDownField({
   const baseClasses =
     "w-full py-2 px-3 rounded-md text-black " +
     "focus:outline-none focus:ring-2 focus:ring-primary " +
-    (disabled ? "bg-gray-300 cursor-not-allowed opacity-70" : "bg-gray-200");
+    (disabled ? "bg-gray-200 cursor-not-allowed opacity-70" : "bg-grayColor");
 
   return (
     <div className="relative w-full">

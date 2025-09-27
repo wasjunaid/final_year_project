@@ -17,7 +17,7 @@ function Button({
     <button
       onClick={onClick}
       {...rest}
-      className={`inline-flex items-center gap-2 py-1 px-4 rounded-full 
+      className={`inline-flex justify-center items-center gap-2 py-1 px-4 rounded-full 
         transition-colors duration-200 bg-primary text-white ${className}`}
     >
       {icon && (

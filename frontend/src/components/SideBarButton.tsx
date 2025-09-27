@@ -1,8 +1,9 @@
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
 
-interface ISideBarButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ISideBarButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
-  icon: ReactNode;
+  icon?: ReactNode;
   selected?: boolean;
   collapsed?: boolean;
   className?: string;
@@ -31,13 +32,15 @@ function SideBarButton({
         ${className}
       `}
     >
-      <span
-        className={`text-xl flex items-center
+      {icon && (
+        <span
+          className={`text-xl flex items-center
           ${selected ? "text-white" : "text-black"}
         `}
-      >
-        {icon}
-      </span>
+        >
+          {icon}
+        </span>
+      )}
       {!collapsed && <span>{label}</span>}
     </button>
   );
