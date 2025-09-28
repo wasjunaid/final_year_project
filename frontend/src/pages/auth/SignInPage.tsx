@@ -11,10 +11,11 @@ import api from "../../services/api";
 import EndPoints from "../../constants/endpoints";
 import { useAuth } from "../../hooks/useAuth";
 import WarningCard from "../../components/WarningCard";
+import { ROLES, type UserRole } from "../../constants/roles";
 
 function SignInPage() {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
 
   // Form state
   const [email, setEmail] = useState("");
@@ -29,6 +30,26 @@ function SignInPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendError, setResendError] = useState("");
   const [resendSuccess, setResendSuccess] = useState("");
+
+  const rolePortal = (role?: UserRole): string | null => {
+    switch (role) {
+      case ROLES.ADMIN:
+        return ROUTES.ADMIN_PORTAL;
+      case ROLES.PATIENT:
+        return ROUTES.PATIENT_PORTAL;
+      case ROLES.DOCTOR:
+        return ROUTES.DOCTOR_PORTAL;
+      case ROLES.HOSPITAL:
+        return ROUTES.HOSPITAL_PORTAL;
+      case ROLES.FRONT_DESK:
+        return ROUTES.FRONT_DESK_PORTAL;
+      case ROLES.MEDICAL_CODER:
+        return ROUTES.MEDICAL_CODER_PORTAL;
+
+      default:
+        return null;
+    }
+  };
 
   const handleSignIn = async () => {
     setError("");
@@ -60,7 +81,7 @@ function SignInPage() {
         if (accessToken && refreshToken) {
           signIn({ accessToken, refreshToken });
         }
-        navigate(ROUTES.HOME);
+        navigate(rolePortal(user?.role) ?? ROUTES.HOME);
       } else {
         setError(res.data.message || "Sign in failed");
       }
