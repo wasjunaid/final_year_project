@@ -38,7 +38,13 @@ router.put(
     '/status/:doctor_id',
     allowedRoles(['hospital admin', 'hospital sub admin', 'hospital front desk']),
     DoctorController.updateDoctorStatus
-)
+);
+
+router.put(
+    '/remove-hospital',
+    allowedRoles(['doctor']),
+    DoctorController.removeDoctorFromHospital
+);
 
 router.delete(
     '/',

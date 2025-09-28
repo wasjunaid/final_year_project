@@ -250,6 +250,57 @@ class DoctorService {
         }
     }
 
+    static async updateDoctorHospital(doctor_id, hospital_id) {
+        if (!doctor_id) {
+            throw new AppError('doctor_id is required', statusCodes.BAD_REQUEST);
+        }
+        if (!hospital_id) {
+            hospital_id = null;
+        }
+
+        try {
+            const doctor = await this.checkDoctorExists(doctor_id);
+            if (!doctor) {
+                throw new AppError('Doctor not found', statusCodes.NOT_FOUND);
+            }
+
+            const query = {
+                text: `UPDATE doctor
+                SET
+                hospital_id = $1,
+                updated_at = CURRENT_TIMESTAMP
+                WHERE
+                doctor_id = $2
+                RETURNING *`,
+                values: [hospital_id, doctor_id]
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                throw new AppError(`Error updating doctor hospital`, statusCodes.INTERNAL_SERVER_ERROR);
+            }
+
+            return result.rows[0];
+        } catch (error) {
+            console.error(`Error updating doctor hospital: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
+    static async removeDoctorFromHospital(doctor_id) {
+        if (!doctor_id) {
+            throw new AppError('doctor_id is required', statusCodes.BAD_REQUEST);
+        }
+
+        try {
+            const result = await this.updateDoctorHospital(doctor_id, null);
+
+            return result;
+        } catch (error) {
+            console.error(`Error removing doctor hospital: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
     static async deleteDoctor(doctor_id) {
         if (!doctor_id) {
             throw new AppError('doctor_id is required', statusCodes.BAD_REQUEST);

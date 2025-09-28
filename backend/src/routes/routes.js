@@ -26,6 +26,7 @@ const LabTestRouter = require("./labTest/labTestRoutes");
 const MedicineRouter = require("./medicine/medicineRoutes");
 const PrescriptionRouter = require("./prescription/prescriptionRoutes");
 const DoctorNoteRouter = require("./doctor/doctorNoteRoutes");
+const HospitalAssociationRequestRouter = require("./hospital/hospitalAssociationRequestRoutes");
 
 const routes = (app) => {
     app.use("/auth", AuthRouter);
@@ -73,6 +74,11 @@ const routes = (app) => {
         "/hospital/staff",
         verifyAccessJWT,
         HospitalStaffRouter
+    );
+    app.use(
+        "/hospital/association-request",
+        verifyAccessJWT,
+        HospitalAssociationRequestRouter
     );
     app.use(
         "/appointment/request",
