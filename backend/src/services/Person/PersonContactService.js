@@ -27,7 +27,8 @@ class PersonContactService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error getting person contacts: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting person contacts: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -60,7 +61,8 @@ class PersonContactService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting person contact: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting person contact: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -95,7 +97,8 @@ class PersonContactService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating person_contact: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating person contact: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -116,7 +119,8 @@ class PersonContactService {
                 throw new AppError(`Failed to delete person contact with id: ${person_contact_id}`, statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting person contact: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting person contact: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

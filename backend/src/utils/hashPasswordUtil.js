@@ -8,7 +8,8 @@ const hashPasswordUtil = async (password, saltRounds = 10) => {
     try {
       return await bcrypt.hash(password, saltRounds);
     } catch (error) {
-      throw new Error(`Failed to hash password: ${error.message}`);
+      console.error(`Error hashing password: ${error.message} ${error.status}`);
+      throw error;
     }
 }
 

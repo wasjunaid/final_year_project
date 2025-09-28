@@ -14,7 +14,8 @@ class HospitalService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error fetching hospitals: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting hospitals: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -48,7 +49,8 @@ class HospitalService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting hospital: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting hospitals: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -88,7 +90,8 @@ class HospitalService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating hospital: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating hospital: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -109,7 +112,8 @@ class HospitalService {
                 throw new AppError("Error deleting hospital", statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting hospital: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting hospital: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -135,8 +139,8 @@ class HospitalService {
 
             return true;
         } catch (error) {
-            console.error(`error in checkHospitalExists: ${error.message}`);
-            throw new AppError(`Error checking hospital existence: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking hospital exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

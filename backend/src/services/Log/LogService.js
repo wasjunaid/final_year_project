@@ -31,8 +31,8 @@ class LogService {
 
             return result.rows;
         } catch (error) {
-            console.error(`Error retrieving logs: ${error.message}`);
-            throw new AppError("Failed to retrieve logs", statusCodes.INTERNAL_SERVER);
+            console.error(`Error getting logs: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -60,8 +60,8 @@ class LogService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error inserting log: ${error.message}`);
-            throw new AppError("Failed to insert log", statusCodes.INTERNAL_SERVER);
+            console.error(`Error inserting log: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

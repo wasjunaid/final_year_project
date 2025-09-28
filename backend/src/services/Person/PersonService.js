@@ -33,7 +33,8 @@ class PersonService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error getting person: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting person: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -65,7 +66,8 @@ class PersonService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error getting person: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting person by email: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -91,7 +93,8 @@ class PersonService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error getting persons: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting persons: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -131,7 +134,8 @@ class PersonService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting person: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting person: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -160,7 +164,8 @@ class PersonService {
 
             return person;
         } catch (error) {
-            throw new AppError(`Error inserting person: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting person: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -211,7 +216,8 @@ class PersonService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting person: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting person for google auth: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -250,7 +256,8 @@ class PersonService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating person: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating person: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -286,7 +293,8 @@ class PersonService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating person: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating person password hash: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -317,7 +325,8 @@ class PersonService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating verification status: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating person is verified: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -339,7 +348,8 @@ class PersonService {
                 throw new AppError(`Error deleting person`, statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting person: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting person: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -362,7 +372,8 @@ class PersonService {
 
             return true;
         } catch (error) {
-            throw new AppError(`Error checking email: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking email in use: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -395,7 +406,8 @@ class PersonService {
 
             return result.rows[0].person_id;
         } catch (error) {
-            throw new AppError(`Error verifying password: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error verifying email and password: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

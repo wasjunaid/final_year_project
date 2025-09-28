@@ -29,7 +29,8 @@ class TokenService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error retrieving ${tokenType}: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting valid ${tokenType}: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -57,7 +58,8 @@ class TokenService {
                 throw new AppError(`Error deleting ${tokenType} or token not found`, statusCodes.NOT_FOUND);
             }
         } catch (error) {
-            throw new AppError(`Error deleting ${tokenType}: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting ${tokenType}: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

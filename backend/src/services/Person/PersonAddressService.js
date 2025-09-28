@@ -24,7 +24,8 @@ class PersonAddressService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error getting person address: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting person address: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -43,7 +44,8 @@ class PersonAddressService {
 
             return personAddress.address_id;
         } catch (error) {
-            throw new AppError(`Error inserting person address: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting person address: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

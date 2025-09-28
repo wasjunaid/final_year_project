@@ -25,8 +25,8 @@ class PrescriptionService {
 
             return result.rows;
         } catch (error) {
-            console.error(`Error fetching prescriptions: ${error.message}`);
-            throw new AppError(`Error fetching prescriptions: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting prescriptions: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -60,8 +60,8 @@ class PrescriptionService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error inserting prescription: ${error.message}`);
-            throw new AppError(`Error inserting prescription: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting prescription: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -127,8 +127,8 @@ class PrescriptionService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error deleting prescription: ${error.message}`);
-            throw new AppError(`Error deleting prescription: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating prescription: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

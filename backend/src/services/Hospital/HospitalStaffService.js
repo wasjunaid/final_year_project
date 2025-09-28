@@ -30,7 +30,8 @@ class HospitalStaffService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`error retrieving hospital staff: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting hospital staff: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -64,7 +65,8 @@ class HospitalStaffService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`error retrieving hospital staff: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting hospital staff: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -125,7 +127,8 @@ class HospitalStaffService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`error inserting hospital staff: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting hospital staff: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -167,7 +170,8 @@ class HospitalStaffService {
                 throw new AppError("Error deleting hospital staff", statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`error deleting hospital staff: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting hospital staff: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -195,8 +199,8 @@ class HospitalStaffService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error checking hospital staff: ${error.message}`);
-            throw new AppError("Error checking hospital staff", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking hospital staff exists against hospital id: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -219,8 +223,8 @@ class HospitalStaffService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error checking hospital staff: ${error.message}`);
-            throw new AppError("Error checking hospital staff", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking hospital staff exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

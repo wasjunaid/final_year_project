@@ -25,7 +25,8 @@ class DocumentService {
                 unverified_documents: unverifiedDocsResult
             };
         } catch (error) {
-            throw new AppError(`error getting documents ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting documents: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -94,7 +95,8 @@ class DocumentService {
 
             return result;
         } catch (error) {
-            throw new AppError(`error uploading document: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error uploading documents: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

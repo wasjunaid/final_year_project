@@ -25,8 +25,8 @@ class EHRAccessRequestService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`error in getEHRAccessRequest ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting ehr access request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -48,8 +48,8 @@ class EHRAccessRequestService {
 
             return result.rows;
         } catch (error) {
-            console.error(`error in getEHRAccessRequestsForPatient ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting ehr access request for patient: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -71,8 +71,8 @@ class EHRAccessRequestService {
 
             return result.rows;
         } catch (error) {
-            console.error(`error in getEHRAccessRequestsForDoctor ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting ehr access request for doctor: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -107,8 +107,8 @@ class EHRAccessRequestService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`error in insertEHRAccessRequest ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting ehr access request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -147,8 +147,8 @@ class EHRAccessRequestService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`error in updateEHRAccessRequestStatus ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating ehr access request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -165,8 +165,8 @@ class EHRAccessRequestService {
 
             return updatedRequest;
         } catch (error) {
-            console.error(`error in approveEHRAccessRequest ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error approving ehr access request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -183,8 +183,8 @@ class EHRAccessRequestService {
 
             return updatedRequest;
         } catch (error) {
-            console.error(`error in denyEHRAccessRequest ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error denying ehr access request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -201,8 +201,8 @@ class EHRAccessRequestService {
 
             return updatedRequest;
         } catch (error) {
-            console.error(`error in revokeEHRAccessRequest ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error revoking ehr access request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -227,8 +227,8 @@ class EHRAccessRequestService {
 
             return result.rows[0].ehr_access_request_id;
         } catch (error) {
-            console.error(`error in checkEHRAccessRequestExists ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking ehr access request exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -253,8 +253,8 @@ class EHRAccessRequestService {
 
             return result.rows[0].ehr_access_request_id;
         } catch (error) {
-            console.error(`error in checkEHRAccessRequestOwnership ${error.message}`);
-            throw new AppError("Internal Server Error", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking ehr access request ownership: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

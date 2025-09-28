@@ -56,7 +56,8 @@ class EmailService {
     try {
       await transport.sendMail(mailOptions);
     } catch (error) {
-      throw new AppError(`Error sending verification email: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+      console.error(`Error sending verification email: ${error.message} ${error.status}`);
+      throw error;
     }
   }
 
@@ -143,7 +144,8 @@ class EmailService {
     try {
       await transport.sendMail(mailOptions);
     } catch (error) {
-      throw new AppError(`Error sending reset password email: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+      console.error(`Error sending password reset email: ${error.message} ${error.status}`);
+      throw error;
     }
   }
 
@@ -176,7 +178,8 @@ class EmailService {
     try {
       await transport.sendMail(mailOptions);
     } catch (error) {
-      throw new AppError(`Error sending random password email: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+      console.error(`Error sending random password email: ${error.message} ${error.status}`);
+      throw error;
     }
   }
 
@@ -295,7 +298,8 @@ class EmailService {
     try {
       await transport.sendMail(mailOptions);
     } catch (error) {
-      throw new AppError(`Error sending notification email: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+      console.error(`Error sending notification email: ${error.message} ${error.status}`);
+      throw error;
     }
   }
 }

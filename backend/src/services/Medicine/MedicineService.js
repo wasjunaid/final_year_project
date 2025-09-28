@@ -15,8 +15,8 @@ class MedicineService {
 
             return result.rows;
         } catch (error) {
-            console.error(`Error fetching medicines: ${error.message}`);
-            throw new AppError(`Error fetching medicines: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting medicines: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -41,8 +41,8 @@ class MedicineService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error inserting medicine: ${error.message}`);
-            throw new AppError(`Error inserting medicine: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting medicine: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -71,8 +71,8 @@ class MedicineService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error updating medicine: ${error.message}`);
-            throw new AppError(`Error updating medicine: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating medicine: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

@@ -45,7 +45,8 @@ class AuthService {
 
             await EmailVerificationTokenService.insertOrUpdateEmailVerificationToken(person.person_id);
         } catch (error) {
-            throw new AppError(`Error signing up: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error signing up: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -93,14 +94,21 @@ class AuthService {
 
             return tokens;
         } catch (error) {
-            if (error.status === statusCodes.FORBIDDEN) throw error;
-            throw new AppError(`Error signing in: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error signing in: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
     static async signOut(person_id) {
         if (!person_id) {
             throw new AppError("person_id is required", statusCodes.BAD_REQUEST);
+        }
+
+        try {
+
+        } catch (error) {
+            console.error(`Error signing out: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

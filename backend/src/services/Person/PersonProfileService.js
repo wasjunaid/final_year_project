@@ -17,7 +17,8 @@ class PersonProfileService {
 
             return { personDetails: person, addressDetails: address, contactDetails: contacts };
         } catch (error) {
-            throw new AppError(`Error retrieving person profile: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting person profile: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

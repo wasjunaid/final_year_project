@@ -12,7 +12,8 @@ class InsuranceCompanyService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error fetching insurance companies: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting insurance companies: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -41,7 +42,8 @@ class InsuranceCompanyService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting insurance company: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting insurance company: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -75,7 +77,8 @@ class InsuranceCompanyService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating insurance company: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating insurance company: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -96,7 +99,8 @@ class InsuranceCompanyService {
                 throw new AppError("Error deleting insurance company", statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting insurance company: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting insurance company: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -118,8 +122,8 @@ class InsuranceCompanyService {
 
             return true;
         } catch (error) {
-            console.error(`error in checkInsuranceCompanyExists: ${error.message}`);
-            throw new AppError(`Error checking insurance company existence: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking insurance company exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

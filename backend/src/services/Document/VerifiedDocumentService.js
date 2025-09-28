@@ -47,7 +47,8 @@ class VerifiedDocumentService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`error getting documents ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting verified documents: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -115,7 +116,8 @@ class VerifiedDocumentService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`error uploading document: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error uploading verified documents: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

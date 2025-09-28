@@ -38,7 +38,8 @@ class EmailVerificationTokenService {
 
             await EmailService.sendVerificationEmail(person.email, TokenData.token);
         } catch (error) {
-            throw new AppError(`Error inserting or updating email verification token: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting or updating email verification token: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -55,8 +56,8 @@ class EmailVerificationTokenService {
 
             return true;
         } catch (error) {
-            console.error(`error verifying email: ${error}`);
-            throw new AppError(`Error verifying email: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error verifying email: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

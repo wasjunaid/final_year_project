@@ -39,7 +39,7 @@ passport.use(
 
                 return done(null, { tokens });
             } catch (error) {
-                console.error(`Error during Google authentication: ${error.message}`);
+                console.error(`Error in google auth: ${error.message} ${error.status}`);
                 return done(error);
             }
         }

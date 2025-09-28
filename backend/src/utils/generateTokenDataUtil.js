@@ -22,7 +22,8 @@ const generateTokenDataUtil = (tokenType) => {
 
     return tokenData;
   } catch (error) {
-    throw new Error(`Failed to generate token data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error(`Error generating token data: ${error.message} ${error.status}`);
+    throw error;
   }
 }
 

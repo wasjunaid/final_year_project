@@ -40,7 +40,8 @@ class UnverifiedDocumentService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`error getting documents ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting unverified documents: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -96,7 +97,8 @@ class UnverifiedDocumentService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`error uploading document: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error uploading unverified documents: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

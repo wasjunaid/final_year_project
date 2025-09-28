@@ -24,8 +24,8 @@ class DoctorNoteService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`error getting doctor note: ${error.message}`);
-            throw new AppError("error getting doctor note", statusCodes.INTERNAL_SERVER_ERROR, error);
+            console.error(`Error getting doctor note: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -55,8 +55,8 @@ class DoctorNoteService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`error inserting doctor note: ${error.message}`);
-            throw new AppError("error inserting doctor note", statusCodes.INTERNAL_SERVER_ERROR, error);
+            console.error(`Error inserting doctor note: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

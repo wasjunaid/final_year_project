@@ -39,7 +39,8 @@ class AppointmentService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error fetching appointments: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error fetching appointments: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -77,7 +78,8 @@ class AppointmentService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error fetching appointments: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error fetching appointments: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -122,7 +124,8 @@ class AppointmentService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error fetching appointments: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error fetching appointments: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -150,7 +153,8 @@ class AppointmentService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting appointment: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting appointment: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -198,7 +202,8 @@ class AppointmentService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating appointment status: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating appointment status: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -220,7 +225,8 @@ class AppointmentService {
                 throw new AppError("Failed to delete appointment", statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting appointment: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting appointment: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -269,7 +275,8 @@ class AppointmentService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error fetching upcoming appointments: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error fetching upcoming appointments: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -292,7 +299,8 @@ class AppointmentService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error checking appointment existence: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking appointment exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

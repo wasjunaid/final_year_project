@@ -22,7 +22,8 @@ class PatientService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error getting patient: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting patient: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -47,7 +48,8 @@ class PatientService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting patient: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting patient: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -67,7 +69,8 @@ class PatientService {
 
             return patient;
         } catch (error) {
-            throw new AppError(`Error inserting patient: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting patient: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -106,7 +109,8 @@ class PatientService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating patient: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating patient: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -128,7 +132,8 @@ class PatientService {
                 throw new AppError(`Error deleting patient`, statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting patient: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting patient: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -151,7 +156,8 @@ class PatientService {
 
             return true;
         } catch (error) {
-            throw new AppError(`Error checking patient existence: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking patient exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

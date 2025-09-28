@@ -57,7 +57,8 @@ class JWTService {
 
             return newTokens;
         } catch (error) {
-            throw new AppError(`Error refreshing tokens: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error refreshing tokens: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

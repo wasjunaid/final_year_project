@@ -30,8 +30,8 @@ class SystemAdminService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error fetching system admin: ${error.message}`);
-            throw new AppError("Error fetching system admin", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting system admin: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -56,8 +56,8 @@ class SystemAdminService {
 
             return result.rows;
         } catch (error) {
-            console.error(`Error fetching all system admins: ${error.message}`);
-            throw new AppError("Error fetching all system admins", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting all system admins: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -104,8 +104,8 @@ class SystemAdminService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`error inserting system admin: ${error.message}`);
-            throw new AppError(`error inserting system admin: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting system admin: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -137,8 +137,8 @@ class SystemAdminService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error deleting system admin: ${error.message}`);
-            throw new AppError(`Error deleting system admin: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting system admin: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -161,8 +161,8 @@ class SystemAdminService {
 
             return result.rows[0].system_admin_id;
         } catch (error) {
-            console.error(`Error checking system admin: ${error.message}`);
-            throw new AppError("Error checking system admin", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking system admin exists against role: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -185,8 +185,8 @@ class SystemAdminService {
 
             return result.rows[0].system_admin_id;
         } catch (error) {
-            console.error(`Error checking system admin: ${error.message}`);
-            throw new AppError("Error checking system admin", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking system admin exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

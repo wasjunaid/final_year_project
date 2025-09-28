@@ -15,8 +15,8 @@ class LabTestService {
 
             return result.rows;
         } catch (error) {
-            console.error(`Error fetching lab tests: ${error.message}`);
-            throw new AppError(`Error fetching lab tests: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting lab tests: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -47,8 +47,8 @@ class LabTestService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error inserting lab test: ${error.message}`);
-            throw new AppError(`Error inserting lab test: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting lab tests: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -89,8 +89,8 @@ class LabTestService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error updating lab test: ${error.message}`);
-            throw new AppError(`Error updating lab test: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating lab tests: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

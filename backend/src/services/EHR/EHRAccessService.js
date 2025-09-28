@@ -22,8 +22,8 @@ class EHRAccessService {
             
             return result.rows;
         } catch (error) {
-            console.error(`Error in getEHRAccessForPatient: ${error.message}`);
-            throw new AppError('Internal Server Error', statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting ehr access for patient: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -45,8 +45,8 @@ class EHRAccessService {
             
             return result.rows;
         } catch (error) {
-            console.error(`Error in getEHRAccessForDoctor: ${error.message}`);
-            throw new AppError('Internal Server Error', statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting ehr access for doctor: ${error.message} ${error.status}`);
+            throw error;
         }
     }
     
@@ -81,8 +81,8 @@ class EHRAccessService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error in insertEHRAccess: ${error.message}`);
-            throw new AppError('Internal Server Error', statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting ehr access: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -122,8 +122,8 @@ class EHRAccessService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error in updateEHRAccessStatus: ${error.message}`);
-            throw new AppError('Internal Server Error', statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating ehr access status: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -140,8 +140,8 @@ class EHRAccessService {
 
             return updateAccess;
         } catch (error) {
-            console.error(`Error in grantEHRAccess: ${error.message}`);
-            throw new AppError('Internal Server Error', statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error granting ehr access: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -158,8 +158,8 @@ class EHRAccessService {
 
             return updateAccess;
         } catch (error) {
-            console.error(`Error in revokeEHRAccess: ${error.message}`);
-            throw new AppError('Internal Server Error', statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error revoking ehr access: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -184,8 +184,8 @@ class EHRAccessService {
 
             return result.rows[0].ehr_access_id;
         } catch (error) {
-            console.error(`Error in checkEHRAccessExists: ${error.message}`);
-            throw new AppError('Internal Server Error', statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking ehr access exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -210,8 +210,8 @@ class EHRAccessService {
 
             return true;
         } catch (error) {
-            console.error(`Error in checkEHRAccessOwnership: ${error.message}`);
-            throw new AppError('Internal Server Error', statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking ehr access ownership: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

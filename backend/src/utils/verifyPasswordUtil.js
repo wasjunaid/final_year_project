@@ -11,7 +11,8 @@ const verifyPasswordUtil = async (password, passwordHash) => {
     try {
       return await bcrypt.compare(password, passwordHash);
     } catch (error) {
-      throw new Error(`Failed to verify password: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(`Error verifying password: ${error.message} ${error.status}`);
+      throw error;
     }
 }
 

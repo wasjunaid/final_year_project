@@ -40,8 +40,8 @@ class NotificationService {
 
             return result.rows;
         } catch (error) {
-            console.error(`Error fetching notifications: ${error.message}`);
-            throw new AppError("Unable to Get Notifications", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting notifications: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -104,8 +104,8 @@ class NotificationService {
 
             return result.rows[0];
         } catch (error) {
-            console.error(`Error creating notification: ${error.message}`);
-            throw new AppError("Unable to Insert Notification", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting notification: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -128,8 +128,8 @@ class NotificationService {
             };
             await pool.query(query);
         } catch (error) {
-            console.error(`Error marking notification as read: ${error.message}`);
-            throw new AppError("Unable to Update Notification", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating notification is read: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -154,8 +154,8 @@ class NotificationService {
             };
             await pool.query(query);
         } catch (error) {
-            console.error(`Error marking all notifications as read: ${error.message}`);
-            throw new AppError("Unable to Update Notifications", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating all notifications is read: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -177,8 +177,8 @@ class NotificationService {
             };
             await pool.query(query);
         } catch (error) {
-            console.error(`Error deleting notification: ${error.message}`);
-            throw new AppError("Unable to Delete Notification", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting notification: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -200,8 +200,8 @@ class NotificationService {
             };
             await pool.query(query);
         } catch (error) {
-            console.error(`Error deleting all notifications: ${error.message}`);
-            throw new AppError("Unable to Delete Notifications", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting all notifications: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -243,8 +243,8 @@ class NotificationService {
                 });
             }
         } catch (error) {
-            console.error(`Error inserting notifications for upcoming appointments: ${error.message}`);
-            throw new AppError("Unable to Insert Notifications", statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting notifications for upcoming appointments: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }
@@ -254,7 +254,8 @@ const sendAppointmentReminders = () => {
     try {
         await NotificationService.insertNotificationsForUpcomingAppointments();
     } catch (error) {
-        console.error(`Error in scheduled appointment reminders: ${error.message}`);
+        console.error(`Error sending appointment reminders: ${error.message} ${error.status}`);
+        throw error;
     }
   });
 };

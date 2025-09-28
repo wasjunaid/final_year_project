@@ -37,7 +37,8 @@ class AppointmentRequestService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error fetching appointment requests: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error fetching appointment requests: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -79,7 +80,8 @@ class AppointmentRequestService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error fetching appointment requests: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error fetching appointment requests: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -132,7 +134,8 @@ class AppointmentRequestService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting appointment request: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting appointment request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -220,7 +223,8 @@ class AppointmentRequestService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating appointment request status: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating appointment request status: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -262,7 +266,8 @@ class AppointmentRequestService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error cancelling appointment request: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error cancelling appointment request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -322,7 +327,8 @@ class AppointmentRequestService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error rescheduling appointment request: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error resheduling appointment request: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -345,7 +351,8 @@ class AppointmentRequestService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error checking appointment request existence: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking appointment request exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -371,7 +378,8 @@ class AppointmentRequestService {
 
             return true;
         } catch (error) {
-            throw new AppError(`Error checking appointment request ownership: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking appointment request ownership: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -400,7 +408,8 @@ class AppointmentRequestService {
 
             return true;
         } catch (error) {
-            throw new AppError(`Error checking appointment request clash: ${error.message}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking appointment request clash: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

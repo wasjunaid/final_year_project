@@ -22,7 +22,8 @@ class AddressService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error getting address: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error fetching address: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -52,7 +53,8 @@ class AddressService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting address: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting address: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -73,7 +75,8 @@ class AddressService {
 
             return fetchedAddress;
         } catch (error) {
-            throw new AppError(`Error updating address: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating address: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -95,7 +98,8 @@ class AddressService {
                 throw new AppError(`Error deleting address`, statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting address: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting address: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -118,7 +122,8 @@ class AddressService {
 
             return result.rows[0].address_id;
         } catch (error) {
-            throw new AppError(`Error checking address existence: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking address exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

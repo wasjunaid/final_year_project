@@ -38,7 +38,8 @@ class PasswordResetTokenService {
 
             await EmailService.sendPasswordResetEmail(person.email, TokenData.token);
         } catch (error) {
-            throw new AppError(`Error inserting or updating password reset token: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting or updating password reset token: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -58,8 +59,8 @@ class PasswordResetTokenService {
 
             return true;
         } catch (error) {
-            console.error(`Error resetting password: ${error}`);
-            throw new AppError(`Error resetting password: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error resetting password: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

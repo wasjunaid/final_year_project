@@ -22,7 +22,8 @@ class ContactService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error getting contact: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting contact: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -55,7 +56,8 @@ class ContactService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting contact: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting contact: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -79,7 +81,8 @@ class ContactService {
 
             return fetchedContact;
         } catch (error) {
-            throw new AppError(`Error updating contact: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating contact: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -101,7 +104,8 @@ class ContactService {
                 throw new AppError("Error deleting contact", statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting contact: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting contact: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -127,7 +131,8 @@ class ContactService {
 
             return result.rows[0].contact_id;
         } catch (error) {
-            throw new AppError(`Error checking contact existence: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking contact existence: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }

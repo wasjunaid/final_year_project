@@ -31,7 +31,8 @@ class DoctorService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error getting doctor: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting doctor: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -76,7 +77,8 @@ class DoctorService {
 
             return result.rows;
         } catch (error) {
-            throw new AppError(`Error getting doctors for hospital: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting doctors: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -105,8 +107,8 @@ class DoctorService {
 
             return result.rows;
         } catch (error) {
-            console.error(`Error getting doctors for appointments: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            throw new AppError(`Error getting doctors for appointments: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error getting doctors: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -131,7 +133,8 @@ class DoctorService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error inserting doctor: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting doctor: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -151,7 +154,8 @@ class DoctorService {
 
             return doctor;
         } catch (error) {
-            throw new AppError(`Error inserting doctor: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error inserting doctor: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -190,7 +194,8 @@ class DoctorService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating doctor: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating doctor: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -240,7 +245,8 @@ class DoctorService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error updating doctor status: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error updating doctor status: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -262,7 +268,8 @@ class DoctorService {
                 throw new AppError(`Error deleting doctor`, statusCodes.INTERNAL_SERVER_ERROR);
             }
         } catch (error) {
-            throw new AppError(`Error deleting doctor: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error deleting doctor: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -285,7 +292,8 @@ class DoctorService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error checking if doctor exists: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking doctor exists: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 
@@ -311,7 +319,8 @@ class DoctorService {
 
             return result.rows[0];
         } catch (error) {
-            throw new AppError(`Error checking if doctor exists: ${error instanceof Error ? error.message : 'Unknown error'}`, statusCodes.INTERNAL_SERVER_ERROR);
+            console.error(`Error checking doctor exists against hospital id: ${error.message} ${error.status}`);
+            throw error;
         }
     }
 }
