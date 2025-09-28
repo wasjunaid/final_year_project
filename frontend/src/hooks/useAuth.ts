@@ -1,7 +1,5 @@
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "../redux/store";
 import { signIn, signOut } from "../redux/slices/authSlice";
-import { useAppSelector } from "../redux/hooks";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
 
 interface ISignInProps {
   accessToken: string;
@@ -9,14 +7,14 @@ interface ISignInProps {
 }
 
 export function useAuth() {
-  const person = useAppSelector((state) => state.auth.person);
+  const user = useAppSelector((state) => state.auth.user);
   const accessToken = useAppSelector((state) => state.auth.accessToken);
   const refreshToken = useAppSelector((state) => state.auth.refreshToken);
 
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   return {
-    person,
+    user,
     accessToken,
     refreshToken,
     signIn: (tokens: ISignInProps) => dispatch(signIn(tokens)),

@@ -1,19 +1,22 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
-import type { Person } from "../../models/Person";
+import type { User } from "../../models/User";
+import { tokenService } from "../../services/tokenService";
 
 interface AuthState {
-  person: Person | null;
+  user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
 }
 
-const initialAccessToken = localStorage.getItem("accessToken");
+// Read tokens from localStorage on initialization
+const initialAccessToken = tokenService.getAccessToken();
+const initialRefreshToken = tokenService.getRefreshToken();
+
 const initialState: AuthState = {
   accessToken: initialAccessToken,
-  refreshToken: localStorage.getItem("refreshToken"),
-  person: initialAccessToken ? jwtDecode<Person>(initialAccessToken) : null,
+  refreshToken: initialRefreshToken,
+  user: initialAccessToken ? jwtDecode<User>(initialAccessToken) : null,
 };
 
 const authSlice = createSlice({
@@ -30,18 +33,18 @@ const authSlice = createSlice({
       const { accessToken, refreshToken } = action.payload;
       state.accessToken = accessToken;
       state.refreshToken = refreshToken;
-      state.person = jwtDecode<Person>(accessToken);
+      state.user = jwtDecode<User>(accessToken);
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
+      // Persist tokens
+      tokenService.setTokens({ accessToken, refreshToken });
     },
     signOut: (state) => {
       state.accessToken = null;
       state.refreshToken = null;
-      state.person = null;
+      state.user = null;
 
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      // Remove tokens from storage
+      tokenService.clearTokens();
     },
   },
 });

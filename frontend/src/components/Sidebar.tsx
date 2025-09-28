@@ -1,5 +1,8 @@
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import SideBarButton from "./SideBarButton";
 import { FaSignOutAlt } from "react-icons/fa";
+import ROUTES from "../constants/routes";
 
 export interface ISideBarItem {
   label: string;
@@ -15,6 +18,9 @@ interface ISideBarProps {
 }
 
 function SideBar({ items, selected, onSelect, collapsed }: ISideBarProps) {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <div
       className={` bg-grayColor shadow-sm transition-all duration-200 flex flex-col justify-between
@@ -41,7 +47,8 @@ function SideBar({ items, selected, onSelect, collapsed }: ISideBarProps) {
           icon={<FaSignOutAlt />}
           selected={false}
           onClick={() => {
-            // TODO: Add logout logic later
+            signOut();
+            navigate(ROUTES.AUTH.SIGN_IN);
           }}
           collapsed={collapsed}
         />

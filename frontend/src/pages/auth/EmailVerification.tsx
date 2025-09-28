@@ -25,9 +25,7 @@ function EmailVerification() {
 
   const verifyEmail = async (token: string) => {
     try {
-      await api.get(
-        `${EndPoints.auth.verifyEmail}?token=${encodeURIComponent(token)}`
-      );
+      await api.post(EndPoints.emailVerification.verify, { token: token });
 
       setVerified(true);
     } catch (err: any) {

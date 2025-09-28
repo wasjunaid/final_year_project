@@ -3,12 +3,13 @@ const EndPoints = {
     signIn: "/auth/sign-in",
     signUp: "/auth/sign-up",
     refreshToken: "/auth/refresh-token",
-    verifyEmail: "/auth/verify-email",
-    resendVerification: "/auth/resend-verification",
-    sendOrResendEmailVerification: "/auth/send-or-resend-email-verification",
     google: "/auth/google",
-    forgotPassword: "/auth/forgot-password",
-    resetPassword: "/auth/reset-password",
+    forgotPassword: "/token/password-reset",
+    resetPassword: "/token/password-reset/reset",
+  },
+  emailVerification: {
+    verify: "/token/email-verification/verify",
+    sendOrResend: "/token/email-verification/",
   },
   patient: {
     dashboard: "/patient/dashboard",

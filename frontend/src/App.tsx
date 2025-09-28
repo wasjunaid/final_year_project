@@ -7,11 +7,8 @@ import {
 import "./App.css";
 import LandingPage from "./pages/landing/LandingPage";
 import ROUTES from "./constants/routes";
-import type { UserRole } from "./constants/roles";
+import { ROLES, type UserRole } from "./constants/roles";
 import { useAuth } from "./hooks/useAuth";
-import ComponentsTestPage from "./components/tests/ComponentsTestPage";
-import PatientPortalTest from "./components/tests/PatientPortalTest";
-import TableComponentTest from "./components/tests/TableComponentTest";
 import PatientPortalLayout from "./pages/patient/PatientPortalLayout";
 import DoctorPortalLayout from "./pages/doctor/DoctorPortalLayout";
 import HospitalPortalLayout from "./pages/hospital/HospitalPortalLayout";
@@ -31,11 +28,11 @@ interface ProtectedProps {
 
 // Protected route wrapper
 function Protected({ children, allowedRoles }: ProtectedProps) {
-  const { person } = useAuth();
+  const { user } = useAuth();
 
-  if (!person) return <Navigate to={ROUTES.AUTH.SIGN_IN} />;
+  if (!user) return <Navigate to={ROUTES.AUTH.SIGN_IN} />;
 
-  if (allowedRoles && !allowedRoles.includes(person.role)) {
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to={ROUTES.HOME} />;
   }
 
@@ -47,9 +44,6 @@ function App() {
     <Router>
       <div className="bg-background h-screen">
         <Routes>
-          {/* Default to landing page */}
-          <Route path={ROUTES.HOME} element={<LandingPage />} />
-
           {/* Auth Routes */}
           <Route
             path={ROUTES.AUTH.VERIFY_EMAIL}
@@ -66,29 +60,65 @@ function App() {
           <Route path={ROUTES.AUTH.SIGN_UP} element={<SignUpPage />} />
           <Route path={ROUTES.AUTH.SIGN_IN} element={<SignInPage />} />
 
-          {/* Admin Routes */}
-          <Route path={ROUTES.ADMIN} element={<AdminPortalLayout />} />
+          {/* Portals */}
+          <Route
+            path={ROUTES.ADMIN_PORTAL}
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN]}>
+                <AdminPortalLayout />
+              </Protected>
+            }
+          />
 
-          {/* Patient Routes */}
           <Route
             path={ROUTES.PATIENT_PORTAL}
-            element={<PatientPortalLayout />}
+            element={
+              <Protected allowedRoles={[ROLES.PATIENT]}>
+                <PatientPortalLayout />
+              </Protected>
+            }
           />
 
-          {/* Doctor Routes */}
-          <Route path={ROUTES.DOCTOR_PORTAL} element={<DoctorPortalLayout />} />
-
-          {/* Hospital Routes */}
-          <Route path={ROUTES.HOSPITAL} element={<HospitalPortalLayout />} />
-
-          {/* Front Desk Routes */}
-          <Route path={ROUTES.FRONT_DESK} element={<FrontDeskPortalLayout />} />
-
-          {/* Medical Coder Routes */}
           <Route
-            path={ROUTES.MEDICAL_CODER}
-            element={<MedicalCoderPortalLayout />}
+            path={ROUTES.DOCTOR_PORTAL}
+            element={
+              <Protected allowedRoles={[ROLES.DOCTOR]}>
+                <DoctorPortalLayout />
+              </Protected>
+            }
           />
+
+          <Route
+            path={ROUTES.HOSPITAL_PORTAL}
+            element={
+              <Protected allowedRoles={[ROLES.HOSPITAL]}>
+                <HospitalPortalLayout />
+              </Protected>
+            }
+          />
+
+          <Route
+            path={ROUTES.FRONT_DESK_PORTAL}
+            element={
+              <Protected allowedRoles={[ROLES.FRONT_DESK]}>
+                <FrontDeskPortalLayout />
+              </Protected>
+            }
+          />
+
+          <Route
+            path={ROUTES.MEDICAL_CODER_PORTAL}
+            element={
+              <Protected allowedRoles={[ROLES.MEDICAL_CODER]}>
+                <MedicalCoderPortalLayout />
+              </Protected>
+            }
+          />
+
+          {/* landing page */}
+          <Route path={ROUTES.HOME} element={<LandingPage />} />
+
+          {/* define more routes here... */}
         </Routes>
       </div>
     </Router>

@@ -14,14 +14,16 @@ const ROUTES = {
     GOOGLE_AUTH_SUCCESS: "/auth/google/success",
   },
 
-  HOME: "/", //landing page
+  //landing page
+  HOME: "/",
 
-  ADMIN: "/admin",
+  //portals
+  ADMIN_PORTAL: "/admin",
   PATIENT_PORTAL: "/patient",
   DOCTOR_PORTAL: "/doctor",
-  FRONT_DESK: "/front-desk",
-  HOSPITAL: "/hospital",
-  MEDICAL_CODER: "/medical-coder",
+  FRONT_DESK_PORTAL: "/front-desk",
+  HOSPITAL_PORTAL: "/hospital",
+  MEDICAL_CODER_PORTAL: "/medical-coder",
 
   // NOT_FOUND: "/not-found",
 };
