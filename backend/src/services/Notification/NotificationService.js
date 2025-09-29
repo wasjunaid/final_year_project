@@ -255,7 +255,6 @@ const sendAppointmentReminders = () => {
         await NotificationService.insertNotificationsForUpcomingAppointments();
     } catch (error) {
         console.error(`Error sending appointment reminders: ${error.message} ${error.status}`);
-        throw error;
     }
   });
 };

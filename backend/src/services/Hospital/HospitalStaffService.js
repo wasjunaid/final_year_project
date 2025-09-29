@@ -81,9 +81,6 @@ class HospitalStaffService {
         if (!email) {
             throw new AppError("email is required", statusCodes.BAD_REQUEST);
         }
-        if (!password) {
-            throw new AppError("password is required", statusCodes.BAD_REQUEST);
-        }
         if (!hospital_id) {
             throw new AppError("hospital_id is required", statusCodes.BAD_REQUEST);
         }

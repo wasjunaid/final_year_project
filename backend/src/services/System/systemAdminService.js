@@ -3,6 +3,7 @@ const { PersonService } = require("../Person/PersonService");
 const { validSystemAdminRoles } = require("../../database/system/systemAdminTableQuery");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { superAdmin } = require("../../config/backendConfig");
 
 class SystemAdminService {
     static async getSystemAdmin(person_id, role) {
@@ -191,4 +192,26 @@ class SystemAdminService {
     }
 }
 
-module.exports = { SystemAdminService };
+const createDefaultSuperAdmin = async () => {
+    try {
+        const person = await PersonService.insertPersonIfNotExists(superAdmin.email, superAdmin.password);
+
+        const query = {
+            text: `INSERT INTO system_admin
+            (system_admin_id, role)
+            VALUES ($1, $2)
+            RETURNING *`,
+            values: [person.person_id, 'super admin']
+        };
+        const result = await pool.query(query);
+        if (result.rows.length === 0) {
+            throw new AppError("Error creating default super admin", statusCodes.INTERNAL_SERVER_ERROR);
+        }
+
+        console.log("Default super admin created successfully");
+    } catch (error) {
+        console.error(`Error creating default super admin: ${error.message} ${error.status}`);
+    }
+}
+
+module.exports = { SystemAdminService, createDefaultSuperAdmin };
