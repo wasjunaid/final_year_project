@@ -50,11 +50,12 @@ class AppointmentRequestController {
 
     async insertAppointmentRequest(req, res) {
         const { person_id } = req.user;
-        const { hospital_id, date, time, reason } = req.body;
+        const { hospital_id, doctor_id, date, time, reason } = req.body;
 
         try {
             const newRequest = await AppointmentRequestService.insertAppointmentRequest(person_id, {
                 hospital_id,
+                doctor_id,
                 date,
                 time,
                 reason

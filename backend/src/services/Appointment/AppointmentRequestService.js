@@ -98,6 +98,9 @@ class AppointmentRequestService {
         if (!hospital_id) {
             throw new AppError("hospital_id is required", statusCodes.BAD_REQUEST);
         }
+        if (!doctor_id) {
+            throw new AppError("doctor_id is required", statusCodes.BAD_REQUEST);
+        }
         if (!date) {
             throw new AppError("date is required", statusCodes.BAD_REQUEST);
         }
