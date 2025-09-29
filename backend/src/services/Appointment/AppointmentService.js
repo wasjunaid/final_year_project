@@ -129,22 +129,25 @@ class AppointmentService {
         }
     }
 
-    static async insertAppointment(appointment_request_id, status = 'upcoming') {
+    static async insertAppointment(appointment_request_id, cost, status = 'upcoming') {
         if (!appointment_request_id) {
             throw new AppError("appointment_request_id is required", statusCodes.BAD_REQUEST);
         }
         if (!validAppointmentStatuses.includes(status)) {
             throw new AppError(`Invalid status`, statusCodes.BAD_REQUEST);
         }
+        if (cost === undefined || cost < 0) {
+            throw new AppError("Invalid cost", statusCodes.BAD_REQUEST);
+        }
 
         try {
             const query = {
                 text: `INSERT INTO appointment
-                (appointment_id, status)
+                (appointment_id, status, cost)
                 VALUES
-                ($1, $2)
+                ($1, $2, $3)
                 RETURNING *`,
-                values: [appointment_request_id, status]
+                values: [appointment_request_id, status, cost]
             };
             const result = await pool.query(query);
             if (result.rows.length === 0) {

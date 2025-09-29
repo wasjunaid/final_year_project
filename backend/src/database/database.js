@@ -28,6 +28,8 @@ const { hospitalStaffTableQuery } = require("./hospital/hospitalStaffTableQuery"
 const { medicineTableQuery } = require("./medicine/medicineTableQuery");
 const { prescriptionTableQuery } = require("./prescription/prescriptionTableQuery");
 const { hospitalAssociationRequestTableQuery } = require("./hospital/hospitalAssociationRequestTableQuery");
+const { insuranceTableQuery } = require("./insurance/insuranceTableQuery");
+const { patientInsuranceTableQuery } = require("./patient/patientInsuranceTableQuery");
 
 const database = async () => {
     try {
@@ -91,6 +93,10 @@ const database = async () => {
         console.log("Prescription Table Initialized");
         await pool.query(hospitalAssociationRequestTableQuery);
         console.log("Hospital Association Request Table Initialized");
+        await pool.query(insuranceTableQuery);
+        console.log("Insurance Table Initialized");
+        await pool.query(patientInsuranceTableQuery);
+        console.log("Patient Insurance Table Initialized");
 
         console.log("Database Initialized Successfully");
     } catch (error) {

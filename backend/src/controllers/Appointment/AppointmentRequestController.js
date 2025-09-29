@@ -80,7 +80,7 @@ class AppointmentRequestController {
     async updateAppointmentRequestStatusForHospital(req, res) {
         const { person_id } = req.user;
         const { appointment_request_id } = req.params;
-        const { doctor_id, date, time, status } = req.body;
+        const { doctor_id, date, time, status, cost } = req.body;
 
         try {
             const updatedRequest = await AppointmentRequestService.updateAppointmentRequestStatusForHospital(person_id, {
@@ -88,7 +88,8 @@ class AppointmentRequestController {
                 doctor_id,
                 date,
                 time,
-                status
+                status,
+                cost
             });
 
             res.status(statusCodes.OK).json({

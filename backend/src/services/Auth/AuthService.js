@@ -3,6 +3,8 @@ const { PatientService } = require("../Patient/PatientService");
 const { DoctorService } = require("../Doctor/DoctorService");
 const { JWTService } = require("./JWTService");
 const { EmailVerificationTokenService } = require("../Token/EmailVerificationTokenService");
+const { LogService } = require("../Log/LogService");
+const { NotificationService } = require("../Notification/NotificationService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
 
@@ -91,6 +93,19 @@ class AuthService {
             }
 
             const tokens = await JWTService.generateJWT(person_id, role.toLowerCase());
+
+            await LogService.insertLog(person.person_id, `Sign In: User with email ${email} signed in as ${role.toLowerCase()}`);
+
+            await NotificationService.insertNotification(person.person_id, {
+                role: role,
+                title: "Sign In",
+                message: `You have signed in as a ${role.toLowerCase()}`,
+                type: "check",
+                related_id: person.person_id,
+                related_type: "person",
+                email: email,
+                sendEmail: true
+            });
 
             return tokens;
         } catch (error) {

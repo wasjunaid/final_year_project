@@ -144,7 +144,8 @@ class AppointmentRequestService {
         doctor_id,
         date,
         time,
-        status
+        status,
+        cost
     }) {
         if (!person_id) {
             throw new AppError("person_id is required", statusCodes.BAD_REQUEST);
@@ -166,6 +167,9 @@ class AppointmentRequestService {
         }
         if (!validAppointmentRequestStatuses.includes(status)) {
             throw new AppError("Invalid status", statusCodes.BAD_REQUEST);
+        }
+        if (cost === undefined || cost < 0) {
+            throw new AppError("Invalid cost", statusCodes.BAD_REQUEST);
         }
 
         try {
@@ -196,7 +200,7 @@ class AppointmentRequestService {
                 if (checkClash) {
                     throw new AppError("Appointment clash detected for the selected doctor at the given date and time", statusCodes.CONFLICT);
                 }
-                await AppointmentService.insertAppointment(appointment_request_id);
+                await AppointmentService.insertAppointment(appointment_request_id, cost);
             } else if (status === "denied") {
                 const appointmentExists = await AppointmentService.checkAppointmentExists(appointment_request_id);
                 if (appointmentExists) {
