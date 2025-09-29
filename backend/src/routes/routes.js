@@ -29,6 +29,7 @@ const DoctorNoteRouter = require("./doctor/doctorNoteRoutes");
 const HospitalAssociationRequestRouter = require("./hospital/hospitalAssociationRequestRoutes");
 const PatientInsuranceRouter = require("./patient/patientInsuranceRoutes");
 const HospitalPanelListRouter = require("./hospital/hospitalPanelListRoutes");
+const EHRRoutes = require("./EHR/EHRRoutes");
 
 const routes = (app) => {
     app.use("/auth", AuthRouter);
@@ -156,6 +157,11 @@ const routes = (app) => {
         "/hospital/panel-list",
         verifyAccessJWT,
         HospitalPanelListRouter
+    );
+    app.use(
+        "/ehr",
+        verifyAccessJWT,
+        EHRRoutes
     );
 
     return app;
