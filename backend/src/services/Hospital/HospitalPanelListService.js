@@ -14,7 +14,7 @@ class HospitalPanelListService {
             if (!hospitalStaff) {
                 throw new AppError("Hospital staff not found", statusCodes.NOT_FOUND);
             }
-            if (hospitalStaff.role !== 'admin' && hospitalStaff.role !== 'sub admin') {
+            if (hospitalStaff.role !== 'hospital admin' && hospitalStaff.role !== 'hospital sub admin') {
                 throw new AppError("Unauthorized access", statusCodes.UNAUTHORIZED);
             }
 
@@ -49,7 +49,7 @@ class HospitalPanelListService {
             if (!hospitalStaff) {
                 throw new AppError("Hospital staff not found", statusCodes.NOT_FOUND);
             }
-            if (hospitalStaff.role !== 'admin' && hospitalStaff.role !== 'sub admin') {
+            if (hospitalStaff.role !== 'hospital admin' && hospitalStaff.role !== 'hospital sub admin') {
                 throw new AppError("Unauthorized access", statusCodes.UNAUTHORIZED);
             }
 
@@ -86,7 +86,7 @@ class HospitalPanelListService {
             if (!hospitalStaff) {
                 throw new AppError("Hospital staff not found", statusCodes.NOT_FOUND);
             }
-            if (hospitalStaff.role !== 'admin' && hospitalStaff.role !== 'sub admin') {
+            if (hospitalStaff.role !== 'hospital admin' && hospitalStaff.role !== 'hospital sub admin') {
                 throw new AppError("Unauthorized access", statusCodes.UNAUTHORIZED);
             }
 

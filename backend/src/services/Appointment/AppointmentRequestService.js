@@ -52,7 +52,7 @@ class AppointmentRequestService {
             if (!checkStaff) {
                 throw new AppError("You do not have permission to view appointment requests for this hospital", statusCodes.FORBIDDEN);
             }
-            if (checkStaff.role === 'lab technician') {
+            if (checkStaff.role === 'hospital lab technician') {
                 throw new AppError("Lab technicians cannot view appointment requests for this hospital", statusCodes.FORBIDDEN);
             }
 
@@ -180,7 +180,7 @@ class AppointmentRequestService {
             if (!checkHospitalStaff) {
                 throw new AppError("You do not have permission to update appointment request status", statusCodes.FORBIDDEN);
             }
-            if (checkHospitalStaff.role === 'lab technician') {
+            if (checkHospitalStaff.role === 'hospital lab technician') {
                 throw new AppError("Lab technicians cannot update appointment request status", statusCodes.FORBIDDEN);
             }
 

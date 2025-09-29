@@ -7,6 +7,10 @@ const { LogService } = require("../Log/LogService");
 const { NotificationService } = require("../Notification/NotificationService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { validHospitalStaffRoles } = require("../../database/hospital/hospitalStaffTableQuery");
+const { validSystemAdminRoles } = require("../../database/system/systemAdminTableQuery");
+const { HospitalStaffService } = require("../Hospital/HospitalStaffService");
+const { SystemAdminService } = require("../System/systemAdminService");
 
 const roles = ['patient', 'doctor'];
 
@@ -67,7 +71,7 @@ class AuthService {
         if (!role) {
             throw new AppError("role is required", statusCodes.BAD_REQUEST);
         }
-        if (!roles.includes(role.toLowerCase())) {
+        if (!roles.includes(role.toLowerCase()) && !validHospitalStaffRoles.includes(role.toLowerCase()) && !validSystemAdminRoles.includes(role.toLowerCase())) {
             throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
         }
 
@@ -84,6 +88,19 @@ class AuthService {
             } else if (role.toLowerCase() === 'doctor') {
                 const doctorExists = await DoctorService.checkDoctorExists(person_id);
                 if (!doctorExists) {
+                    throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
+                }
+            } else if (validHospitalStaffRoles.includes(role.toLowerCase())) {
+                const hospitalStaffExists = await HospitalStaffService.checkHospitalStaffExists(person_id);
+                if (!hospitalStaffExists) {
+                    throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
+                }
+                if (hospitalStaffExists.role !== role.toLowerCase()) {
+                    throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
+                }
+            } else if (validSystemAdminRoles.includes(role.toLowerCase())) {
+                const systemAdminExists = await SystemAdminService.checkSystemAdminExistsAgainstRole(person_id, role.toLowerCase());
+                if (!systemAdminExists) {
                     throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
                 }
             }

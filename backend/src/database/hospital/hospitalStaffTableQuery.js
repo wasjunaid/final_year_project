@@ -1,8 +1,8 @@
 const validHospitalStaffRoles = [
-    'admin',
-    'sub admin',
-    'front desk',
-    'lab technician'
+    'hospital admin',
+    'hospital sub admin',
+    'hospital front desk',
+    'hospital lab technician'
 ];
 
 const hospitalStaffTableQuery = `

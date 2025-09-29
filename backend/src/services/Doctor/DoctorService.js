@@ -49,7 +49,7 @@ class DoctorService {
             if (!checkStaffExists) {
                 throw new AppError('You are not authorized to view doctors for this hospital', statusCodes.FORBIDDEN);
             }
-            if (checkStaffExists.role === 'lab technician') {
+            if (checkStaffExists.role === 'hospital lab technician') {
                 throw new AppError('You are not authorized to view doctors for this hospital', statusCodes.FORBIDDEN);
             }
 
@@ -218,7 +218,7 @@ class DoctorService {
             if (!checkStaffExists) {
                 throw new AppError('You are not authorized to update doctor status', statusCodes.FORBIDDEN);
             }
-            if (checkStaffExists.role === 'lab technician') {
+            if (checkStaffExists.role === 'hospital lab technician') {
                 throw new AppError('You are not authorized to update doctor status', statusCodes.FORBIDDEN);
             }
             const doctor = await this.checkDoctorExists(doctor_id);
