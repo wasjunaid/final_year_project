@@ -11,6 +11,10 @@ const EndPoints = {
     verify: "/token/email-verification/verify",
     sendOrResend: "/token/email-verification/",
   },
+  notification: {
+    list: "/notification", // GET
+    // ...other notification endpoints if needed
+  },
   patient: {
     dashboard: "/patient/dashboard",
     appointments: "/patient/appointments",

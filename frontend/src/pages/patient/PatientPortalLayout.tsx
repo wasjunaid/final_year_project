@@ -14,6 +14,7 @@ import {
 import PatientDemographicsPage from "./PatientDemographicsPage";
 import PatientAppointmentsTabLayout from "./PatientAppointmentsTabLayout";
 import PatientDasboardTab from "./PatientDasboardTab";
+import NotificationPage from "../notification/NotificaitonPage";
 
 function PatientPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -43,7 +44,7 @@ function PatientPortalLayout() {
       case "billing":
         return <h2 className="p-4">💳 Billing Page</h2>;
       case "notifications":
-        return <h2 className="p-4">🔔 Notifications</h2>;
+        return <NotificationPage />;
       default:
         return <h2 className="p-4">Page Not Found</h2>;
     }
