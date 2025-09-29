@@ -48,7 +48,7 @@ class HospitalStaffService {
             if (!hospitalStaff) {
                 throw new AppError("Only hospital staff can view all hospital staff", statusCodes.FORBIDDEN);
             }
-            if (hospitalStaff.role !== 'admin' || hospitalStaff.role !== 'sub-admin') {
+            if (hospitalStaff.role !== 'admin' && hospitalStaff.role !== 'sub-admin') {
                 throw new AppError("Only admin and sub-admin can view all hospital staff", statusCodes.FORBIDDEN);
             }
 
@@ -102,7 +102,7 @@ class HospitalStaffService {
                 if (!hospitalStaff) {
                     throw new AppError("Only hospital staff can add new hospital staff", statusCodes.FORBIDDEN);
                 }
-                if (hospitalStaff.role !== 'admin' || hospitalStaff.role !== 'sub-admin') {
+                if (hospitalStaff.role !== 'admin' && hospitalStaff.role !== 'sub-admin') {
                     throw new AppError("Only admin and sub-admin can add hospital staff", statusCodes.FORBIDDEN);
                 }
                 if (hospitalStaff.role !== 'admin' && role === 'admin') {
@@ -151,7 +151,7 @@ class HospitalStaffService {
             if (hospitalStaff.hospital_id !== deleteStaffCheck.hospital_id) {
                 throw new AppError("Cannot delete hospital staff from another hospital", statusCodes.FORBIDDEN);
             }
-            if (hospitalStaff.role !== 'admin' || hospitalStaff.role !== 'sub-admin') {
+            if (hospitalStaff.role !== 'admin' && hospitalStaff.role !== 'sub-admin') {
                 throw new AppError("Only admin and sub-admin can delete hospital staff", statusCodes.FORBIDDEN);
             }
             if (hospitalStaff.role !== 'admin' && deleteStaffCheck.role === 'admin') {

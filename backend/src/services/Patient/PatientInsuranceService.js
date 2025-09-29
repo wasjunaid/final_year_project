@@ -94,6 +94,7 @@ class PatientInsuranceService {
                 text: `UPDATE patient_insurance
                 SET insurance_number = $1,
                 is_primary = $2,
+                is_verified = false,
                 updated_at = CURRENT_TIMESTAMP
                 WHERE
                 patient_insurance_id = $3

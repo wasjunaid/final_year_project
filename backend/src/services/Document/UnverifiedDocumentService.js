@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { pool } = require('../../config/databaseConfig');
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { validUnverifiedDocumentTypes } = require("../../database/document/unverifiedDocumentTableQuery");
 
 const uploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -74,6 +75,9 @@ class UnverifiedDocumentService {
         }
         if (!document_type) {
             throw new AppError("document_type is required", statusCodes.BAD_REQUEST);
+        }
+        if (!validUnverifiedDocumentTypes.includes(document_type)) {
+            throw new AppError(`invalid document_type`, statusCodes.BAD_REQUEST);
         }
         if (!detail) {
             throw new AppError("detail is required", statusCodes.BAD_REQUEST);
