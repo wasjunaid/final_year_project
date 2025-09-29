@@ -4,6 +4,29 @@ const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
 
 class EHRAccessService {
+    static async getEHRAccess(ehr_access_id) {
+        if (!ehr_access_id) {
+            throw new AppError('ehr_access_id is required', statusCodes.BAD_REQUEST);
+        }
+
+        try {
+            const query = {
+                text: `SELECT * FROM ehr_access
+                WHERE ehr_access_id = $1`,
+                values: [ehr_access_id]
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                throw new AppError('EHR access record not found', statusCodes.NOT_FOUND);
+            }
+
+            return result.rows[0];
+        } catch (error) {
+            console.error(`Error getting ehr access: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
     static async getEHRAccessForPatient(patient_id) {
         if (!patient_id) {
             throw new AppError('patient_id is required', statusCodes.BAD_REQUEST);

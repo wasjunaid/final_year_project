@@ -46,6 +46,40 @@ class UnverifiedDocumentService {
         }
     }
 
+    static async getUnverifiedDocumentsForEHR(person_id) {
+        if (!person_id) {
+            throw new AppError("person_id is required", statusCodes.BAD_REQUEST);
+        }
+
+        try {
+            const query = {
+                text: `SELECT 
+                document_id, 
+                original_name, 
+                mime_type, 
+                file_size,
+                document_type, 
+                detail,
+                created_at
+                FROM unverified_document
+                WHERE
+                person_id = $1 AND document_type != 'personal'
+                ORDER BY
+                created_at DESC`,
+                values: [person_id]
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                return false;
+            }
+
+            return result.rows;
+        } catch (error) {
+            console.error(`Error getting unverified documents: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
     static async uploadUnverifiedDocument(person_id, {
             original_name,
             file_name,

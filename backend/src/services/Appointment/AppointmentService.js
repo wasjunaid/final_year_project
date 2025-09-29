@@ -22,7 +22,7 @@ class AppointmentService {
                 h.name AS hospital_name,
                 p.first_name AS doctor_first_name,
                 p.last_name AS doctor_last_name,
-                p.email AS doctor_email,
+                p.email AS doctor_email
                 FROM appointment a
                 JOIN appointment_request ar ON a.appointment_id = ar.appointment_request_id
                 JOIN hospital h ON ar.hospital_id = h.hospital_id
@@ -303,6 +303,43 @@ class AppointmentService {
             return result.rows[0];
         } catch (error) {
             console.error(`Error checking appointment exists: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
+    static async getAppointmentsForEHR(patient_id) {
+        if (!patient_id) {
+            throw new AppError("patient_id is required", statusCodes.BAD_REQUEST);
+        }
+        
+        try {
+            const query = {
+                text: `SELECT
+                ar.doctor_id,
+                TO_CHAR(ar.date, 'YYYY-MM-DD') AS appointment_date,
+                TO_CHAR(ar.time, 'HH24:MI') AS appointment_time,
+                ar.reason AS appointment_reason,
+                d.specialization AS doctor_specialization,
+                p.first_name AS doctor_first_name,
+                p.last_name AS doctor_last_name,
+                dn.note AS doctor_note
+                FROM appointment a
+                JOIN appointment_request ar ON a.appointment_id = ar.appointment_request_id
+                JOIN doctor d ON ar.doctor_id = d.doctor_id
+                JOIN person p ON d.person_id = p.person_id
+                JOIN doctor_note dn ON a.appointment_id = dn.appointment_id
+                WHERE
+                ar.patient_id = $1 AND a.status = 'completed'`,
+                values: [patient_id]
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                return false;
+            }
+
+            return result.rows;
+        } catch (error) {
+            console.error(`Error fetching appointments for EHR: ${error.message} ${error.status}`);
             throw error;
         }
     }

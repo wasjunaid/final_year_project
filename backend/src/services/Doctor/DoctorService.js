@@ -120,7 +120,7 @@ class DoctorService {
         try {
             const query = {
                 text: `INSERT INTO doctor
-                (person_id)
+                (doctor_id)
                 VALUES
                 ($1)
                 RETURNING *`,

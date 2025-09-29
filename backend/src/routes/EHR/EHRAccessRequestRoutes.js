@@ -4,7 +4,7 @@ const EHRAccessRequestController = require("../../controllers/EHR/EHRAccessReque
 const router = express.Router();
 
 router.get(
-    "/:patient_id",
+    "/",
     EHRAccessRequestController.getEHRAccessRequest
 );
 
@@ -19,7 +19,7 @@ router.get(
 );
 
 router.post(
-    "/:patient_id",
+    "/",
     EHRAccessRequestController.insertEHRAccessRequest
 );
 

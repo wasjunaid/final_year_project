@@ -14,7 +14,7 @@ router.get(
 );
 
 router.post(
-    "/:patient_id",
+    "/",
     EHRAccessController.insertEHRAccess
 );
 
