@@ -2,11 +2,34 @@ const { statusCodes } = require("../../utils/statusCodesUtil");
 const { HospitalAssociationRequestService } = require("../../services/Hospital/HospitalAssociationRequestService");
 
 class HospitalAssociationRequestController {
-    async getHospitalAssociationRequests(req, res) {
+    async getHospitalAssociationRequestsForPerson(req, res) {
+        const { person_id } = req.user;
+
+        try {
+            const requests = await HospitalAssociationRequestService.getHospitalAssociationRequestsForPerson(person_id);
+
+            return res.status(statusCodes.OK).json({
+                data: requests,
+                message: "Hospital association requests for person fetched successfully",
+                status: statusCodes.OK,
+                success: true
+            });
+        } catch (error) {
+            console.error(`Error in getHospitalAssociationRequestsForPerson: ${error.message}`);
+            return res.status(error.status || statusCodes.INTERNAL_SERVER_ERROR).json({
+                data: null,
+                message: error.message || "Error fetching hospital association requests for person",
+                status: error.status || statusCodes.INTERNAL_SERVER_ERROR,
+                success: false
+            });
+        }
+    }
+
+    async getHospitalAssociationRequestsForHospital(req, res) {
         const { hospital_id } = req.params;
 
         try {
-            const requests = await HospitalAssociationRequestService.getHospitalAssociationRequests(hospital_id);
+            const requests = await HospitalAssociationRequestService.getHospitalAssociationRequestsForHospital(hospital_id);
 
             return res.status(statusCodes.OK).json({
                 data: requests,

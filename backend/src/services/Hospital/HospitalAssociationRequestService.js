@@ -1,12 +1,35 @@
 const { pool } = require("../../config/databaseConfig");
-const { validHospitalAssocaitionRequestRoles } = require("../../database/hospital/hospitalAssociationRequestTableQuery");
+const { validHospitalAssociationRequestRoles } = require("../../database/hospital/hospitalAssociationRequestTableQuery");
 const { PersonService } = require("../Person/PersonService");
 const { DoctorService } = require("../Doctor/DoctorService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
 
 class HospitalAssociationRequestService {
-    static async getHospitalAssociationRequests(hospital_id) {
+    static async getHospitalAssociationRequestsForPerson(person_id) {
+        if (!person_id) {
+            throw new AppError("person_id is required", statusCodes.BAD_REQUEST);
+        }
+
+        try {
+            const query = {
+                text: `SELECT * FROM hospital_association_request
+                WHERE person_id = $1`,
+                values: [person_id]
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                throw new AppError("No hospital association requests found for person", statusCodes.NOT_FOUND);
+            }
+
+            return result.rows;
+        } catch (error) {
+            console.error(`Error getting hospital association requests for person: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
+    static async getHospitalAssociationRequestsForHospital(hospital_id) {
         if (!hospital_id) {
             throw new AppError("hospital_id is required", statusCodes.BAD_REQUEST);
         }
@@ -40,7 +63,7 @@ class HospitalAssociationRequestService {
         if (!role) {
             throw new AppError("role is required", statusCodes.BAD_REQUEST);
         }
-        if (!validHospitalAssocaitionRequestRoles.includes(role)) {
+        if (!validHospitalAssociationRequestRoles.includes(role)) {
             throw new AppError(`Invalid role`, statusCodes.BAD_REQUEST);
         }
 
