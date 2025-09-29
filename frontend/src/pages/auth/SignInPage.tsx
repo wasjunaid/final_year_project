@@ -12,10 +12,12 @@ import EndPoints from "../../constants/endpoints";
 import { useAuth } from "../../hooks/useAuth";
 import WarningCard from "../../components/WarningCard";
 import { ROLES, type UserRole } from "../../constants/roles";
+import type { User } from "../../models/User";
+import { jwtDecode } from "jwt-decode";
 
 function SignInPage() {
   const navigate = useNavigate();
-  const { signIn, user } = useAuth();
+  const { signIn } = useAuth();
 
   // Form state
   const [email, setEmail] = useState("");
@@ -81,7 +83,12 @@ function SignInPage() {
         if (accessToken && refreshToken) {
           signIn({ accessToken, refreshToken });
         }
-        navigate(rolePortal(user?.role) ?? ROUTES.HOME);
+
+        //TODO: find a better way to pass user-role instead of decoding manually
+        const tempUser = jwtDecode<User>(accessToken);
+        console.log(`User Role on login is: ${tempUser?.role}`);
+
+        navigate(rolePortal(tempUser?.role) ?? ROUTES.HOME);
       } else {
         setError(res.data.message || "Sign in failed");
       }
@@ -148,10 +155,8 @@ function SignInPage() {
         <div className="flex justify-center">
           <img src={logo} className="h-30 mb-2" />
         </div>
-
         {error && <p className="text-center text-red-500">{error}</p>}
         {success && <p className="text-center text-green-500">{success}</p>}
-
         {verifyEmail && (
           <WarningCard>
             <p className="text-center text-yellow-700 font-medium">
@@ -181,7 +186,6 @@ function SignInPage() {
             </button>
           </WarningCard>
         )}
-
         <LabeledInputField
           title="Email"
           required
@@ -204,14 +208,12 @@ function SignInPage() {
             { label: "Hospital", value: "hospital" },
           ]}
         />
-
         <AuthButton
           className="my-2"
           label={loading ? "Signing In ..." : "Sign In"}
           disabled={loading}
           onClick={handleSignIn}
         />
-
         <a
           href={ROUTES.AUTH.FORGOT_PASSWORD}
           className="text-center text-primary"
