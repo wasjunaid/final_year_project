@@ -22,7 +22,7 @@ class AppointmentService {
                 h.name AS hospital_name,
                 p.first_name AS doctor_first_name,
                 p.last_name AS doctor_last_name,
-                p.email AS doctor_email,
+                p.email AS doctor_email
                 FROM appointment a
                 JOIN appointment_request ar ON a.appointment_id = ar.appointment_request_id
                 JOIN hospital h ON ar.hospital_id = h.hospital_id
