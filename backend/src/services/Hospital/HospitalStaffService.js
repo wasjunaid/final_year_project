@@ -53,7 +53,11 @@ class HospitalStaffService {
             }
 
             const query = {
-                text: `SELECT * FROM hospital_staff
+                text: `SELECT
+                hs.*,
+                p.email
+                FROM hospital_staff hs
+                JOIN person p ON hs.hospital_staff_id = p.person_id
                 WHERE
                 hospital_id = $1`,
                 values: [hospital_id]
