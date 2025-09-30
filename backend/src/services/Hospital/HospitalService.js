@@ -33,7 +33,7 @@ class HospitalService {
                 throw new AppError("Hospital with this name and address already exists", statusCodes.CONFLICT);
             }
 
-            const addressDetail = await AddressService.updateAddress(address);
+            const addressDetail = await AddressService.insertAddress(address);
 
             const insertQuery = {
                 text: `INSERT INTO hospital

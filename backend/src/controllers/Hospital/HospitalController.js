@@ -27,7 +27,7 @@ class HospitalController {
         const { name, address } = req.body;
 
         try {
-            const newHospital = await HospitalService.insertHospital({ name, address });
+            const newHospital = await HospitalService.insertHospital(name, address );
 
             res.status(statusCodes.CREATED).json({
                 data: newHospital,
