@@ -70,6 +70,42 @@ class HospitalStaffService {
         }
     }
 
+    static async getAllHospitalAdminsForSuperAdmin(person_id) {
+        if (!person_id) {
+            throw new AppError("person_id is required", statusCodes.BAD_REQUEST);
+        }
+
+        try {
+            const checkSuperAdminExists = await SystemAdminService.checkSystemAdminExistsAgainstRole(person_id, 'super admin');
+            if (!checkSuperAdminExists) {
+                throw new AppError("Only super admins can get all hospital admins", statusCodes.BAD_REQUEST);
+            }
+
+            const query = {
+                text: `SELECT
+                hs.hospital_staff_id,
+                hs.role,
+                h.hospital_id,
+                h.name AS hospital_name,
+                ad.address AS hospital_address
+                FROM hospital_staff hs
+                JOIN hospital h ON hs.hospital_id = h.hospital_id
+                JOIN address ad ON ad.address_id = h.address_id
+                WHERE
+                hs.role = 'hospital admin'`,
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                throw new AppError("No hospital admins found", statusCodes.NOT_FOUND);
+            }
+
+            return result.rows;
+        } catch (error) {
+            console.error(`Error getting all hospital admins: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
     static async insertHospitalStaff(person_id, {
         email,
         hospital_id,
