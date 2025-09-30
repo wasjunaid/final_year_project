@@ -194,7 +194,8 @@ class SystemAdminService {
 
 const createDefaultSuperAdmin = async () => {
     try {
-        const person = await PersonService.insertPersonIfNotExists(superAdmin.email, superAdmin.password);
+        const person = await PersonService.insertPersonIfNotExists(superAdmin.email, superAdmin.password, true);
+
 
         const query = {
             text: `INSERT INTO system_admin

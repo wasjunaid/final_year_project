@@ -50,6 +50,8 @@ class AuthService {
             }
 
             await EmailVerificationTokenService.insertOrUpdateEmailVerificationToken(person.person_id);
+
+            await LogService.insertLog(person.person_id, `Sign Up: User with email ${email} signed up as ${role.toLowerCase()}`);
         } catch (error) {
             console.error(`Error signing up: ${error.message} ${error.status}`);
             throw error;
@@ -113,16 +115,16 @@ class AuthService {
 
             await LogService.insertLog(person.person_id, `Sign In: User with email ${email} signed in as ${role.toLowerCase()}`);
 
-            await NotificationService.insertNotification(person.person_id, {
-                role: role,
-                title: "Sign In",
-                message: `You have signed in as a ${role.toLowerCase()}`,
-                type: "check",
-                related_id: person.person_id,
-                related_type: "person",
-                email: email,
-                sendEmail: true
-            });
+            // await NotificationService.insertNotification(person.person_id, {
+            //     role: role,
+            //     title: "Sign In",
+            //     message: `You have signed in as a ${role.toLowerCase()}`,
+            //     type: "check",
+            //     related_id: person.person_id,
+            //     related_type: "person",
+            //     email: email,
+            //     sendEmail: true
+            // });
 
             return tokens;
         } catch (error) {
@@ -137,7 +139,9 @@ class AuthService {
         }
 
         try {
+            const person = await PersonService.getPerson(person_id);
 
+            await LogService.insertLog(person.person_id, `Sign Out: User with email ${person.email} signed out as ${person.role.toLowerCase()}`);
         } catch (error) {
             console.error(`Error signing out: ${error.message} ${error.status}`);
             throw error;
