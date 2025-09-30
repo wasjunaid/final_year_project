@@ -1,10 +1,5 @@
 import { type ReactNode } from "react";
-import DropDownField from "./DropDownField";
-
-interface IDropdownOption {
-  label: string;
-  value: string;
-}
+import DropDownField, { type IDropdownOption } from "./DropDownField";
 
 interface ILabeledDropDownFieldProps {
   label: string;
@@ -16,8 +11,8 @@ interface ILabeledDropDownFieldProps {
   disabled?: boolean;
   required?: boolean;
   onChange?: React.ChangeEventHandler<HTMLSelectElement>;
-  className?: string; // extra styles for wrapper
-  hint?: string; // ✅ added this
+  className?: string;
+  hint?: string;
 }
 
 function LabeledDropDownField({

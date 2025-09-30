@@ -2,7 +2,7 @@ import { type SelectHTMLAttributes, type ReactNode } from "react";
 
 export interface IDropdownOption {
   label: string;
-  value: string;
+  value: any;
 }
 
 interface IDropDownFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
