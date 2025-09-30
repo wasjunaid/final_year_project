@@ -7,13 +7,12 @@ import {
   FaHospital,
   FaCalendarAlt,
   FaFileMedical,
-  FaUserMd,
-  FaUserCog,
   FaUsers,
 } from "react-icons/fa";
 import AppointmentsPage from "../appointments/AppointmentsPage";
 import NotificationPage from "../notification/NotificaitonPage";
 import HospitalAccountsTabLayout from "./HospitalAccountsTabLayout";
+import HospitalProfile from "./HospitalProfile";
 
 function HospitalPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -31,7 +30,7 @@ function HospitalPortalLayout() {
   const renderPage = () => {
     switch (selectedPage) {
       case "hospital":
-        return <h2 className="p-4">🏥 Hospital Profile Page</h2>;
+        return <HospitalProfile/>;
       case "appointments":
         return <AppointmentsPage />;
       case "pannel":

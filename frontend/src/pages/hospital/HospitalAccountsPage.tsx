@@ -2,10 +2,8 @@ import { useEffect, useState } from "react";
 import DataTable from "../../components/DataTable";
 import EndPoints from "../../constants/endpoints";
 import api from "../../services/api";
-import { useAuth } from "../../hooks/useAuth";
 
 function HospitalAccountsPage() {
-  const { user } = useAuth();
   const [hospitalId, setHospitalId] = useState<number | null>(null);
   const [staff, setStaff] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
