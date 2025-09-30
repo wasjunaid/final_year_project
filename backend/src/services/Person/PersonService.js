@@ -139,7 +139,7 @@ class PersonService {
         }
     }
 
-    static async insertPersonIfNotExists(email, password) {
+    static async insertPersonIfNotExists(email, password, is_verified = false) {
         const randomPass = false;
         if (!email) {
             throw new AppError("Email is required", statusCodes.BAD_REQUEST);
@@ -160,6 +160,10 @@ class PersonService {
 
             if (randomPass) {
                 await EmailService.sendRandomPasswordEmail(email, password);
+            }
+
+            if (is_verified && !person.is_verified) {
+                person = await this.updatePersonIsVerifiedWithoutToken(person.person_id);
             }
 
             return person;
@@ -407,6 +411,30 @@ class PersonService {
             return result.rows[0].person_id;
         } catch (error) {
             console.error(`Error verifying email and password: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
+    static async updatePersonIsVerifiedWithoutToken() {
+        try {
+                const query = {
+                text: `UPDATE person
+                SET
+                is_verified = TRUE,
+                updated_at = CURRENT_TIMESTAMP
+                WHERE
+                person_id = $1
+                RETURNING *`,
+                values: [tokenResult.person_id]
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                throw new AppError(`Error updating verification status`, statusCodes.INTERNAL_SERVER_ERROR);
+            }
+
+            return result.rows[0];
+        } catch (error) {
+            console.error(`Error updating person is verified: ${error.message} ${error.status}`);
             throw error;
         }
     }
