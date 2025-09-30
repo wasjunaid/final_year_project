@@ -48,7 +48,11 @@ class SystemAdminService {
             }
             
             const query = {
-                text: `SELECT * FROM system_admin`,
+                text: `SELECT
+                sa.*,
+                p.email
+                FROM system_admin sa
+                JOIN person p ON sa.system_admin_id = p.person_id`,
             };
             const result = await pool.query(query);
             if (result.rows.length === 0) {

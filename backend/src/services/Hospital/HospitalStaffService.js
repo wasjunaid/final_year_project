@@ -87,10 +87,13 @@ class HospitalStaffService {
                 hs.role,
                 h.hospital_id,
                 h.name AS hospital_name,
-                ad.address AS hospital_address
+                ad.address AS hospital_address,
+                p.email,
+                hs.created_at
                 FROM hospital_staff hs
                 JOIN hospital h ON hs.hospital_id = h.hospital_id
                 JOIN address ad ON ad.address_id = h.address_id
+                JOIN person p ON hs.hospital_staff_id = p.person_id
                 WHERE
                 hs.role = 'hospital admin'`,
             };
