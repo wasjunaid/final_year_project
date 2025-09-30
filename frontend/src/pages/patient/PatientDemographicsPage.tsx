@@ -153,8 +153,18 @@ function PatientDemographicsPage() {
             disabled={!editMode}
             type="date"
           />
-          <LabeledInputField
-            title="Blood Group"
+          <LabeledDropDownField
+            label="Blood Group"
+            options={[
+              { label: "A+", value: "A+" },
+              { label: "A-", value: "A-" },
+              { label: "B+", value: "B+" },
+              { label: "B-", value: "B-" },
+              { label: "AB+", value: "AB+" },
+              { label: "AB-", value: "AB-" },
+              { label: "O+", value: "O+" },
+              { label: "O-", value: "O-" },
+            ]}
             value={form.blood_group || ""}
             onChange={(e) => handleChange("blood_group", e.target.value)}
             disabled={!editMode}

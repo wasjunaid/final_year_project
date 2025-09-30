@@ -15,13 +15,14 @@ import PatientDemographicsPage from "./PatientDemographicsPage";
 import PatientAppointmentsTabLayout from "./PatientAppointmentsTabLayout";
 import PatientDasboardTab from "./PatientDasboardTab";
 import NotificationPage from "../notification/NotificaitonPage";
+import PatientDocumentsTabLayout from "./PatientDocumentsTabLayout";
 
 function PatientPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedPage, setSelectedPage] = useState("home");
+  const [selectedPage, setSelectedPage] = useState("demographics");
 
   const sidebarItems: ISideBarItem[] = [
-    { label: "Home", icon: <FaHome />, page: "home" },
+    // { label: "Home", icon: <FaHome />, page: "home" },
     { label: "Demographics", icon: <FaUser />, page: "demographics" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
     { label: "Data Sharing", icon: <FaShareAlt />, page: "datasharing" },
@@ -40,7 +41,7 @@ function PatientPortalLayout() {
       case "datasharing":
         return <h2 className="p-4">🔗 Data Sharing Page</h2>;
       case "ehr":
-        return <h2 className="p-4">📄 EHR Page</h2>;
+        return <PatientDocumentsTabLayout />
       case "billing":
         return <h2 className="p-4">💳 Billing Page</h2>;
       case "notifications":

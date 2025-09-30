@@ -1,8 +1,11 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Appointment } from "../../models/appointment";
+import { type Appointment } from "../../models/Appointment";
 
-function AppointmentDetailsPage() {
-  const { state } = useLocation();
+interface AppointmentDetailsPageProps {
+  state?: Appointment;
+}
+
+function AppointmentDetailsPage({ state }: AppointmentDetailsPageProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 

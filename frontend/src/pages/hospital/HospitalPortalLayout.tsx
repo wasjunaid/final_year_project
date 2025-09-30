@@ -12,6 +12,7 @@ import {
   FaUsers,
 } from "react-icons/fa";
 import AppointmentsPage from "../appointments/AppointmentsPage";
+import NotificationPage from "../notification/NotificaitonPage";
 
 function HospitalPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -41,7 +42,7 @@ function HospitalPortalLayout() {
       case "accounts":
         return <h2 className="p-4">👥 Accounts Page</h2>;
       case "notifications":
-        return <h2 className="p-4">🔔 Notifications</h2>;
+        return <NotificationPage />
       default:
         return <h2 className="p-4">Page Not Found</h2>;
     }

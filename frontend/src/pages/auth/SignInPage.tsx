@@ -37,6 +37,8 @@ function SignInPage() {
     switch (role) {
       case ROLES.ADMIN:
         return ROUTES.ADMIN_PORTAL;
+      case ROLES.SUPER_ADMIN:
+        return ROUTES.ADMIN_PORTAL;
       case ROLES.PATIENT:
         return ROUTES.PATIENT_PORTAL;
       case ROLES.DOCTOR:
