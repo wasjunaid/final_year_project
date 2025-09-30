@@ -4,9 +4,14 @@ const HospitalAssociationRequestController = require("../../controllers/Hospital
 const router = express.Router();
 
 router.get(
-    '/',
-    HospitalAssociationRequestController.getHospitalAssociationRequests
+    '/person',
+    HospitalAssociationRequestController.getHospitalAssociationRequestsForPerson
 );
+
+router.get(
+    '/hospital/:hospital_id',
+    HospitalAssociationRequestController.getHospitalAssociationRequestsForHospital
+); // change to fetch automatically based on logged in user's hospital_id
 
 router.post(
     '/',
