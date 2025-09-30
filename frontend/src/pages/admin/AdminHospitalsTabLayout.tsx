@@ -6,7 +6,6 @@ import HospitalsListPage from "./HospitalsListPage";
 
 const PAGE = {
   hospitals: "hospitals",
-  appointmentRequests: "appointmentRequests",
   createHospitals: "createHospitals",
 } as const;
 type PAGE = (typeof PAGE)[keyof typeof PAGE];
