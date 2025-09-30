@@ -24,6 +24,13 @@ const EndPoints = {
   },
   doctor: {
     dashboard: "/doctor/dashboard",
+    profile: "/doctor/", //GET
+  },
+  hospital: {
+    create: "/hospital/", //POST (name, address)
+    get: "/hospital/", //GET
+    update: "/hospital/", //PUT (:hospital_id) (name, address)
+    delete: "/hospital/", //DELETE (:hospital_id)
   },
   admin: {
     dashboard: "/admin/dashboard",
