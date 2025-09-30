@@ -36,7 +36,7 @@ const EndPoints = {
     get: "/hospital/staff", //GET ({persion_id})
     getAll: "/hospital/staff", // GET (:hospital_id)
     insert: "/hospital/staff", //POST  ({email, hospital_id, role})
-    delete: "/hospital/staff" //DELETE (:hospital_staff_id)
+    delete: "/hospital/staff", //DELETE (:hospital_staff_id)
   },
   admin: {
     dashboard: "/admin/dashboard",
@@ -56,16 +56,22 @@ const EndPoints = {
       cancel: "/appointment/request/cancel/", //PUT (:appointment_request_id)
     },
   },
+  logs: "/log", //GET
   documents: {
     // "/document",
     get: "/document", //GET
     upload: "/document/upload", //POST
   },
+  systemAdmin: {
+    getAll: "/system/admin", // GET
+    create: "/system/admin", // POST
+    delete: "/system/admin", // DELETE /:system_admin_id
+  },
   ehr: {
     // "/ehr/access-request"
     // "/ehr/access"
     // "/ehr"
-  }
+  },
 } as const;
 
 export default EndPoints;
