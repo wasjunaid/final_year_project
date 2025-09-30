@@ -10,7 +10,9 @@ import {
   FaShareAlt,
   FaFileAlt,
   FaCreditCard,
+  FaHospital,
 } from "react-icons/fa";
+import AdminHospitalsTabLayout from "./AdminHospitalsTabLayout";
 
 function AdminPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -21,6 +23,7 @@ function AdminPortalLayout() {
     { label: "Demographics", icon: <FaUser />, page: "demographics" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
     { label: "Data Sharing", icon: <FaShareAlt />, page: "datasharing" },
+    { label: "Hospitals", icon: <FaHospital />, page: "hospitals" },
     { label: "EHR", icon: <FaFileAlt />, page: "ehr" },
     { label: "Billing", icon: <FaCreditCard />, page: "billing" },
   ];
@@ -33,6 +36,8 @@ function AdminPortalLayout() {
         return <h2 className="p-4">👤 Demographics Page</h2>;
       case "appointments":
         return <h2 className="p-4">📅 Appointments Page</h2>;
+      case "hospitals":
+        return <AdminHospitalsTabLayout />;
       case "datasharing":
         return <h2 className="p-4">🔗 Data Sharing Page</h2>;
       case "ehr":

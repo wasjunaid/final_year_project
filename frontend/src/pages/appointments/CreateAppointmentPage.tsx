@@ -2,101 +2,95 @@ import { useState } from "react";
 import LabeledDropDownField from "../../components/LabeledDropDownField";
 import LabeledInputField from "../../components/LabeledInputField";
 import Button from "../../components/Button";
+import api from "../../services/api";
+import EndPoints from "../../constants/endpoints";
 
 function CreateAppointmentPage() {
   const [hospital, setHospital] = useState("");
   const [doctor, setDoctor] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [symptoms, setSymptoms] = useState("");
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
-  // Dummy dropdown options
+  // TODO: Fetch hospital and doctor options from backend
   const hospitalOptions = [
-    { label: "City Hospital", value: "city" },
-    { label: "Green Valley Clinic", value: "valley" },
-    { label: "Community Health", value: "community" },
+    { label: "City Hospital", value: 1 },
+    { label: "Green Valley Clinic", value: 2 },
+    { label: "Community Health", value: 3 },
   ];
 
   const doctorOptions = [
-    { label: "Dr. Smith", value: "smith" },
-    { label: "Dr. Adams", value: "adams" },
-    { label: "Dr. Lee", value: "lee" },
+    { label: "Dr. Smith", value: 1 },
+    { label: "Dr. Adams", value: 2 },
+    { label: "Dr. Lee", value: 3 },
   ];
 
-  const dateOptions = [
-    { label: "6 Sep, 2025", value: "2025-09-06" },
-    { label: "7 Sep, 2025", value: "2025-09-07" },
-    { label: "8 Sep, 2025", value: "2025-09-08" },
-  ];
-
-  const timeOptions = [
-    { label: "10:00 AM", value: "10:00" },
-    { label: "02:00 PM", value: "14:00" },
-    { label: "06:00 PM", value: "18:00" },
-  ];
+  const handleCreate = async () => {
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    try {
+      await api.post(EndPoints.appointments.request.insert, {
+        hospital_id: hospital,
+        doctor_id: doctor,
+        date,
+        time,
+        reason,
+      });
+      setSuccess("Appointment request sent!");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to create appointment");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="p-6 space-y-6 ">
-      {/* Hospital */}
+    <div className="p-8">
+      <h2 className="text-xl font-bold mb-4">Create Appointment</h2>
       <LabeledDropDownField
-        label="Select Hospital"
-        placeholder="Select the hospital"
-        options={hospitalOptions}
+        label="Hospital"
         value={hospital}
         onChange={(e) => setHospital(e.target.value)}
+        options={hospitalOptions}
       />
-
-      {/* Doctor */}
       <LabeledDropDownField
-        label="Select Doctor"
-        placeholder="Select the doctor"
-        options={doctorOptions}
+        label="Doctor"
         value={doctor}
         onChange={(e) => setDoctor(e.target.value)}
-        hint="Leave this field empty if you do not have a preferred doctor"
+        options={doctorOptions}
       />
-
-      {/* Date + Time in a row */}
-      <div className="flex gap-4">
-        <LabeledDropDownField
-          className="flex-1"
-          label="Select Date"
-          options={dateOptions}
-          placeholder="Select date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-        <LabeledDropDownField
-          className="flex-1"
-          label="Select Time"
-          options={timeOptions}
-          placeholder="Select time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-        />
-      </div>
-
-      {/* Symptoms (textarea) */}
       <LabeledInputField
-        title="Symptoms"
-        placeholder="Explain the symptoms so we can assign the most suitable doctor"
+        title="Date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        type="date"
+      />
+      <LabeledInputField
+        title="Time"
+        value={time}
+        onChange={(e) => setTime(e.target.value)}
+        type="time"
+      />
+      <LabeledInputField
+        title="Reason"
         multiline
-        rows={4}
-        value={symptoms}
-        onChange={(e) => setSymptoms(e.target.value)}
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
       />
 
-      {/* Button */}
-      <div>
-        <Button
-          label="Create Appointment"
-          onClick={() =>
-            alert(
-              `Appointment Created:\nHospital: ${hospital}\nDoctor: ${doctor}\nDate: ${date}\nTime: ${time}\nSymptoms: ${symptoms}`
-            )
-          }
-        />
-      </div>
+      {error && <div className="text-red-500 mt-2">{error}</div>}
+      {success && <div className="text-green-600 mt-2">{success}</div>}
+
+      <Button
+        className="my-4"
+        label={loading ? "Creating..." : "Create"}
+        onClick={handleCreate}
+        disabled={loading}
+      />
     </div>
   );
 }

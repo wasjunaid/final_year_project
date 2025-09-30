@@ -3,9 +3,11 @@ import TabButton from "../../components/TabButton";
 import { FaCalendarAlt } from "react-icons/fa";
 import AppointmentsPage from "../appointments/AppointmentsPage";
 import CreateAppointmentPage from "../appointments/CreateAppointmentPage";
+import AppointmentRequestsPage from "../appointments/AppointmentRequestsPage";
 
 const PAGE = {
   appointments: "appointments",
+  appointmentRequests: "appointmentRequests",
   createAppointment: "createAppointment",
 } as const;
 type PAGE = (typeof PAGE)[keyof typeof PAGE];
@@ -14,6 +16,8 @@ function renderPage(page: PAGE) {
   switch (page) {
     case PAGE.appointments:
       return <AppointmentsPage />;
+    case PAGE.appointmentRequests:
+      return <AppointmentRequestsPage />;
     case PAGE.createAppointment:
       return <CreateAppointmentPage />;
     default:
@@ -32,6 +36,12 @@ function PatientAppointmentsTabLayout() {
           icon={<FaCalendarAlt />}
           selected={page == PAGE.appointments}
           onClick={() => setPage(PAGE.appointments)}
+        />
+        <TabButton
+          label="Appointment Requests"
+          icon={<FaCalendarAlt />}
+          selected={page == PAGE.appointmentRequests}
+          onClick={() => setPage(PAGE.appointmentRequests)}
         />
         <TabButton
           label="Create Apointment"

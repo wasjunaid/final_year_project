@@ -36,6 +36,20 @@ const EndPoints = {
     dashboard: "/admin/dashboard",
     users: "/admin/users",
   },
+  appointments: {
+    patient: "/appointment/patient", //GET
+    doctor: "/appointment/doctor", //GET
+    hospital: "/appointment/hospital", //GET
+    update: "/appointment/", //PUT (:appointment_id)
+    request: {
+      insert: "/appointment/request/", //POST
+      patient: "/appointment/request/patient", //GET
+      hospital: "/appointment/request/hospital", //GET
+      updateHospitalStatus: "/appointment/request/hospital", //PUT (:appointment_request_id)
+      reschedule: "/appointment/request/reschedule/", //PUT (:appointment_request_id)
+      cancel: "/appointment/request/cancel/", //PUT (:appointment_request_id)
+    },
+  },
 } as const;
 
 export default EndPoints;
