@@ -4,8 +4,10 @@ import LabeledDropDownField from "../../components/LabeledDropDownField";
 import Button from "../../components/Button";
 import api from "../../services/api";
 import EndPoints from "../../constants/endpoints";
+import { useAuth } from "../../hooks/useAuth";
+import { ROLES } from "../../constants/roles";
 
-const STAFF_ROLES = [
+const ALL_STAFF_ROLES = [
   { label: "Hospital Admin", value: "hospital admin" },
   { label: "Hospital Sub Admin", value: "hospital sub admin" },
   { label: "Hospital Front Desk", value: "hospital front desk" },
@@ -20,6 +22,14 @@ function CreateHospitalStaffPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+
+  const { user } = useAuth();
+
+  // filter staff roles based on user role
+  const STAFF_ROLES =
+    user?.role === ROLES.SUPER_ADMIN
+      ? ALL_STAFF_ROLES
+      : ALL_STAFF_ROLES.filter((r) => r.value !== "hospital admin");
 
   // Fetch hospitals list on mount
   useEffect(() => {

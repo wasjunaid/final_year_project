@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import AppointmentsPage from "../appointments/AppointmentsPage";
 import NotificationPage from "../notification/NotificaitonPage";
+import HospitalAccountsTabLayout from "./HospitalAccountsTabLayout";
 
 function HospitalPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -21,9 +22,9 @@ function HospitalPortalLayout() {
   const sidebarItems: ISideBarItem[] = [
     { label: "Hospital", icon: <FaHospital />, page: "hospital" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
-    { label: "Insurances", icon: <FaFileMedical />, page: "insurances" },
-    { label: "Doctors", icon: <FaUserMd />, page: "doctors" },
-    { label: "Coders", icon: <FaUserCog />, page: "coders" },
+    { label: "Pannel", icon: <FaFileMedical />, page: "pannel" },
+    // { label: "Doctors", icon: <FaUserMd />, page: "doctors" },
+    // { label: "Coders", icon: <FaUserCog />, page: "coders" },
     { label: "Accounts", icon: <FaUsers />, page: "accounts" },
   ];
 
@@ -33,16 +34,16 @@ function HospitalPortalLayout() {
         return <h2 className="p-4">🏥 Hospital Profile Page</h2>;
       case "appointments":
         return <AppointmentsPage />;
-      case "insurances":
+      case "pannel":
         return <h2 className="p-4">🧾 Insurances Page</h2>;
       case "doctors":
         return <h2 className="p-4">👨‍⚕️ Doctors Page</h2>;
       case "coders":
         return <h2 className="p-4">💻 Coders Page</h2>;
       case "accounts":
-        return <h2 className="p-4">👥 Accounts Page</h2>;
+        return <HospitalAccountsTabLayout />;
       case "notifications":
-        return <NotificationPage />
+        return <NotificationPage />;
       default:
         return <h2 className="p-4">Page Not Found</h2>;
     }
