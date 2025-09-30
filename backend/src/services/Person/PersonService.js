@@ -159,7 +159,7 @@ class PersonService {
                 person = await this.getPersonByEmail(email);
             }
 
-            if (randomPass) {
+            if (randomPass && !emailExists) {
                 await EmailService.sendRandomPasswordEmail(email, password);
             }
 
