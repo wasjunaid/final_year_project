@@ -151,6 +151,7 @@ function PatientDemographicsPage() {
             value={form.date_of_birth || ""}
             onChange={(e) => handleChange("date_of_birth", e.target.value)}
             disabled={!editMode}
+            type="date"
           />
           <LabeledInputField
             title="Blood Group"
