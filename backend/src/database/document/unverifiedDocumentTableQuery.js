@@ -1,6 +1,7 @@
 const validUnverifiedDocumentTypes = [
     'personal',
-    'lab report'
+    'lab test',
+    'prescription'
 ];
 
 const unverifiedDocumentTableQuery = `
