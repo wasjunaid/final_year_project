@@ -149,7 +149,7 @@ class PersonService {
             password = Math.random().toString(36).slice(-12);
             randomPass = true;
         }
-
+ 
         try {
             let person;
             const emailExists = await this.checkEmailInUse(email);
