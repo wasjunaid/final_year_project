@@ -49,6 +49,29 @@ class HospitalStaffController {
         }
     }
 
+    async getAllHospitalAdminsForSuperAdmin(req, res) {
+        const { person_id } = req.user;
+
+        try {
+            const hospitalAdmins = await HospitalStaffService.getAllHospitalAdminsForSuperAdmin(person_id);
+
+            return res.status(statusCodes.OK).json({
+                data: hospitalAdmins,
+                message: "Hospital admins fetched successfully",
+                status: statusCodes.OK,
+                success: true
+            });
+        } catch (error) {
+            console.error(`Error in getAllHospitalAdminsForSuperAdmin: ${error.message}`);
+            return res.status(error.status || statusCodes.INTERNAL_SERVER_ERROR).json({
+                data: null,
+                message: error.message || "Error fetching hospital admins",
+                status: error.status || statusCodes.INTERNAL_SERVER_ERROR,
+                success: false
+            });
+        }
+    }
+
     async insertHospitalStaff(req, res) {
         const { person_id } = req.user;
         const { email, hospital_id, role } = req.body;

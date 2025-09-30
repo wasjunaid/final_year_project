@@ -72,9 +72,6 @@ class SystemAdminService {
         if (!email) {
             throw new AppError("email is required", statusCodes.BAD_REQUEST);
         }
-        if (!password) {
-            throw new AppError("password is required", statusCodes.BAD_REQUEST);
-        }
         if (!role) {
             throw new AppError("role is required", statusCodes.BAD_REQUEST);
         }
@@ -86,6 +83,9 @@ class SystemAdminService {
             const checkSuperAdminExists = await this.checkSystemAdminExistsAgainstRole(person_id, 'super admin');
             if (!checkSuperAdminExists) {
                 throw new AppError("Only super admins can create new system admins", statusCodes.BAD_REQUEST);
+            }
+            if (role === 'super admin') {
+                throw new AppError("Cannot create another super admin", statusCodes.BAD_REQUEST);
             }
 
             const person = await PersonService.insertPersonIfNotExists(email);

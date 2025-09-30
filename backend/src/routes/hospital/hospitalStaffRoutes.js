@@ -13,6 +13,11 @@ router.get(
     HospitalStaffController.getAllHospitalStaff
 );
 
+router.get(
+    '/super-admin/all-hospital-admins',
+    HospitalStaffController.getAllHospitalAdminsForSuperAdmin
+);
+
 router.post(
     '/',
     HospitalStaffController.insertHospitalStaff
