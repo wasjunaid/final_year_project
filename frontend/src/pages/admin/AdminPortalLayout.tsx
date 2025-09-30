@@ -3,49 +3,43 @@ import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
 
 // Importing icons from react-icons
-import {
-  FaHome,
-  FaUser,
-  FaCalendarAlt,
-  FaShareAlt,
-  FaFileAlt,
-  FaCreditCard,
-  FaHospital,
-} from "react-icons/fa";
+import { FaShareAlt, FaHospital } from "react-icons/fa";
 import AdminHospitalsTabLayout from "./AdminHospitalsTabLayout";
+import AdminHospitalStaffTabLayout from "./AdminHosptalStaffTabLayout";
+import NotificationPage from "../notification/NotificaitonPage";
+import AdminDataSharingTabLayout from "./AdminDataSharingTabLayout";
+import AdminAdminsTabLayout from "./AdminAdminsTabLayout";
+import { useAuth } from "../../hooks/useAuth";
+import { ROLES } from "../../constants/roles";
 
 function AdminPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedPage, setSelectedPage] = useState("home");
+  const [selectedPage, setSelectedPage] = useState("dataaccess");
+
+  const { user } = useAuth();
 
   const sidebarItems: ISideBarItem[] = [
-    { label: "Home", icon: <FaHome />, page: "home" },
-    { label: "Demographics", icon: <FaUser />, page: "demographics" },
-    { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
-    { label: "Data Sharing", icon: <FaShareAlt />, page: "datasharing" },
+    { label: "Data Access", icon: <FaShareAlt />, page: "dataaccess" },
     { label: "Hospitals", icon: <FaHospital />, page: "hospitals" },
-    { label: "EHR", icon: <FaFileAlt />, page: "ehr" },
-    { label: "Billing", icon: <FaCreditCard />, page: "billing" },
+    { label: "Hospital Staff", icon: <FaHospital />, page: "hospital_staff" },
   ];
+
+  if (user?.role === ROLES.SUPER_ADMIN) {
+    sidebarItems.splice(1, 0, { label: "Admins", icon: <FaHospital />, page: "admins" });
+  }
 
   const renderPage = () => {
     switch (selectedPage) {
-      case "home":
-        return <h2 className="p-4">🏠 Home Page</h2>;
-      case "demographics":
-        return <h2 className="p-4">👤 Demographics Page</h2>;
-      case "appointments":
-        return <h2 className="p-4">📅 Appointments Page</h2>;
       case "hospitals":
         return <AdminHospitalsTabLayout />;
-      case "datasharing":
-        return <h2 className="p-4">🔗 Data Sharing Page</h2>;
-      case "ehr":
-        return <h2 className="p-4">📄 EHR Page</h2>;
-      case "billing":
-        return <h2 className="p-4">💳 Billing Page</h2>;
+      case "admins":
+        return <AdminAdminsTabLayout />;
+      case "hospital_staff":
+        return <AdminHospitalStaffTabLayout />;
+      case "dataaccess":
+        return <AdminDataSharingTabLayout />;
       case "notifications":
-        return <h2 className="p-4">💳 Notifications</h2>;
+        return <NotificationPage />;
       default:
         return <h2 className="p-4">Page Not Found</h2>;
     }

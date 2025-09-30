@@ -207,7 +207,6 @@ function SignInPage() {
           options={[
             { label: "Patient", value: "patient" },
             { label: "Doctor", value: "doctor" },
-            { label: "Hospital", value: "hospital" },
             { label: "super admin", value: "super admin" },
             { label: "admin", value: "admin" },
             { label: "hospital admin", value: "hospital admin" },
