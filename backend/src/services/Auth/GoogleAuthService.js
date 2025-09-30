@@ -53,6 +53,8 @@ passport.use(
 
                 const tokens = await JWTService.generateJWT(person.person_id, requestedRole);
 
+                await LogService.insertLog(person.person_id, `Sign In: User with email ${person.email} signed in as ${requestedRole}`);
+
                 return done(null, { tokens });
             } catch (error) {
                 console.error(`Error in google auth: ${error.message} ${error.status}`);

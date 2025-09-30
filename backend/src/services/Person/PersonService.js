@@ -416,7 +416,11 @@ class PersonService {
         }
     }
 
-    static async updatePersonIsVerifiedWithoutToken() {
+    static async updatePersonIsVerifiedWithoutToken(person_id) {
+        if (!person_id) {
+            throw new AppError('person_id is required', statusCodes.BAD_REQUEST);
+        }
+
         try {
                 const query = {
                 text: `UPDATE person
@@ -426,7 +430,7 @@ class PersonService {
                 WHERE
                 person_id = $1
                 RETURNING *`,
-                values: [tokenResult.person_id]
+                values: [person_id]
             };
             const result = await pool.query(query);
             if (result.rows.length === 0) {
