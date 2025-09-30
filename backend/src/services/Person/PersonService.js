@@ -2,6 +2,7 @@ const { pool } = require("../../config/databaseConfig");
 const { hashPasswordUtil } = require("../../utils/hashPasswordUtil");
 const { verifyPasswordUtil } = require("../../utils/verifyPasswordUtil");
 const { TokenService } = require("../Token/TokenService");
+const { EmailService } = require("../Email/EmailService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
 
