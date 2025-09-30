@@ -64,7 +64,7 @@ function App() {
           <Route
             path={ROUTES.ADMIN_PORTAL}
             element={
-              <Protected allowedRoles={[ROLES.ADMIN]}>
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
                 <AdminPortalLayout />
               </Protected>
             }

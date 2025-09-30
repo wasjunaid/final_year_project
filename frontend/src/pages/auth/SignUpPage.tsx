@@ -98,7 +98,6 @@ function SignUpPage() {
           options={[
             { label: "Patient", value: "patient" },
             { label: "Doctor", value: "doctor" },
-            { label: "Hospital", value: "hospital" },
           ]}
           value={role}
           onChange={(e) => setRole(e.target.value)}

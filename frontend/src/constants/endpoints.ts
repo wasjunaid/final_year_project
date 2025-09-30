@@ -24,7 +24,6 @@ const EndPoints = {
   },
   doctor: {
     dashboard: "/doctor/dashboard",
-    profile: "/doctor/profile",
   },
   admin: {
     dashboard: "/admin/dashboard",

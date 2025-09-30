@@ -206,6 +206,15 @@ function SignInPage() {
             { label: "Patient", value: "patient" },
             { label: "Doctor", value: "doctor" },
             { label: "Hospital", value: "hospital" },
+            { label: "super admin", value: "super admin" },
+            { label: "admin", value: "admin" },
+            { label: "hospital admin", value: "hospital admin" },
+            { label: "hospital sub admin", value: "hospital sub admin" },
+            { label: "hospital front desk", value: "hospital front desk" },
+            {
+              label: "hospital lab technician",
+              value: "hospital lab technician",
+            },
           ]}
         />
         <AuthButton
