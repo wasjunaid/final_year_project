@@ -2,6 +2,9 @@ import { useState } from "react";
 import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
 import { FaUser, FaCalendarAlt, FaFileAlt } from "react-icons/fa";
+import DoctorProfile from "./DoctorProfile";
+import AppointmentsPage from "../appointments/AppointmentsPage";
+import NotificationPage from "../notification/NotificaitonPage";
 
 function DoctorPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -16,13 +19,13 @@ function DoctorPortalLayout() {
   const renderPage = () => {
     switch (selectedPage) {
       case "profile":
-        return <h2 className="p-4">👤 Profile Page</h2>;
+        return <DoctorProfile />;
       case "appointments":
-        return <h2 className="p-4">📅 Appointments Page</h2>;
+        return <AppointmentsPage />;
       case "personal-docs":
         return <h2 className="p-4">📄 Personal Docs Page</h2>;
       case "notifications":
-        return <h2 className="p-4">💳 Notifications</h2>;
+        return <NotificationPage />;
       default:
         return <h2 className="p-4">Page Not Found</h2>;
     }
