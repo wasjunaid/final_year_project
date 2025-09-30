@@ -110,7 +110,7 @@ class AppointmentService {
           statusCodes.FORBIDDEN
         );
       }
-      if (hospitalStaff.role === "lab technician") {
+      if (hospitalStaff.role === "hospital lab technician") {
         throw new AppError(
           "Lab technicians do not have access to all appointments",
           statusCodes.FORBIDDEN
