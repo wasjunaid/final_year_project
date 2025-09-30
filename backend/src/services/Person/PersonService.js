@@ -141,7 +141,7 @@ class PersonService {
     }
 
     static async insertPersonIfNotExists(email, password, is_verified = false) {
-        const randomPass = false;
+        let randomPass = false;
         if (!email) {
             throw new AppError("Email is required", statusCodes.BAD_REQUEST);
         }
@@ -258,6 +258,8 @@ class PersonService {
             if (result.rows.length === 0) {
                 throw new AppError(`Error updating person`, statusCodes.INTERNAL_SERVER_ERROR);
             }
+
+            await LogService.insertLog(person_id, `Updated person: ${JSON.stringify(updates)}`);
 
             return result.rows[0];
         } catch (error) {

@@ -59,6 +59,8 @@ class PersonContactService {
                 throw new AppError(`Failed to insert person contact`, statusCodes.INTERNAL_SERVER_ERROR);
             }
 
+            await LogService.insertLog(person_id, `Inserted person contact: ${JSON.stringify(result.rows[0])}`);
+
             return result.rows[0];
         } catch (error) {
             console.error(`Error inserting person contact: ${error.message} ${error.status}`);
@@ -94,6 +96,8 @@ class PersonContactService {
             if (result.rows.length === 0) {
                 throw new AppError(`Error updating person_contact`, statusCodes.INTERNAL_SERVER_ERROR);
             }
+
+            await LogService.insertLog(result.rows[0].person_id, `Updated person contact: ${JSON.stringify(result.rows[0])}`);
 
             return result.rows[0];
         } catch (error) {
