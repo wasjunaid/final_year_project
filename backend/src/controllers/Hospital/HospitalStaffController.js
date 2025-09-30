@@ -16,10 +16,10 @@ class HospitalStaffController {
             });
         } catch (error) {
             console.error(`Error in getHospitalStaff: ${error.message}`);
-            res.status(error.statusCode || statusCodes.INTERNAL_SERVER_ERROR).json({
+            res.status(error.status || statusCodes.INTERNAL_SERVER_ERROR).json({
                 data: null,
                 message: error.message || "Error fetching hospital staff",
-                status: error.statusCode || statusCodes.INTERNAL_SERVER_ERROR,
+                status: error.status || statusCodes.INTERNAL_SERVER_ERROR,
                 success: false
             });
         }
@@ -40,10 +40,10 @@ class HospitalStaffController {
             });
         } catch (error) {
             console.error(`Error in getAllHospitalStaff: ${error.message}`);
-            res.status(error.statusCode || statusCodes.INTERNAL_SERVER_ERROR).json({ 
+            res.status(error.status || statusCodes.INTERNAL_SERVER_ERROR).json({ 
                 data: null,
                 message: error.message || "Error fetching hospital staff",
-                status: error.statusCode || statusCodes.INTERNAL_SERVER_ERROR,
+                status: error.status || statusCodes.INTERNAL_SERVER_ERROR,
                 success: false
             });
         }
@@ -68,10 +68,10 @@ class HospitalStaffController {
             });
         } catch (error) {
             console.error(`Error in insertHospitalStaff: ${error.message}`);
-            res.status(error.statusCode || statusCodes.INTERNAL_SERVER_ERROR).json({ 
+            res.status(error.status || statusCodes.INTERNAL_SERVER_ERROR).json({ 
                 data: null,
                 message: error.message || "Error creating hospital staff",
-                status: error.statusCode || statusCodes.INTERNAL_SERVER_ERROR,
+                status: error.status || statusCodes.INTERNAL_SERVER_ERROR,
                 success: false
             });
         }
@@ -92,10 +92,10 @@ class HospitalStaffController {
             });
         } catch (error) {
             console.error(`Error in deleteHospitalStaff: ${error.message}`);
-            res.status(error.statusCode || statusCodes.INTERNAL_SERVER_ERROR).json({
+            res.status(error.status || statusCodes.INTERNAL_SERVER_ERROR).json({
                 data: null,
                 message: error.message || "Error deleting hospital staff",
-                status: error.statusCode || statusCodes.INTERNAL_SERVER_ERROR,
+                status: error.status || statusCodes.INTERNAL_SERVER_ERROR,
                 success: false
             });
         }
