@@ -34,6 +34,7 @@ const EndPoints = {
   },
   hospitalStaff: {
     get: "/hospital/staff", //GET ({persion_id})
+    // /super-admin/all-hospital-admins
     getAll: "/hospital/staff", // GET (:hospital_id)
     insert: "/hospital/staff", //POST  ({email, hospital_id, role})
     delete: "/hospital/staff", //DELETE (:hospital_staff_id)
@@ -41,6 +42,7 @@ const EndPoints = {
   admin: {
     dashboard: "/admin/dashboard",
     users: "/admin/users",
+    allHospitals: "/hospital/staff/super-admin/all-hospital-admins",
   },
   appointments: {
     patient: "/appointment/patient", //GET

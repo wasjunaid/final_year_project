@@ -18,14 +18,18 @@ function AdminPortalLayout() {
 
   const { user } = useAuth();
 
+  // Always show Data Access
   const sidebarItems: ISideBarItem[] = [
     { label: "Data Access", icon: <FaShareAlt />, page: "dataaccess" },
-    { label: "Hospitals", icon: <FaHospital />, page: "hospitals" },
-    { label: "Hospital Staff", icon: <FaHospital />, page: "hospital_staff" },
   ];
 
+  // Only show these if SUPER_ADMIN
   if (user?.role === ROLES.SUPER_ADMIN) {
-    sidebarItems.splice(1, 0, { label: "Admins", icon: <FaHospital />, page: "admins" });
+    sidebarItems.push(
+      { label: "Admins", icon: <FaHospital />, page: "admins" },
+      { label: "Hospitals", icon: <FaHospital />, page: "hospitals" },
+      { label: "Hospital Staff", icon: <FaHospital />, page: "hospital_staff" }
+    );
   }
 
   const renderPage = () => {
