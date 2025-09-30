@@ -28,7 +28,7 @@ function HospitalAccountsPage() {
   // Then, fetch staff for that hospital
   useEffect(() => {
     const fetchStaff = async () => {
-        console.log(`Hospital id: ${hospitalId}`);
+      console.log(`Hospital id: ${hospitalId}`);
       if (!hospitalId) return;
 
       setLoading(true);
