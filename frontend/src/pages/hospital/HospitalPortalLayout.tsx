@@ -11,6 +11,7 @@ import {
   FaUserCog,
   FaUsers,
 } from "react-icons/fa";
+import AppointmentsPage from "../appointments/AppointmentsPage";
 
 function HospitalPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -28,9 +29,9 @@ function HospitalPortalLayout() {
   const renderPage = () => {
     switch (selectedPage) {
       case "hospital":
-        return <h2 className="p-4">🏥 Hospital Page</h2>;
+        return <h2 className="p-4">🏥 Hospital Profile Page</h2>;
       case "appointments":
-        return <h2 className="p-4">📅 Appointments Page</h2>;
+        return <AppointmentsPage />;
       case "insurances":
         return <h2 className="p-4">🧾 Insurances Page</h2>;
       case "doctors":
