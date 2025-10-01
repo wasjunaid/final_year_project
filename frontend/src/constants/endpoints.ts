@@ -25,6 +25,8 @@ const EndPoints = {
   doctor: {
     dashboard: "/doctor/dashboard",
     profile: "/doctor/", //GET
+    getForHospital: "/doctor/hospital/", //GET (:hospital_id)
+    getAll: "/doctor/appointments", //GET 
   },
   hospital: {
     create: "/hospital/", //POST (name, address)

@@ -51,7 +51,7 @@ class HospitalController {
         const { name, address } = req.body;
 
         try {
-            const updatedHospital = await HospitalService.updateHospital(hospital_id, { name, address });
+            const updatedHospital = await HospitalService.updateHospital(hospital_id,  name, address );
 
             res.status(statusCodes.OK).json({
                 data: updatedHospital,

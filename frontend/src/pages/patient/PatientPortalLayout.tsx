@@ -25,9 +25,9 @@ function PatientPortalLayout() {
     // { label: "Home", icon: <FaHome />, page: "home" },
     { label: "Demographics", icon: <FaUser />, page: "demographics" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
-    { label: "Data Sharing", icon: <FaShareAlt />, page: "datasharing" },
+    // { label: "Data Sharing", icon: <FaShareAlt />, page: "datasharing" },
     { label: "EHR", icon: <FaFileAlt />, page: "ehr" },
-    { label: "Billing", icon: <FaCreditCard />, page: "billing" },
+    // { label: "Billing", icon: <FaCreditCard />, page: "billing" },
   ];
 
   const renderPage = () => {

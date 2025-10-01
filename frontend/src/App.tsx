@@ -20,6 +20,7 @@ import SignInPage from "./pages/auth/SignInPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerification from "./pages/auth/EmailVerification";
+import AppointmentRequestDetails from "./pages/appointments/AppointmentRequestDetails";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -91,7 +92,9 @@ function App() {
           <Route
             path={ROUTES.HOSPITAL_PORTAL}
             element={
-              <Protected allowedRoles={[ROLES.HOSPITAL_ADMIN, ROLES.HOSPITAL_SUB_ADMIN]}>
+              <Protected
+                allowedRoles={[ROLES.HOSPITAL_ADMIN, ROLES.HOSPITAL_SUB_ADMIN]}
+              >
                 <HospitalPortalLayout />
               </Protected>
             }
@@ -100,7 +103,7 @@ function App() {
           <Route
             path={ROUTES.FRONT_DESK_PORTAL}
             element={
-              <Protected allowedRoles={[ROLES.FRONT_DESK]}>
+              <Protected allowedRoles={[ROLES.HOSPITAL_FRONT_DESK]}>
                 <FrontDeskPortalLayout />
               </Protected>
             }
@@ -119,6 +122,15 @@ function App() {
           <Route path={ROUTES.HOME} element={<LandingPage />} />
 
           {/* define more routes here... */}
+
+          <Route
+            path="/appointments/requests/:id"
+            element={
+              <Protected>
+                <AppointmentRequestDetails />
+              </Protected>
+            }
+          />
         </Routes>
       </div>
     </Router>

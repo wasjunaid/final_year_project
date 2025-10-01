@@ -47,7 +47,7 @@ function SignInPage() {
         return ROUTES.HOSPITAL_PORTAL;
       case ROLES.HOSPITAL_SUB_ADMIN:
         return ROUTES.HOSPITAL_PORTAL;
-      case ROLES.FRONT_DESK:
+      case ROLES.HOSPITAL_FRONT_DESK:
         return ROUTES.FRONT_DESK_PORTAL;
       case ROLES.MEDICAL_CODER:
         return ROUTES.MEDICAL_CODER_PORTAL;

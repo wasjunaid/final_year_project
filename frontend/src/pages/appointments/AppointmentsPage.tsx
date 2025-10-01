@@ -50,11 +50,18 @@ function AppointmentsPage() {
       setLoading(true);
       setError("");
       let endpoint = "";
-      if (role === ROLES.PATIENT) endpoint = EndPoints.appointments.patient;
-      else if (role === ROLES.DOCTOR) endpoint = EndPoints.appointments.doctor;
-      else if (role === ROLES.HOSPITAL)
+
+      if (role === ROLES.PATIENT) {
+        endpoint = EndPoints.appointments.patient;
+      } else if (role === ROLES.DOCTOR) {
+        endpoint = EndPoints.appointments.doctor;
+      } else if (
+        role === ROLES.HOSPITAL_ADMIN ||
+        role === ROLES.HOSPITAL_SUB_ADMIN ||
+        role === ROLES.HOSPITAL_FRONT_DESK
+      ) {
         endpoint = EndPoints.appointments.hospital;
-      else {
+      } else {
         setError("Role not supported for appointments");
         setLoading(false);
         return;

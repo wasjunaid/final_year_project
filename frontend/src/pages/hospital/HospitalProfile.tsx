@@ -3,19 +3,17 @@ import LabeledInputField from "../../components/LabeledInputField";
 import Button from "../../components/Button";
 import api from "../../services/api";
 import EndPoints from "../../constants/endpoints";
-import { useAuth } from "../../hooks/useAuth";
 
 interface Hospital {
   hospital_id: number;
   name: string;
   address: string;
-  address_id?: number; // Add this
+  address_id?: number;
   created_at: string;
   updated_at: string;
 }
 
 function HospitalProfile() {
-  const { user } = useAuth();
   const [hospital, setHospital] = useState<Hospital | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -160,10 +158,10 @@ function HospitalProfile() {
         <div className="w-full"></div>
       </div>
 
-      <div className="mt-4 text-gray-600">
+      {/* <div className="mt-4 text-gray-600">
         <p>Created: {new Date(hospital.created_at).toLocaleString()}</p>
         <p>Last Updated: {new Date(hospital.updated_at).toLocaleString()}</p>
-      </div>
+      </div> */}
     </div>
   );
 }

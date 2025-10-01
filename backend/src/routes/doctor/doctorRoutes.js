@@ -12,13 +12,13 @@ router.get(
 
 router.get(
     '/hospital/:hospital_id',
-    allowedRoles(['hospital admin', 'hospital sub admin', 'hospital front desk']),
+    allowedRoles(['hospital admin', 'hospital sub admin', 'hospital front desk', 'patient']),
     DoctorController.getDoctorsForHospital
 );
 
 router.get(
     '/appointments',
-    allowedRoles(['patient']),
+    allowedRoles(['patient', 'hospital front desk']),
     DoctorController.getDoctorsForAppointments
 );
 

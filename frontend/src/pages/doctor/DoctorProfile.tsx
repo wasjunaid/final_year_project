@@ -31,6 +31,12 @@ function DoctorProfile() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Add hospital info state
+  const [hospitalInfo, setHospitalInfo] = useState({
+    hospital_name: "",
+    hospital_address: ""
+  });
+
   // Fetch person and doctor data on mount
   useEffect(() => {
     const fetchData = async () => {
@@ -43,8 +49,23 @@ function DoctorProfile() {
         ]);
         setPerson(personRes.data.data);
         setPersonForm(personRes.data.data);
-        setDoctor(doctorRes.data.data);
-        setDoctorForm(doctorRes.data.data);
+        
+        const doctorData = doctorRes.data.data;
+        setDoctor(doctorData);
+        setDoctorForm(doctorData);
+
+        // Set hospital info if available
+        if (doctorData.hospital_id) {
+          setHospitalInfo({
+            hospital_name: doctorData.hospital_name || "Not assigned",
+            hospital_address: doctorData.hospital_address || "Not available"
+          });
+        } else {
+          setHospitalInfo({
+            hospital_name: "Not assigned to any hospital",
+            hospital_address: "N/A"
+          });
+        }
       } catch (err: any) {
         setError(err.response?.data?.message || "Failed to load profile");
       } finally {
@@ -111,8 +132,9 @@ function DoctorProfile() {
 
       <div className="flex items-center justify-between">
         <ProfileInfoCard
-          fullName={`${person.first_name} ${person.last_name}`}
+          fullName={`${person.first_name || ''} ${person.last_name || ''}`}
           email={person.email}
+          // subtitle={hospitalInfo.hospital_name} // Add hospital name as subtitle
           imageElement={<img className="h-20" src={profileAvatar} />}
         />
         {!editMode ? (
@@ -128,6 +150,16 @@ function DoctorProfile() {
       {error && <div className="text-red-500 mt-2">{error}</div>}
       {success && <div className="text-green-600 mt-2">{success}</div>}
 
+      {/* Hospital Information Section */}
+      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+        <h3 className="text-lg font-semibold mb-2">Hospital Information</h3>
+        <div className="text-gray-600">
+          <p>Hospital: {hospitalInfo.hospital_name}</p>
+          <p>Address: {hospitalInfo.hospital_address}</p>
+        </div>
+      </div>
+
+      {/* Existing form fields */}
       <div className="flex flex-col gap-5 px-4 mt-4">
         {/* Person fields */}
         <div className="flex items-center justify-between gap-10">
