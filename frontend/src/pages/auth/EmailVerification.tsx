@@ -42,11 +42,11 @@ function EmailVerification() {
         h-screen 
         bg-cover 
         bg-center 
-        bg-[url("${bgImg}")]
         flex 
         justify-center 
         items-center 
       `}
+      style={{ backgroundImage: `url(${bgImg})` }}
       >
         <div className="bg-white rounded-lg shadow-md p-8 flex flex-col items-center">
           <svg

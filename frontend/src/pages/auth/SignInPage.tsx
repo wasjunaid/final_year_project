@@ -149,11 +149,11 @@ function SignInPage() {
         h-screen 
         bg-cover 
         bg-center 
-        bg-[url("${bgImg}")]
         flex 
         justify-center 
         items-center 
       `}
+      style={{ backgroundImage: `url(${bgImg})` }}
     >
       <div className="flex flex-col gap-3 justify-center mx-8 p-8 bg-white rounded-md shadow-md w-full max-w-xl">
         <div className="flex justify-center">
