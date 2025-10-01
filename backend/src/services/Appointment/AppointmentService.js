@@ -5,8 +5,54 @@ const {
 const { HospitalStaffService } = require("../Hospital/HospitalStaffService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { NotificationService } = require("../Notification/NotificationService");
 
 class AppointmentService {
+  static async getAppointmentDetails(appointment_id) {
+    if (!appointment_id) {
+      throw new AppError("appointment_id is required", statusCodes.BAD_REQUEST);
+    }
+
+    try {
+      const query = {
+        text: `SELECT a.*,
+                ar.patient_id,
+                ar.hospital_id,
+                TO_CHAR(ar.date, 'YYYY-MM-DD') AS date,
+                TO_CHAR(ar.time, 'HH24:MI') AS time,
+                ar.reason,
+                ad.address AS hospital_address,
+                h.name AS hospital_name,
+                p.first_name AS doctor_first_name,
+                p.last_name AS doctor_last_name,
+                p.email AS doctor_email,
+                p2.first_name AS patient_first_name,
+                p2.last_name AS patient_last_name,
+                p2.email AS patient_email
+                FROM appointment a
+                JOIN appointment_request ar ON a.appointment_id = ar.appointment_request_id
+                JOIN hospital h ON ar.hospital_id = h.hospital_id
+                JOIN address ad ON h.address_id = ad.address_id
+                JOIN person p ON ar.doctor_id = p.person_id
+                JOIN person p2 ON ar.patient_id = p2.person_id
+                WHERE
+                a.appointment_id = $1`,
+        values: [appointment_id],
+      };
+      const result = await pool.query(query);
+      if (result.rows.length === 0) {
+        throw new AppError("Appointment not found", statusCodes.NOT_FOUND);
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      console.error(
+        `Error getting appointment details: ${error.message} ${error.status}`
+      );
+      throw error;
+    }
+  }
+
   static async getAppointmentsForPatient(patient_id) {
     if (!patient_id) {
       throw new AppError("patient_id is required", statusCodes.BAD_REQUEST);
@@ -188,6 +234,14 @@ class AppointmentService {
           statusCodes.INTERNAL_SERVER_ERROR
         );
       }
+
+      const details = await this.getAppointmentDetails(
+        appointment_request_id
+      );
+
+      await NotificationService.insertNotification(details.patient_id, { message: `Your appointment on ${details.date} at ${details.time} with Dr. ${details.doctor_first_name} ${details.doctor_last_name} at ${details.hospital_name} has been scheduled.` , role: 'patient' , title: 'Appointment Scheduled', type: 'appointment', related_id: appointment_request_id, related_type: 'appointment', email: details.patient_email, sendEmail: true });
+
+      await NotificationService.insertNotification(details.doctor_id, { message: `You have a new appointment on ${details.date} at ${details.time} with patient ${details.patient_first_name} ${details.patient_last_name} at ${details.hospital_name}.` , role: 'doctor' , title: 'New Appointment', type: 'appointment', related_id: appointment_request_id, related_type: 'appointment', email: details.doctor_email, sendEmail: true });
 
       return result.rows[0];
     } catch (error) {
