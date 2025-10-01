@@ -386,7 +386,7 @@ class AppointmentService {
                 FROM appointment a
                 JOIN appointment_request ar ON a.appointment_id = ar.appointment_request_id
                 JOIN doctor d ON ar.doctor_id = d.doctor_id
-                JOIN person p ON d.person_id = p.person_id
+                JOIN person p ON d.doctor_id = p.person_id
                 JOIN doctor_note dn ON a.appointment_id = dn.appointment_id
                 WHERE
                 ar.patient_id = $1 AND a.status = 'completed'`,

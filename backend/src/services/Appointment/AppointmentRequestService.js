@@ -80,7 +80,7 @@ class AppointmentRequestService {
                 FROM appointment_request ar
                 JOIN person p ON ar.patient_id = p.person_id
                 JOIN doctor d ON ar.doctor_id = d.doctor_id
-                JOIN person p2 ON d.person_id = p2.person_id
+                JOIN person p2 ON d.doctor_id = p2.person_id
                 WHERE
                 ar.hospital_id = $1`,
         values: [checkStaff.hospital_id],
