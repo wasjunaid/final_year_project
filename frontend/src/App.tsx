@@ -140,6 +140,14 @@ function App() {
               </Protected>
             }
           />
+          <Route
+            path="/doctor-appointments/:id"
+            element={
+              <Protected>
+                <AppointmentDetailsPage />
+              </Protected>
+            }
+          />
         </Routes>
       </div>
     </Router>

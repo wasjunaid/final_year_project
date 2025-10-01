@@ -5,6 +5,7 @@ import { FaUser, FaCalendarAlt, FaFileAlt } from "react-icons/fa";
 import DoctorProfile from "./DoctorProfile";
 import AppointmentsPage from "../appointments/AppointmentsPage";
 import NotificationPage from "../notification/NotificaitonPage";
+import DoctorAppointmentPage from "./DoctorAppointmentPage";
 
 function DoctorPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -13,7 +14,7 @@ function DoctorPortalLayout() {
   const sidebarItems: ISideBarItem[] = [
     { label: "Profile", icon: <FaUser />, page: "profile" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
-    { label: "Personal Docs", icon: <FaFileAlt />, page: "personal-docs" },
+    // { label: "Personal Docs", icon: <FaFileAlt />, page: "personal-docs" },
   ];
 
   const renderPage = () => {
@@ -21,7 +22,7 @@ function DoctorPortalLayout() {
       case "profile":
         return <DoctorProfile />;
       case "appointments":
-        return <AppointmentsPage />;
+        return <DoctorAppointmentPage />;
       case "personal-docs":
         return <h2 className="p-4">📄 Personal Docs Page</h2>;
       case "notifications":
