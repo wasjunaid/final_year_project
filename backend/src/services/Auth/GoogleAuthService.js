@@ -11,6 +11,7 @@ const { validHospitalStaffRoles } = require("../../database/hospital/hospitalSta
 const { validSystemAdminRoles } = require("../../database/system/systemAdminTableQuery");
 const { HospitalStaffService } = require("../Hospital/HospitalStaffService");
 const { SystemAdminService } = require("../System/systemAdminService");
+const { LogService } = require("../Log/LogService");
 
 passport.use(
     new GoogleStrategy(googleStrategyConfig,

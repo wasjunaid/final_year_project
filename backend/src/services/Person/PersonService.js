@@ -5,6 +5,7 @@ const { TokenService } = require("../Token/TokenService");
 const { EmailService } = require("../Email/EmailService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { LogService } = require("../Log/LogService");
 
 class PersonService {
     static async getPerson(person_id) {
