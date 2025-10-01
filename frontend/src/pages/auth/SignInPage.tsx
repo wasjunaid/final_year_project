@@ -214,10 +214,10 @@ function SignInPage() {
             { label: "hospital admin", value: "hospital admin" },
             { label: "hospital sub admin", value: "hospital sub admin" },
             { label: "hospital front desk", value: "hospital front desk" },
-            {
-              label: "hospital lab technician",
-              value: "hospital lab technician",
-            },
+            // {
+            //   label: "hospital lab technician",
+            //   value: "hospital lab technician",
+            // },
           ]}
         />
         <AuthButton

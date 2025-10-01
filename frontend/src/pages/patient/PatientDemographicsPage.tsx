@@ -135,9 +135,9 @@ function PatientDemographicsPage() {
           <LabeledDropDownField
             label="Gender"
             options={[
-              { label: "Male", value: "m" },
-              { label: "Female", value: "f" },
-              { label: "Other", value: "o" },
+              { label: "Male", value: "M" },
+              { label: "Female", value: "F" },
+              { label: "Other", value: "O" },
             ]}
             placeholder="Select your gender"
             value={form.gender || ""}
