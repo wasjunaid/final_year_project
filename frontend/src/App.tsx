@@ -21,6 +21,7 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerification from "./pages/auth/EmailVerification";
 import AppointmentRequestDetails from "./pages/appointments/AppointmentRequestDetails";
+import AppointmentDetailsPage from "./pages/appointments/AppointmentDetailPage";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -128,6 +129,14 @@ function App() {
             element={
               <Protected>
                 <AppointmentRequestDetails />
+              </Protected>
+            }
+          />
+          <Route
+            path="/appointments/:id"
+            element={
+              <Protected>
+                <AppointmentDetailsPage />
               </Protected>
             }
           />

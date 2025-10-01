@@ -39,6 +39,13 @@ const filterDoctorsByHospital = (doctors: any[], hospitalId: number) => {
   return doctors.filter((doctor) => doctor.hospital_id === hospitalId);
 };
 
+const STATUS_COLORS = {
+  processing: "text-yellow-500",
+  denied: "text-red-500",
+  approved: "text-green-500",
+  cancelled: "text-red-500",
+} as const;
+
 function AppointmentRequestDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate(); // Add navigate
@@ -139,18 +146,30 @@ function AppointmentRequestDetails() {
   const handleUpdateStatus = async (newStatus: string) => {
     try {
       if (isHospitalStaff()) {
-        if (!cost) {
-          setError("Please set the appointment cost");
-          return;
+        // Validation for hospital staff actions
+        if (newStatus === "approved") {
+          if (!cost || parseFloat(cost) <= 0) {
+            setError("Please set a valid appointment cost");
+            return;
+          }
+          if (!selectedDoctor) {
+            setError("Please select a doctor");
+            return;
+          }
+          if (!date || !time) {
+            setError("Please set appointment date and time");
+            return;
+          }
         }
+
         await api.put(
           `${EndPoints.appointments.request.updateHospitalStatus}/${id}`,
           {
             status: newStatus,
-            doctor_id: selectedDoctor,
+            doctor_id: selectedDoctor || request?.doctor_id,
             date,
             time,
-            cost: parseFloat(cost),
+            cost: parseFloat(cost || "0"),
           }
         );
       } else {
@@ -169,12 +188,15 @@ function AppointmentRequestDetails() {
           });
         }
       }
-      setSuccess("Request updated successfully!");
-      // Navigate back instead of reload
+      setSuccess(`Request ${newStatus} successfully!`);
       setTimeout(() => navigate(-1), 1500);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update request");
     }
+  };
+
+  const getStatusColor = (status: string) => {
+    return STATUS_COLORS[status as keyof typeof STATUS_COLORS] || "text-gray-500";
   };
 
   if (loading) return <div className="p-6">Loading...</div>;
@@ -251,102 +273,101 @@ function AppointmentRequestDetails() {
             </div>
 
             {/* Appointment Details */}
-            <div className="flex items-center justify-between gap-10">
-              {isHospitalStaff() || request.status === "processing" ? (
-                <>
-                  <LabeledInputField
-                    title="Date"
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    required
-                  />
-                  <LabeledInputField
-                    title="Time"
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    required
-                  />
-                </>
-              ) : (
-                <>
-                  <LabeledInputField
-                    title="Date"
-                    value={new Date(request.date).toLocaleDateString()}
-                    disabled
-                  />
-                  <LabeledInputField
-                    title="Time"
-                    value={request.time.substring(0, 5)}
-                    disabled
-                  />
-                </>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between gap-10">
-              <LabeledInputField
-                title="Reason"
-                value={request.reason}
-                disabled
-              />
-              <LabeledInputField
-                title="Status"
-                value={request.status}
-                className={
-                  request.status === "approved"
-                    ? "text-green-500"
-                    : request.status === "processing"
-                    ? "text-yellow-500"
-                    : "text-red-500"
-                }
-                disabled
-              />
-            </div>
-
-            {/* Actions */}
-            {request.status === "processing" && (
-              <>
-                {isHospitalStaff() && (
-                  <div className="flex items-center justify-between gap-10">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-10">
+                {isHospitalStaff() && request?.status === "processing" ? (
+                  <>
                     <LabeledInputField
-                      title="Appointment Cost"
-                      type="number"
-                      value={cost}
-                      onChange={(e) => setCost(e.target.value)}
+                      title="Date"
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
                       required
                     />
-                    <div className="w-full"></div>
-                  </div>
+                    <LabeledInputField
+                      title="Time"
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      required
+                    />
+                  </>
+                ) : (
+                  <>
+                    <LabeledInputField
+                      title="Date"
+                      value={new Date(request?.date || "").toLocaleDateString()}
+                      disabled
+                    />
+                    <LabeledInputField
+                      title="Time"
+                      value={request?.time?.substring(0, 5) || ""}
+                      disabled
+                    />
+                  </>
                 )}
+              </div>
 
-                <div>
-                  {isHospitalStaff() ? (
-                    <div className="flex gap-2">
-                      <Button
-                        label="Approve"
-                        onClick={() => handleUpdateStatus("approved")}
-                      />
-                      <Button
-                        label="Deny"
-                        onClick={() => handleUpdateStatus("denied")}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        label="Reschedule"
-                        onClick={() => handleUpdateStatus("rescheduled")}
-                      />
-                      <Button
-                        label="Cancel"
-                        onClick={() => handleUpdateStatus("cancelled")}
-                      />
-                    </div>
-                  )}
+              <div className="flex items-center justify-between gap-10">
+                <LabeledInputField
+                  title="Reason"
+                  value={request?.reason || ""}
+                  disabled
+                />
+                <LabeledInputField
+                  title="Status"
+                  value={request?.status || ""}
+                  className={
+                    request?.status === "approved"
+                      ? "text-green-500"
+                      : request?.status === "processing"
+                      ? "text-yellow-500"
+                      : "text-red-500"
+                  }
+                  disabled
+                />
+              </div>
+            </div>
+
+            {/* Hospital Staff Actions */}
+            {isHospitalStaff() && request?.status === "processing" && (
+              <div className="flex flex-col gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold">Update Appointment</h3>
+
+                <div className="flex items-center justify-between gap-10">
+                  <LabeledInputField
+                    title="Appointment Cost"
+                    type="number"
+                    value={cost}
+                    onChange={(e) => setCost(e.target.value)}
+                    required
+                    placeholder="Enter appointment cost"
+                  />
+                  <div className="w-full"></div>
                 </div>
-              </>
+
+                <div className="flex gap-4">
+                  <Button
+                    label="Approve"
+                    onClick={() => handleUpdateStatus("approved")}
+                    disabled={!cost || !selectedDoctor || !date || !time}
+                  />
+                  <Button
+                    label="Deny"
+                    onClick={() => handleUpdateStatus("denied")}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Patient Actions */}
+            {!isHospitalStaff() && request?.status === "processing" && (
+              <div className="flex gap-2">
+                <Button
+                  label="Cancel"
+                  onClick={() => handleUpdateStatus("cancelled")}
+                />
+              </div>
             )}
           </div>
         </div>
