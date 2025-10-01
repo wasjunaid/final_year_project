@@ -1,6 +1,6 @@
 const { pool } = require("../../config/databaseConfig");
 const { EmailService } = require("../Email/EmailService");
-const { AppointmentService } = require("../Appointment/AppointmentService");
+const { UpcomingAppointmentService } = require("../Appointment/UpcomingAppointmentService");
 const cron = require("node-cron");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
