@@ -4,6 +4,11 @@ const AppointmentController = require("../../controllers/Appointment/Appointment
 const router = express.Router();
 
 router.get(
+    "/:appointment_id",
+    AppointmentController.getAppointmentDetails
+)
+
+router.get(
     "/patient",
     AppointmentController.getAppointmentsForPatient
 );
