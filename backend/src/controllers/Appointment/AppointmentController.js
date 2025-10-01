@@ -4,10 +4,9 @@ const { AppointmentService } = require("../../services/Appointment/AppointmentSe
 class AppointmentController {
     async getAppointmentDetails(req, res) {
         const { appointment_id } = req.params;
-        const { person_id } = req.user;
 
         try {
-            const appointmentDetails = await AppointmentService.getAppointmentDetails(person_id, appointment_id);
+            const appointmentDetails = await AppointmentService.getAppointmentDetails(appointment_id);
 
             res.status(statusCodes.OK).json({
                 data: appointmentDetails,
