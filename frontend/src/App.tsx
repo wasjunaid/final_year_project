@@ -22,6 +22,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerification from "./pages/auth/EmailVerification";
 import AppointmentRequestDetails from "./pages/appointments/AppointmentRequestDetails";
 import AppointmentDetailsPage from "./pages/appointments/AppointmentDetailPage";
+import DoctorAppointmentDetailsPage from "./pages/doctor/DoctorAppointmentDetailsPage";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -144,7 +145,7 @@ function App() {
             path="/doctor-appointments/:id"
             element={
               <Protected>
-                <AppointmentDetailsPage />
+                <DoctorAppointmentDetailsPage />
               </Protected>
             }
           />

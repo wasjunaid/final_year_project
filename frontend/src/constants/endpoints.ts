@@ -26,7 +26,7 @@ const EndPoints = {
     dashboard: "/doctor/dashboard",
     profile: "/doctor/", //GET
     getForHospital: "/doctor/hospital/", //GET (:hospital_id)
-    getAll: "/doctor/appointments", //GET 
+    getAll: "/doctor/appointments", //GET
   },
   hospital: {
     create: "/hospital/", //POST (name, address)
@@ -47,9 +47,13 @@ const EndPoints = {
     allHospitals: "/hospital/staff/super-admin/all-hospital-admins",
   },
   appointments: {
+    uploadNote: "/doctor/note/", //POST ({appointment_id, note})
+    getNote: "/doctor/note/", //GET (:appointment_id)
+    updateStatus: "/appointment/", //PUT (:appointment_id)
     patient: "/appointment/patient", //GET
     doctor: "/appointment/doctor", //GET
     hospital: "/appointment/hospital", //GET
+    get: "/appointment/appointment-details/", //GET (:appointment_id)
     update: "/appointment/", //PUT (:appointment_id)
     request: {
       insert: "/appointment/request/", //POST

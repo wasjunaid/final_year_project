@@ -5,8 +5,54 @@ const {
 const { HospitalStaffService } = require("../Hospital/HospitalStaffService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { NotificationService } = require("../Notification/NotificationService");
 
 class AppointmentService {
+  static async getAppointmentDetails(appointment_id) {
+    if (!appointment_id) {
+      throw new AppError("appointment_id is required", statusCodes.BAD_REQUEST);
+    }
+
+    try {
+      const query = {
+        text: `SELECT a.*,
+                ar.patient_id,
+                ar.hospital_id,
+                TO_CHAR(ar.date, 'YYYY-MM-DD') AS date,
+                TO_CHAR(ar.time, 'HH24:MI') AS time,
+                ar.reason,
+                ad.address AS hospital_address,
+                h.name AS hospital_name,
+                p.first_name AS doctor_first_name,
+                p.last_name AS doctor_last_name,
+                p.email AS doctor_email,
+                p2.first_name AS patient_first_name,
+                p2.last_name AS patient_last_name,
+                p2.email AS patient_email
+                FROM appointment a
+                JOIN appointment_request ar ON a.appointment_id = ar.appointment_request_id
+                JOIN hospital h ON ar.hospital_id = h.hospital_id
+                JOIN address ad ON h.address_id = ad.address_id
+                JOIN person p ON ar.doctor_id = p.person_id
+                JOIN person p2 ON ar.patient_id = p2.person_id
+                WHERE
+                a.appointment_id = $1`,
+        values: [appointment_id],
+      };
+      const result = await pool.query(query);
+      if (result.rows.length === 0) {
+        throw new AppError("Appointment not found", statusCodes.NOT_FOUND);
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      console.error(
+        `Error getting appointment details: ${error.message} ${error.status}`
+      );
+      throw error;
+    }
+  }
+
   static async getAppointmentsForPatient(patient_id) {
     if (!patient_id) {
       throw new AppError("patient_id is required", statusCodes.BAD_REQUEST);
@@ -55,6 +101,7 @@ class AppointmentService {
     if (!doctor_id) {
       throw new AppError("doctor_id is required", statusCodes.BAD_REQUEST);
     }
+
 
     try {
       const query = {
@@ -110,7 +157,7 @@ class AppointmentService {
           statusCodes.FORBIDDEN
         );
       }
-      if (hospitalStaff.role === "lab technician") {
+      if (hospitalStaff.role === "hospital lab technician") {
         throw new AppError(
           "Lab technicians do not have access to all appointments",
           statusCodes.FORBIDDEN
@@ -188,6 +235,14 @@ class AppointmentService {
           statusCodes.INTERNAL_SERVER_ERROR
         );
       }
+
+      const details = await this.getAppointmentDetails(
+        appointment_request_id
+      );
+
+      await NotificationService.insertNotification(details.patient_id, { message: `Your appointment on ${details.date} at ${details.time} with Dr. ${details.doctor_first_name} ${details.doctor_last_name} at ${details.hospital_name} has been scheduled.` , role: 'patient' , title: 'Appointment Scheduled', type: 'appointment', related_id: appointment_request_id, related_type: 'appointment', email: details.patient_email, sendEmail: true });
+
+      await NotificationService.insertNotification(details.doctor_id, { message: `You have a new appointment on ${details.date} at ${details.time} with patient ${details.patient_first_name} ${details.patient_last_name} at ${details.hospital_name}.` , role: 'doctor' , title: 'New Appointment', type: 'appointment', related_id: appointment_request_id, related_type: 'appointment', email: details.doctor_email, sendEmail: true });
 
       return result.rows[0];
     } catch (error) {
@@ -286,61 +341,6 @@ class AppointmentService {
     }
   }
 
-  static async getUpcomingAppointments() {
-    try {
-      const today = new Date();
-      const todayDate = today.toISOString().split("T")[0];
-
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowDate = tomorrow.toISOString().split("T")[0];
-
-      const query = {
-        text: `SELECT
-              a.appointment_id,
-              ar.doctor_id,
-              ar.patient_id,
-              TO_CHAR(ar.date, 'YYYY-MM-DD') AS date,
-              TO_CHAR(ar.time, 'HH24:MI') AS time,
-              ar.reason,
-              h.name AS hospital_name,
-              ad.address AS hospital_address,
-              p.first_name AS patient_first_name,
-              p.last_name AS patient_last_name,
-              p.email AS patient_email,
-              d.first_name AS doctor_first_name,
-              d.last_name AS doctor_last_name,
-              d.email AS doctor_email
-              FROM appointment a
-              JOIN appointment_request ar ON a.appointment_id = ar.appointment_request_id
-              JOIN hospital h ON ar.hospital_id = h.hospital_id
-              JOIN address ad ON h.address_id = ad.address_id
-              JOIN person p ON ar.patient_id = p.person_id
-              JOIN person d ON ar.doctor_id = d.person_id
-              WHERE
-              (ar.date = $1 OR ar.date = $2)
-              AND a.status = 'upcoming'
-              ORDER BY
-              ar.date ASC, ar.time ASC`,
-        values: [todayDate, tomorrowDate],
-      };
-      const result = await pool.query(query);
-      if (result.rows.length === 0) {
-        throw new AppError(
-          "No upcoming appointments found",
-          statusCodes.NOT_FOUND
-        );
-      }
-
-      return result.rows;
-    } catch (error) {
-      console.error(
-        `Error fetching upcoming appointments: ${error.message} ${error.status}`
-      );
-      throw error;
-    }
-  }
-
   static async checkAppointmentExists(appointment_id) {
     if (!appointment_id) {
       throw new AppError("appointment_id is required", statusCodes.BAD_REQUEST);
@@ -386,7 +386,7 @@ class AppointmentService {
                 FROM appointment a
                 JOIN appointment_request ar ON a.appointment_id = ar.appointment_request_id
                 JOIN doctor d ON ar.doctor_id = d.doctor_id
-                JOIN person p ON d.person_id = p.person_id
+                JOIN person p ON d.doctor_id = p.person_id
                 JOIN doctor_note dn ON a.appointment_id = dn.appointment_id
                 WHERE
                 ar.patient_id = $1 AND a.status = 'completed'`,

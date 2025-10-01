@@ -28,14 +28,20 @@ function DoctorAppointmentDetailsPage() {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const res = await api.get(`${EndPoints.appointments.getDetails}${id}`);
+        const res = await api.get(`${EndPoints.appointments.get}${id}`);
         const appointmentData = res.data.data;
         setAppointment(appointmentData);
         setDoctorNote(appointmentData.doctor_note || "");
+
+        if (appointmentData.status == "completed") {
+          const resNote = await api.get(`${EndPoints.appointments.getNote}${id}`);
+          console.log(resNote.data.data.note)
+          setDoctorNote(resNote.data.data.note);
+        }
+
       } catch (err: any) {
         setError(
-          err.response?.data?.message || 
-          "Failed to load appointment details"
+          err.response?.data?.message || "Failed to load appointment details"
         );
       } finally {
         setLoading(false);
@@ -49,12 +55,16 @@ function DoctorAppointmentDetailsPage() {
 
   const handleStatusUpdate = async (newStatus: string) => {
     try {
+      await api.post(`${EndPoints.appointments.uploadNote}`, {
+        appointment_id: id,
+        note: doctorNote,
+      });
       await api.put(`${EndPoints.appointments.update}${id}`, {
         status: newStatus,
-        doctor_note: doctorNote
+        // doctor_note: doctorNote,
       });
       setSuccess("Appointment status updated successfully!");
-      setAppointment(prev => prev ? { ...prev, status: newStatus } : null);
+      setAppointment((prev) => (prev ? { ...prev, status: newStatus } : null));
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update status");
     }
@@ -65,118 +75,128 @@ function DoctorAppointmentDetailsPage() {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Appointment Details</h2>
-        <Button 
-          label="Back" 
-          onClick={() => navigate(-1)} 
-          variant="secondary"
-        />
-      </div>
+      <NavBar
+        leadingIcon={<FaArrowLeft size={16} />}
+        onLeadingIconClick={() => navigate(-1)}
+        showNotifications={false}
+        onToggleSidebar={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+        onNotificationsClick={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+      />
 
-      {error && <div className="text-red-500">{error}</div>}
-      {success && <div className="text-green-600">{success}</div>}
+      <div className="p-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Appointment Details</h2>
+        </div>
 
-      <div className="flex items-center justify-between gap-10">
-        <LabeledInputField
-          title="Patient Name"
-          value={`${appointment.patient_first_name || ""} ${
-            appointment.patient_last_name || ""
-          }`}
-          disabled
-        />
-        <LabeledInputField
-          title="Patient Email"
-          value={appointment.patient_email}
-          disabled
-        />
-      </div>
+        {error && <div className="text-red-500">{error}</div>}
+        {success && <div className="text-green-600">{success}</div>}
 
-      <div className="flex items-center justify-between gap-10">
-        <LabeledInputField
-          title="Hospital"
-          value={appointment.hospital_name || "N/A"}
-          disabled
-        />
-        <LabeledInputField
-          title="Address"
-          value={appointment.hospital_address || "N/A"}
-          disabled
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-10">
-        <LabeledInputField
-          title="Date"
-          value={new Date(appointment.date).toLocaleDateString()}
-          disabled
-        />
-        <LabeledInputField
-          title="Time"
-          value={appointment.time}
-          disabled
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-10">
-        <LabeledInputField
-          title="Reason"
-          value={appointment.reason}
-          disabled
-        />
-        <LabeledInputField
-          title="Status"
-          value={appointment.status}
-          className={STATUS_COLORS[appointment.status as keyof typeof STATUS_COLORS] || "text-gray-500"}
-          disabled
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-10">
-        <LabeledInputField
-          title="Cost"
-          value={`$${appointment.cost}`}
-          disabled
-        />
-        <div className="w-full"></div>
-      </div>
-
-      {/* Doctor's Note Section */}
-      <div className="mt-4">
-        <LabeledInputField
-          title="Doctor's Note"
-          value={doctorNote}
-          onChange={(e) => setDoctorNote(e.target.value)}
-          multiline
-          rows={4}
-          disabled={appointment.status === "completed" || appointment.status === "cancelled"}
-        />
-      </div>
-
-      {/* Action Buttons */}
-      {appointment.status === "upcoming" && (
-        <div className="flex gap-4 mt-4">
-          <Button
-            label="Start Appointment"
-            onClick={() => handleStatusUpdate("in progress")}
+        <div className="flex items-center justify-between gap-10">
+          <LabeledInputField
+            title="Patient Name"
+            value={`${appointment.patient_first_name || ""} ${
+              appointment.patient_last_name || ""
+            }`}
+            disabled
           />
-          <Button
-            label="Cancel"
-            onClick={() => handleStatusUpdate("cancelled")}
-            variant="danger"
+          <LabeledInputField
+            title="Patient Email"
+            value={appointment.patient_email}
+            disabled
           />
         </div>
-      )}
 
-      {appointment.status === "in progress" && (
-        <div className="flex gap-4 mt-4">
-          <Button
-            label="Complete Appointment"
-            onClick={() => handleStatusUpdate("completed")}
-            disabled={!doctorNote}
+        <div className="flex items-center justify-between gap-10">
+          <LabeledInputField
+            title="Hospital"
+            value={appointment.hospital_name || "N/A"}
+            disabled
+          />
+          <LabeledInputField
+            title="Address"
+            value={appointment.hospital_address || "N/A"}
+            disabled
           />
         </div>
-      )}
+
+        <div className="flex items-center justify-between gap-10">
+          <LabeledInputField
+            title="Date"
+            value={new Date(appointment.date).toLocaleDateString()}
+            disabled
+          />
+          <LabeledInputField title="Time" value={appointment.time} disabled />
+        </div>
+
+        <div className="flex items-center justify-between gap-10">
+          <LabeledInputField
+            title="Reason"
+            value={appointment.reason}
+            disabled
+          />
+          <LabeledInputField
+            title="Status"
+            value={appointment.status}
+            className={
+              STATUS_COLORS[appointment.status as keyof typeof STATUS_COLORS] ||
+              "text-gray-500"
+            }
+            disabled
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-10">
+          <LabeledInputField
+            title="Cost"
+            value={`$${appointment.cost}`}
+            disabled
+          />
+          <div className="w-full"></div>
+        </div>
+
+        {/* Doctor's Note Section */}
+        <div className="mt-4">
+          <LabeledInputField
+            title="Doctor's Note"
+            value={doctorNote}
+            onChange={(e) => setDoctorNote(e.target.value)}
+            multiline
+            rows={4}
+            disabled={
+              appointment.status === "completed" ||
+              appointment.status === "cancelled"
+            }
+          />
+        </div>
+
+        {/* Action Buttons */}
+        {appointment.status === "upcoming" && (
+          <div className="flex gap-4 mt-4">
+            <Button
+              label="Start Appointment"
+              onClick={() => handleStatusUpdate("in progress")}
+            />
+            <Button
+              label="Cancel"
+              onClick={() => handleStatusUpdate("cancelled")}
+            />
+          </div>
+        )}
+
+        {appointment.status === "in progress" && (
+          <div className="flex gap-4 mt-4">
+            <Button
+              label="Complete Appointment"
+              onClick={() => handleStatusUpdate("completed")}
+              disabled={!doctorNote}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

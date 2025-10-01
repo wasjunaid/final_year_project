@@ -2,6 +2,7 @@ const { pool } = require("../../config/databaseConfig");
 const { ContactService } = require("../Contact/ContactService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { LogService } = require("../Log/LogService");
 
 class PersonContactService {
     static async getPersonContacts(person_id) {

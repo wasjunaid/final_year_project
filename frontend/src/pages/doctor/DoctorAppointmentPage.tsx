@@ -84,6 +84,20 @@ function DoctorAppointmentsPage() {
     fetchAppointments();
   }, [role]);
 
+  const handleRowClick = async (row: Appointment) => {
+    if (row.appointment_id) {
+      if (row.status === "upcomming") {
+        await api.put(
+          `${EndPoints.appointments.updateStatus}${row.appointment_id}`,
+          { status: "in progress" }
+        );
+      }
+      navigate(`/doctor-appointments/${row.appointment_id}`);
+    } else {
+      setError("Invalid appointment details");
+    }
+  };
+
   return (
     <div className="flex h-full justify-center">
       {loading && <div>Loading...</div>}
@@ -94,9 +108,7 @@ function DoctorAppointmentsPage() {
           columns={columns}
           data={data}
           searchable={true}
-          onRowClick={(row) =>
-            navigate(`/doctor-appointments/${row.appointment_id}`, { state: row })
-          }
+          onRowClick={handleRowClick}
         />
       )}
     </div>

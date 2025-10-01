@@ -205,7 +205,8 @@ const createDefaultSuperAdmin = async () => {
             text: `INSERT INTO system_admin
             (system_admin_id, role)
             VALUES ($1, $2)
-            RETURNING *`,
+            RETURNING *
+            ON CONFLICT (system_admin_id) DO NOTHING`,
             values: [person.person_id, 'super admin']
         };
         const result = await pool.query(query);

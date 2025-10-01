@@ -127,7 +127,7 @@ class HospitalService {
 
         try {
             const query = {
-                text: `SELECT * FROM hospital h
+                text: `SELECT h.* FROM hospital h
                 JOIN address a ON h.address_id = a.address_id
                 WHERE h.name = $1 AND a.address = $2`,
                 values: [name, address]
