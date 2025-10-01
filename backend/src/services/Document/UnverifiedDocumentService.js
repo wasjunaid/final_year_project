@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { pool } = require('../../config/databaseConfig');
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { validUnverifiedDocumentTypes } = require("../../database/document/unverifiedDocumentTableQuery");
 
 const uploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -45,6 +46,40 @@ class UnverifiedDocumentService {
         }
     }
 
+    static async getUnverifiedDocumentsForEHR(person_id) {
+        if (!person_id) {
+            throw new AppError("person_id is required", statusCodes.BAD_REQUEST);
+        }
+
+        try {
+            const query = {
+                text: `SELECT 
+                document_id, 
+                original_name, 
+                mime_type, 
+                file_size,
+                document_type, 
+                detail,
+                created_at
+                FROM unverified_document
+                WHERE
+                person_id = $1 AND document_type != 'personal'
+                ORDER BY
+                created_at DESC`,
+                values: [person_id]
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                return false;
+            }
+
+            return result.rows;
+        } catch (error) {
+            console.error(`Error getting unverified documents: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
     static async uploadUnverifiedDocument(person_id, {
             original_name,
             file_name,
@@ -74,6 +109,9 @@ class UnverifiedDocumentService {
         }
         if (!document_type) {
             throw new AppError("document_type is required", statusCodes.BAD_REQUEST);
+        }
+        if (!validUnverifiedDocumentTypes.includes(document_type)) {
+            throw new AppError(`invalid document_type`, statusCodes.BAD_REQUEST);
         }
         if (!detail) {
             throw new AppError("detail is required", statusCodes.BAD_REQUEST);

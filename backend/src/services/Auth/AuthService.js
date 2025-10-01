@@ -3,8 +3,14 @@ const { PatientService } = require("../Patient/PatientService");
 const { DoctorService } = require("../Doctor/DoctorService");
 const { JWTService } = require("./JWTService");
 const { EmailVerificationTokenService } = require("../Token/EmailVerificationTokenService");
+const { LogService } = require("../Log/LogService");
+const { NotificationService } = require("../Notification/NotificationService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { validHospitalStaffRoles } = require("../../database/hospital/hospitalStaffTableQuery");
+const { validSystemAdminRoles } = require("../../database/system/systemAdminTableQuery");
+const { HospitalStaffService } = require("../Hospital/HospitalStaffService");
+const { SystemAdminService } = require("../System/systemAdminService");
 
 const roles = ['patient', 'doctor'];
 
@@ -44,6 +50,8 @@ class AuthService {
             }
 
             await EmailVerificationTokenService.insertOrUpdateEmailVerificationToken(person.person_id);
+
+            await LogService.insertLog(person.person_id, `Sign Up: User with email ${email} signed up as ${role.toLowerCase()}`);
         } catch (error) {
             console.error(`Error signing up: ${error.message} ${error.status}`);
             throw error;
@@ -65,7 +73,7 @@ class AuthService {
         if (!role) {
             throw new AppError("role is required", statusCodes.BAD_REQUEST);
         }
-        if (!roles.includes(role.toLowerCase())) {
+        if (!roles.includes(role.toLowerCase()) && !validHospitalStaffRoles.includes(role.toLowerCase()) && !validSystemAdminRoles.includes(role.toLowerCase())) {
             throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
         }
 
@@ -84,6 +92,19 @@ class AuthService {
                 if (!doctorExists) {
                     throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
                 }
+            } else if (validHospitalStaffRoles.includes(role.toLowerCase())) {
+                const hospitalStaffExists = await HospitalStaffService.checkHospitalStaffExists(person_id);
+                if (!hospitalStaffExists) {
+                    throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
+                }
+                if (hospitalStaffExists.role !== role.toLowerCase()) {
+                    throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
+                }
+            } else if (validSystemAdminRoles.includes(role.toLowerCase())) {
+                const systemAdminExists = await SystemAdminService.checkSystemAdminExistsAgainstRole(person_id, role.toLowerCase());
+                if (!systemAdminExists) {
+                    throw new AppError("Invalid Credentials", statusCodes.UNAUTHORIZED);
+                }
             }
 
             if (!person.is_verified) {
@@ -91,6 +112,19 @@ class AuthService {
             }
 
             const tokens = await JWTService.generateJWT(person_id, role.toLowerCase());
+
+            await LogService.insertLog(person.person_id, `Sign In: User with email ${email} signed in as ${role.toLowerCase()}`);
+
+            // await NotificationService.insertNotification(person.person_id, {
+            //     role: role,
+            //     title: "Sign In",
+            //     message: `You have signed in as a ${role.toLowerCase()}`,
+            //     type: "check",
+            //     related_id: person.person_id,
+            //     related_type: "person",
+            //     email: email,
+            //     sendEmail: true
+            // });
 
             return tokens;
         } catch (error) {
@@ -105,7 +139,9 @@ class AuthService {
         }
 
         try {
+            const person = await PersonService.getPerson(person_id);
 
+            await LogService.insertLog(person.person_id, `Sign Out: User with email ${person.email} signed out as ${person.role.toLowerCase()}`);
         } catch (error) {
             console.error(`Error signing out: ${error.message} ${error.status}`);
             throw error;

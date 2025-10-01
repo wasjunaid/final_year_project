@@ -1,6 +1,6 @@
 const { pool } = require("../../config/databaseConfig");
 const { EmailService } = require("../Email/EmailService");
-const { AppointmentService } = require("../Appointment/AppointmentService");
+const { UpcomingAppointmentService } = require("../Appointment/UpcomingAppointmentService");
 const cron = require("node-cron");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
@@ -207,7 +207,7 @@ class NotificationService {
 
     static async insertNotificationsForUpcomingAppointments() {
         try {
-            const appointments = await AppointmentService.getUpcomingAppointments();
+            const appointments = await UpcomingAppointmentService.getUpcomingAppointments();
             if (appointments.length === 0) {
                 throw new AppError("No upcoming appointments found", statusCodes.NOT_FOUND);
             }
@@ -255,7 +255,6 @@ const sendAppointmentReminders = () => {
         await NotificationService.insertNotificationsForUpcomingAppointments();
     } catch (error) {
         console.error(`Error sending appointment reminders: ${error.message} ${error.status}`);
-        throw error;
     }
   });
 };

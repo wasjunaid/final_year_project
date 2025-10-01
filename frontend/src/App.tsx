@@ -20,6 +20,9 @@ import SignInPage from "./pages/auth/SignInPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerification from "./pages/auth/EmailVerification";
+import AppointmentRequestDetails from "./pages/appointments/AppointmentRequestDetails";
+import AppointmentDetailsPage from "./pages/appointments/AppointmentDetailPage";
+import DoctorAppointmentDetailsPage from "./pages/doctor/DoctorAppointmentDetailsPage";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -64,7 +67,7 @@ function App() {
           <Route
             path={ROUTES.ADMIN_PORTAL}
             element={
-              <Protected allowedRoles={[ROLES.ADMIN]}>
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
                 <AdminPortalLayout />
               </Protected>
             }
@@ -91,7 +94,9 @@ function App() {
           <Route
             path={ROUTES.HOSPITAL_PORTAL}
             element={
-              <Protected allowedRoles={[ROLES.HOSPITAL]}>
+              <Protected
+                allowedRoles={[ROLES.HOSPITAL_ADMIN, ROLES.HOSPITAL_SUB_ADMIN]}
+              >
                 <HospitalPortalLayout />
               </Protected>
             }
@@ -100,7 +105,7 @@ function App() {
           <Route
             path={ROUTES.FRONT_DESK_PORTAL}
             element={
-              <Protected allowedRoles={[ROLES.FRONT_DESK]}>
+              <Protected allowedRoles={[ROLES.HOSPITAL_FRONT_DESK]}>
                 <FrontDeskPortalLayout />
               </Protected>
             }
@@ -119,6 +124,31 @@ function App() {
           <Route path={ROUTES.HOME} element={<LandingPage />} />
 
           {/* define more routes here... */}
+
+          <Route
+            path="/appointments/requests/:id"
+            element={
+              <Protected>
+                <AppointmentRequestDetails />
+              </Protected>
+            }
+          />
+          <Route
+            path="/appointments/:id"
+            element={
+              <Protected>
+                <AppointmentDetailsPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/doctor-appointments/:id"
+            element={
+              <Protected>
+                <DoctorAppointmentDetailsPage />
+              </Protected>
+            }
+          />
         </Routes>
       </div>
     </Router>

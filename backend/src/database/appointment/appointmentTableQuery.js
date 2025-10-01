@@ -9,6 +9,7 @@ const appointmentTableQuery = `
     CREATE TABLE IF NOT EXISTS appointment (
         appointment_id INTEGER REFERENCES appointment_request(appointment_request_id) ON DELETE CASCADE PRIMARY KEY,
         status VARCHAR(11) CHECK (status IN (${validAppointmentStatuses.map(status => `'${status}'`).join(', ')})) DEFAULT 'upcoming',
+        cost NUMERIC(10, 2) CHECK (cost >= 0),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );

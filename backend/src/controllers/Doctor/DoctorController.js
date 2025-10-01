@@ -177,6 +177,29 @@ class DoctorController {
             });
         }
     }
+
+    async removeDoctorFromHospital(req, res) {
+        const { person_id } = req.user;
+
+        try {
+            const result = await DoctorService.removeDoctorFromHospital(person_id);
+
+            return res.status(statusCodes.OK).json({
+                data: result,
+                message: 'Doctor removed from hospital successfully',
+                status: statusCodes.OK,
+                success: true
+            });
+        } catch (error) {
+            console.error(`Error removing doctor from hospital: ${error.message}`);
+            return res.status(error.status || statusCodes.INTERNAL_SERVER_ERROR).json({
+                data: null,
+                message: error.message || 'Unable to Remove Doctor from Hospital',
+                status: error.status || statusCodes.INTERNAL_SERVER_ERROR,
+                success: false
+            });
+        }
+    }
 }
 
 module.exports = new DoctorController();

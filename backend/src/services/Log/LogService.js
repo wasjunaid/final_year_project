@@ -1,5 +1,4 @@
 const { pool } = require("../../config/databaseConfig");
-const { SystemAdminService } = require("../System/systemAdminService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
 
@@ -10,11 +9,6 @@ class LogService {
         }
 
         try {
-            const checkSystemAdminExists = await SystemAdminService.checkSystemAdminExists(person_id);
-            if (!checkSystemAdminExists) {
-                throw new AppError("Only system admins can get logs", statusCodes.BAD_REQUEST);
-            }
-
             const query = {
                 text: `SELECT lg.*,
                 p.first_name,

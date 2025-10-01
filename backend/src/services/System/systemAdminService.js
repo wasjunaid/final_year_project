@@ -3,6 +3,7 @@ const { PersonService } = require("../Person/PersonService");
 const { validSystemAdminRoles } = require("../../database/system/systemAdminTableQuery");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { superAdmin } = require("../../config/backendConfig");
 
 class SystemAdminService {
     static async getSystemAdmin(person_id, role) {
@@ -47,7 +48,11 @@ class SystemAdminService {
             }
             
             const query = {
-                text: `SELECT * FROM system_admin`,
+                text: `SELECT
+                sa.*,
+                p.email
+                FROM system_admin sa
+                JOIN person p ON sa.system_admin_id = p.person_id`,
             };
             const result = await pool.query(query);
             if (result.rows.length === 0) {
@@ -71,9 +76,6 @@ class SystemAdminService {
         if (!email) {
             throw new AppError("email is required", statusCodes.BAD_REQUEST);
         }
-        if (!password) {
-            throw new AppError("password is required", statusCodes.BAD_REQUEST);
-        }
         if (!role) {
             throw new AppError("role is required", statusCodes.BAD_REQUEST);
         }
@@ -85,6 +87,9 @@ class SystemAdminService {
             const checkSuperAdminExists = await this.checkSystemAdminExistsAgainstRole(person_id, 'super admin');
             if (!checkSuperAdminExists) {
                 throw new AppError("Only super admins can create new system admins", statusCodes.BAD_REQUEST);
+            }
+            if (role === 'super admin') {
+                throw new AppError("Cannot create another super admin", statusCodes.BAD_REQUEST);
             }
 
             const person = await PersonService.insertPersonIfNotExists(email);
@@ -191,4 +196,28 @@ class SystemAdminService {
     }
 }
 
-module.exports = { SystemAdminService };
+const createDefaultSuperAdmin = async () => {
+    try {
+        const person = await PersonService.insertPersonIfNotExists(superAdmin.email, superAdmin.password, true);
+
+
+        const query = {
+            text: `INSERT INTO system_admin
+            (system_admin_id, role)
+            VALUES ($1, $2)
+            RETURNING *
+            ON CONFLICT (system_admin_id) DO NOTHING`,
+            values: [person.person_id, 'super admin']
+        };
+        const result = await pool.query(query);
+        if (result.rows.length === 0) {
+            throw new AppError("Error creating default super admin", statusCodes.INTERNAL_SERVER_ERROR);
+        }
+
+        console.log("Default super admin created successfully");
+    } catch (error) {
+        console.error(`Error creating default super admin: ${error.message} ${error.status}`);
+    }
+}
+
+module.exports = { SystemAdminService, createDefaultSuperAdmin };

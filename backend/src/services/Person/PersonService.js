@@ -2,8 +2,10 @@ const { pool } = require("../../config/databaseConfig");
 const { hashPasswordUtil } = require("../../utils/hashPasswordUtil");
 const { verifyPasswordUtil } = require("../../utils/verifyPasswordUtil");
 const { TokenService } = require("../Token/TokenService");
+const { EmailService } = require("../Email/EmailService");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { LogService } = require("../Log/LogService");
 
 class PersonService {
     static async getPerson(person_id) {
@@ -139,8 +141,8 @@ class PersonService {
         }
     }
 
-    static async insertPersonIfNotExists(email, password) {
-        const randomPass = false;
+    static async insertPersonIfNotExists(email, password, is_verified = false) {
+        let randomPass = false;
         if (!email) {
             throw new AppError("Email is required", statusCodes.BAD_REQUEST);
         }
@@ -148,7 +150,7 @@ class PersonService {
             password = Math.random().toString(36).slice(-12);
             randomPass = true;
         }
-
+ 
         try {
             let person;
             const emailExists = await this.checkEmailInUse(email);
@@ -158,8 +160,12 @@ class PersonService {
                 person = await this.getPersonByEmail(email);
             }
 
-            if (randomPass) {
+            if (randomPass && !emailExists) {
                 await EmailService.sendRandomPasswordEmail(email, password);
+            }
+
+            if (is_verified && !person.is_verified) {
+                person = await this.updatePersonIsVerifiedWithoutToken(person.person_id);
             }
 
             return person;
@@ -253,6 +259,8 @@ class PersonService {
             if (result.rows.length === 0) {
                 throw new AppError(`Error updating person`, statusCodes.INTERNAL_SERVER_ERROR);
             }
+
+            await LogService.insertLog(person_id, `Updated person: ${JSON.stringify(updates)}`);
 
             return result.rows[0];
         } catch (error) {
@@ -407,6 +415,34 @@ class PersonService {
             return result.rows[0].person_id;
         } catch (error) {
             console.error(`Error verifying email and password: ${error.message} ${error.status}`);
+            throw error;
+        }
+    }
+
+    static async updatePersonIsVerifiedWithoutToken(person_id) {
+        if (!person_id) {
+            throw new AppError('person_id is required', statusCodes.BAD_REQUEST);
+        }
+
+        try {
+                const query = {
+                text: `UPDATE person
+                SET
+                is_verified = TRUE,
+                updated_at = CURRENT_TIMESTAMP
+                WHERE
+                person_id = $1
+                RETURNING *`,
+                values: [person_id]
+            };
+            const result = await pool.query(query);
+            if (result.rows.length === 0) {
+                throw new AppError(`Error updating verification status`, statusCodes.INTERNAL_SERVER_ERROR);
+            }
+
+            return result.rows[0];
+        } catch (error) {
+            console.error(`Error updating person is verified: ${error.message} ${error.status}`);
             throw error;
         }
     }

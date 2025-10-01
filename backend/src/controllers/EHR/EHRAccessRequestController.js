@@ -4,7 +4,7 @@ const { EHRAccessRequestService } = require("../../services/EHR/EHRAccessRequest
 class EHRAccessRequestController {
     async getEHRAccessRequest(req, res) {
         const { person_id } = req.user;
-        const { patient_id } = req.params;
+        const { patient_id } = req.body;
 
         try {
             const ehrAccessRequest = await EHRAccessRequestService.getEHRAccessRequest(person_id, patient_id);
@@ -74,7 +74,7 @@ class EHRAccessRequestController {
 
     async insertEHRAccessRequest(req, res) {
         const { person_id } = req.user;
-        const { patient_id } = req.params;
+        const { patient_id } = req.body;
 
         try {
             const newRequest = await EHRAccessRequestService.insertEHRAccessRequest(person_id, patient_id);

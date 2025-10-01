@@ -1,88 +1,104 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DataTable from "../../components/DataTable";
+import EndPoints from "../../constants/endpoints";
+import { useUserRole } from "../../hooks/useUserRole";
+import { ROLES } from "../../constants/roles";
+import api from "../../services/api";
+import { type Appointment } from "../../models/Appointment";
+import StatusCodes from "../../constants/StatusCodes";
 
 const columns = [
-  { key: "doctor", label: "Doctor" },
-  { key: "hospital", label: "Hospital" },
-  { key: "dateIn", label: "Date In" },
-  { key: "symptoms", label: "Symptoms" },
+  {
+    key: "doctor",
+    label: "Doctor",
+    render: (row: Appointment) =>
+      `${row.doctor_first_name} ${row.doctor_last_name}`,
+  },
+  {
+    key: "hospital",
+    label: "Hospital",
+    render: (row: Appointment) => row.hospital_name,
+  },
+  { key: "date", label: "Date" },
+  { key: "time", label: "Time" },
+  { key: "reason", label: "Reason" },
   {
     key: "status",
     label: "Status",
-    render: (row: any) => {
+    render: (row: Appointment) => {
       const colorMap: Record<string, string> = {
-        Pending: "text-yellow-500",
-        Confirmed: "text-green-500",
-        Cancelled: "text-red-500",
+        upcoming: "text-yellow-500",
+        "in progress": "text-blue-500",
+        completed: "text-green-500",
+        cancelled: "text-red-500",
       };
-      return <span className={colorMap[row.status]}>{row.status}</span>;
+      return <span className={colorMap[row.status] || ""}>{row.status}</span>;
     },
   },
-  { key: "ehrAccess", label: "EHR Access" },
-];
-
-// Dummy data
-const data = [
-  {
-    doctor: "Dr. Smith",
-    hospital: "City Hospital",
-    dateIn: "22 Sep, 2025 10:24 AM",
-    symptoms: "Fever, Cough",
-    status: "Pending",
-    ehrAccess: "Granted",
-  },
-  {
-    doctor: "Dr. Adams",
-    hospital: "Green Valley Clinic",
-    dateIn: "21 Sep, 2025 02:00 PM",
-    symptoms: "Headache, Nausea",
-    status: "Confirmed",
-    ehrAccess: "Granted",
-  },
-  {
-    doctor: "Dr. Lee",
-    hospital: "Downtown Medical Center",
-    dateIn: "20 Sep, 2025 09:15 AM",
-    symptoms: "Chest Pain",
-    status: "Cancelled",
-    ehrAccess: "Revoked",
-  },
-  {
-    doctor: "Dr. Patel",
-    hospital: "Community Health",
-    dateIn: "19 Sep, 2025 11:30 AM",
-    symptoms: "Back Pain",
-    status: "Pending",
-    ehrAccess: "Granted",
-  },
-  {
-    doctor: "Dr. Khan",
-    hospital: "General Hospital",
-    dateIn: "18 Sep, 2025 04:45 PM",
-    symptoms: "Fatigue, Dizziness",
-    status: "Confirmed",
-    ehrAccess: "Granted",
-  },
-];
-
-const buttons = [
-  { label: "All", value: "All" },
-  { label: "Pending", value: "Pending" },
-  { label: "Confirmed", value: "Confirmed" },
-  { label: "Cancelled", value: "Cancelled" },
 ];
 
 function AppointmentsPage() {
-  return (
-    <div className="flex h-screen justify-center  ">
-      <DataTable
-        columns={columns}
-        data={data}
-        buttons={buttons}
-        searchable={true}
-        onRowClick={(row) =>
-          alert(`You clicked appointment with ${row.doctor} (${row.status})`)
+  const role = useUserRole();
+  const [data, setData] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setLoading(true);
+      setError("");
+      let endpoint = "";
+
+      if (role === ROLES.PATIENT) {
+        endpoint = EndPoints.appointments.patient;
+      } else if (role === ROLES.DOCTOR) {
+        endpoint = EndPoints.appointments.doctor;
+      } else if (
+        role === ROLES.HOSPITAL_ADMIN ||
+        role === ROLES.HOSPITAL_SUB_ADMIN ||
+        role === ROLES.HOSPITAL_FRONT_DESK
+      ) {
+        endpoint = EndPoints.appointments.hospital;
+      } else {
+        setError("Role not supported for appointments");
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await api.get(endpoint);
+        setData(res.data.data || []);
+      } catch (err: any) {
+        if (err.response?.status == StatusCodes.NOT_FOUND) {
+          setData([]);
+        } else {
+          setError(
+            err.response?.data?.message || "Failed to load appointments"
+          );
         }
-      />
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAppointments();
+  }, [role]);
+
+  return (
+    <div className="flex h-full justify-center">
+      {loading && <div>Loading...</div>}
+      {error && <div className="text-red-500">{error}</div>}
+
+      {!loading && !error && (
+        <DataTable
+          columns={columns}
+          data={data}
+          searchable={true}
+          onRowClick={(row) =>
+            navigate(`/appointments/${row.appointment_id}`, { state: row })
+          }
+        />
+      )}
     </div>
   );
 }

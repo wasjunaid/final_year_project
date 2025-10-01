@@ -12,10 +12,12 @@ import EndPoints from "../../constants/endpoints";
 import { useAuth } from "../../hooks/useAuth";
 import WarningCard from "../../components/WarningCard";
 import { ROLES, type UserRole } from "../../constants/roles";
+import type { User } from "../../models/User";
+import { jwtDecode } from "jwt-decode";
 
 function SignInPage() {
   const navigate = useNavigate();
-  const { signIn, user } = useAuth();
+  const { signIn } = useAuth();
 
   // Form state
   const [email, setEmail] = useState("");
@@ -35,13 +37,17 @@ function SignInPage() {
     switch (role) {
       case ROLES.ADMIN:
         return ROUTES.ADMIN_PORTAL;
+      case ROLES.SUPER_ADMIN:
+        return ROUTES.ADMIN_PORTAL;
       case ROLES.PATIENT:
         return ROUTES.PATIENT_PORTAL;
       case ROLES.DOCTOR:
         return ROUTES.DOCTOR_PORTAL;
-      case ROLES.HOSPITAL:
+      case ROLES.HOSPITAL_ADMIN:
         return ROUTES.HOSPITAL_PORTAL;
-      case ROLES.FRONT_DESK:
+      case ROLES.HOSPITAL_SUB_ADMIN:
+        return ROUTES.HOSPITAL_PORTAL;
+      case ROLES.HOSPITAL_FRONT_DESK:
         return ROUTES.FRONT_DESK_PORTAL;
       case ROLES.MEDICAL_CODER:
         return ROUTES.MEDICAL_CODER_PORTAL;
@@ -81,7 +87,12 @@ function SignInPage() {
         if (accessToken && refreshToken) {
           signIn({ accessToken, refreshToken });
         }
-        navigate(rolePortal(user?.role) ?? ROUTES.HOME);
+
+        //TODO: find a better way to pass user-role instead of decoding manually
+        const tempUser = jwtDecode<User>(accessToken);
+        console.log(`User Role on login is: ${tempUser?.role}`);
+
+        navigate(rolePortal(tempUser?.role) ?? ROUTES.HOME);
       } else {
         setError(res.data.message || "Sign in failed");
       }
@@ -138,20 +149,18 @@ function SignInPage() {
         h-screen 
         bg-cover 
         bg-center 
-        bg-[url("${bgImg}")]
         flex 
         justify-center 
         items-center 
       `}
+      style={{ backgroundImage: `url(${bgImg})` }}
     >
       <div className="flex flex-col gap-3 justify-center mx-8 p-8 bg-white rounded-md shadow-md w-full max-w-xl">
         <div className="flex justify-center">
           <img src={logo} className="h-30 mb-2" />
         </div>
-
         {error && <p className="text-center text-red-500">{error}</p>}
         {success && <p className="text-center text-green-500">{success}</p>}
-
         {verifyEmail && (
           <WarningCard>
             <p className="text-center text-yellow-700 font-medium">
@@ -181,7 +190,6 @@ function SignInPage() {
             </button>
           </WarningCard>
         )}
-
         <LabeledInputField
           title="Email"
           required
@@ -201,17 +209,23 @@ function SignInPage() {
           options={[
             { label: "Patient", value: "patient" },
             { label: "Doctor", value: "doctor" },
-            { label: "Hospital", value: "hospital" },
+            { label: "super admin", value: "super admin" },
+            { label: "admin", value: "admin" },
+            { label: "hospital admin", value: "hospital admin" },
+            { label: "hospital sub admin", value: "hospital sub admin" },
+            { label: "hospital front desk", value: "hospital front desk" },
+            // {
+            //   label: "hospital lab technician",
+            //   value: "hospital lab technician",
+            // },
           ]}
         />
-
         <AuthButton
           className="my-2"
           label={loading ? "Signing In ..." : "Sign In"}
           disabled={loading}
           onClick={handleSignIn}
         />
-
         <a
           href={ROUTES.AUTH.FORGOT_PASSWORD}
           className="text-center text-primary"
