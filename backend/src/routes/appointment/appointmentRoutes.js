@@ -4,7 +4,7 @@ const AppointmentController = require("../../controllers/Appointment/Appointment
 const router = express.Router();
 
 router.get(
-    "/:appointment_id",
+    "/appointment-detail/:appointment_id",
     AppointmentController.getAppointmentDetails
 )
 
