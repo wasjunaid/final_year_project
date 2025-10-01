@@ -207,7 +207,7 @@ class NotificationService {
 
     static async insertNotificationsForUpcomingAppointments() {
         try {
-            const appointments = await AppointmentService.getUpcomingAppointments();
+            const appointments = await UpcomingAppointmentService.getUpcomingAppointments();
             if (appointments.length === 0) {
                 throw new AppError("No upcoming appointments found", statusCodes.NOT_FOUND);
             }
