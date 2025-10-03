@@ -6,6 +6,7 @@ export interface IDataTableColumnProps<T> {
   key: keyof T | string;
   label: string;
   render?: (row: T) => ReactNode;
+  maxWidth?: string;
 }
 
 export interface IDataTableButtonProps {
@@ -19,6 +20,7 @@ interface DataTableProps<T> {
   data: T[];
   buttons?: IDataTableButtonProps[];
   defaultFilter?: string;
+  filterKey?: keyof T | string; // Key to filter by, default is 'status'
   searchable?: boolean;
   searchPlaceholder?: string;
   onRowClick?: (row: T) => void;
@@ -29,6 +31,7 @@ function DataTable<T extends Record<string, any>>({
   data,
   buttons = [],
   defaultFilter = "All",
+  filterKey = "status", // Default to 'status' for backward compatibility
   searchable = true,
   searchPlaceholder = "Search...",
   onRowClick,
@@ -37,7 +40,13 @@ function DataTable<T extends Record<string, any>>({
   const [search, setSearch] = useState("");
 
   const filteredData = data.filter((row) => {
-    if (filter !== "All" && row.status !== filter) return false;
+    // Apply filter if filterKey exists and filter is not "All"
+    if (filter !== "All" && filterKey) {
+      const filterValue = row[filterKey as keyof T];
+      if (filterValue !== filter) return false;
+    }
+
+    // Apply search
     if (
       search &&
       !JSON.stringify(row).toLowerCase().includes(search.toLowerCase())
@@ -82,6 +91,7 @@ function DataTable<T extends Record<string, any>>({
                 <th
                   key={col.key.toString()}
                   className="px-6 py-3 font-semibold whitespace-nowrap"
+                  style={col.maxWidth ? { maxWidth: col.maxWidth } : undefined}
                 >
                   {col.label}
                 </th>
@@ -103,7 +113,8 @@ function DataTable<T extends Record<string, any>>({
                   {columns.map((col) => (
                     <td
                       key={col.key.toString()}
-                      className="px-6 py-3 whitespace-nowrap"
+                      className="px-6 py-3 whitespace-nowrap overflow-hidden text-ellipsis"
+                      style={col.maxWidth ? { maxWidth: col.maxWidth } : undefined}
                     >
                       {col.render ? col.render(row) : row[col.key as keyof T]}
                     </td>
