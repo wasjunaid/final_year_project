@@ -25,7 +25,13 @@ function NotificationPage() {
         const res = await api.get(EndPoints.notification.list);
         setNotifications(res.data.data || []);
       } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load notifications");
+        if (err.response?.status === 404) {
+          setNotifications([]);
+        } else {
+          setError(
+            err.response?.data?.message || "Failed to load notifications"
+          );
+        }
       } finally {
         setLoading(false);
       }
