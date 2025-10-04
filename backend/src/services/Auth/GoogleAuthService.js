@@ -31,7 +31,7 @@ passport.use(
                 
                 const email = profile.emails[0].value;
             
-                const person = await PersonService.insertPersonForGoogleAuth(email, randomPassword, profile.name.givenName, profile.name.familyName);
+                const person = await PersonService.insertPersonForGoogleAuth(email, profile.name.givenName, profile.name.familyName);
 
                 if (requestedRole === 'patient') {
                     await PatientService.insertPatientIfNotExists(person.person_id);
