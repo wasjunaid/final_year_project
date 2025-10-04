@@ -26,12 +26,12 @@ function DropDownField({
   ...rest
 }: IDropDownFieldProps) {
   const baseClasses =
-    "w-full py-2 px-3 rounded-md text-black " +
+    `${className} w-full py-2 px-3 rounded-md text-black` +
     "focus:outline-none focus:ring-2 focus:ring-primary " +
     (disabled ? "bg-gray-200 cursor-not-allowed opacity-70" : "bg-grayColor");
 
   return (
-    <div className="relative w-full">
+    <div className={`relative w-full`}>
       {/* Icon (inside, left) */}
       {icon && (
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">

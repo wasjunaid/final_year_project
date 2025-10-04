@@ -44,7 +44,9 @@ function LabeledDropDownFieldWithButton({
   onButtonClick,
 }: ILabeledDropDownFieldWithButtonProps) {
   return (
-    <div className={`w-full ${className}`}>
+    <div
+      className={`w-full bg-grayColor rounded-md px-3 py-2 shadow-sm ${className}`}
+    >
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -54,6 +56,7 @@ function LabeledDropDownFieldWithButton({
         <div className="flex-1">
           <DropDownField
             options={options}
+            className="bg-white"
             icon={icon}
             placeholder={placeholder}
             value={value}

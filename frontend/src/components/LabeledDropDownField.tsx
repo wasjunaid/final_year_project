@@ -12,6 +12,7 @@ interface ILabeledDropDownFieldProps {
   required?: boolean;
   onChange?: React.ChangeEventHandler<HTMLSelectElement>;
   className?: string;
+  dropDownFieldClassName?: string;
   hint?: string;
 }
 
@@ -26,6 +27,7 @@ function LabeledDropDownField({
   required,
   onChange,
   className = "",
+  dropDownFieldClassName = "",
   hint,
 }: ILabeledDropDownFieldProps) {
   return (
@@ -35,6 +37,7 @@ function LabeledDropDownField({
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       <DropDownField
+        className={dropDownFieldClassName}
         options={options}
         icon={icon}
         placeholder={placeholder}
