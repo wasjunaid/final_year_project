@@ -39,7 +39,9 @@ function NavBar({
         px-4 
         py-2 
         bg-white 
-        shadow-sm  
+        shadow-md
+        border-b
+        border-gray-200  
         ${className}
       `}
       style={style}
@@ -59,7 +61,7 @@ function NavBar({
             )}
           </>
         )}
-        <img src={JAW} className="h-12" alt="Logo" />
+        <img src={JAW} className="h-10" alt="Logo" />
       </div>
 
       {/* Right: Notifications (optional) + Profile */}
