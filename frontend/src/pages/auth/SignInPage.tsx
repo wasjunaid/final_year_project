@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import bgImg from "../../assets/images/landing-hero-section.png";
 import logo from "../../assets/icons/JAW-transparent.png";
 import LabeledInputField from "../../components/LabeledInputField";
 import LabeledDropDownField from "../../components/LabeledDropDownField";
@@ -11,9 +10,11 @@ import api from "../../services/api";
 import EndPoints from "../../constants/endpoints";
 import { useAuth } from "../../hooks/useAuth";
 import WarningCard from "../../components/WarningCard";
-import { ROLES, type UserRole } from "../../constants/roles";
 import type { User } from "../../models/User";
 import { jwtDecode } from "jwt-decode";
+import rolePortalRoute from "./utils/rolePortalNavigation";
+import AuthBg from "./components/AuthBg";
+import Card from "../../components/Card";
 
 function SignInPage() {
   const navigate = useNavigate();
@@ -32,30 +33,6 @@ function SignInPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendError, setResendError] = useState("");
   const [resendSuccess, setResendSuccess] = useState("");
-
-  const rolePortal = (role?: UserRole): string | null => {
-    switch (role) {
-      case ROLES.ADMIN:
-        return ROUTES.ADMIN_PORTAL;
-      case ROLES.SUPER_ADMIN:
-        return ROUTES.ADMIN_PORTAL;
-      case ROLES.PATIENT:
-        return ROUTES.PATIENT_PORTAL;
-      case ROLES.DOCTOR:
-        return ROUTES.DOCTOR_PORTAL;
-      case ROLES.HOSPITAL_ADMIN:
-        return ROUTES.HOSPITAL_PORTAL;
-      case ROLES.HOSPITAL_SUB_ADMIN:
-        return ROUTES.HOSPITAL_PORTAL;
-      case ROLES.HOSPITAL_FRONT_DESK:
-        return ROUTES.FRONT_DESK_PORTAL;
-      case ROLES.MEDICAL_CODER:
-        return ROUTES.MEDICAL_CODER_PORTAL;
-
-      default:
-        return null;
-    }
-  };
 
   const handleSignIn = async () => {
     setError("");
@@ -90,9 +67,9 @@ function SignInPage() {
 
         //TODO: find a better way to pass user-role instead of decoding manually
         const tempUser = jwtDecode<User>(accessToken);
-        console.log(`User Role on login is: ${tempUser?.role}`);
+        const role = tempUser?.role;
 
-        navigate(rolePortal(tempUser?.role) ?? ROUTES.HOME);
+        navigate(rolePortalRoute({ role }) ?? ROUTES.HOME);
       } else {
         setError(res.data.message || "Sign in failed");
       }
@@ -144,23 +121,15 @@ function SignInPage() {
   };
 
   return (
-    <div
-      className={`
-        h-screen 
-        bg-cover 
-        bg-center 
-        flex 
-        justify-center 
-        items-center 
-      `}
-      style={{ backgroundImage: `url(${bgImg})` }}
-    >
-      <div className="flex flex-col gap-3 justify-center mx-8 p-8 bg-white rounded-md shadow-md w-full max-w-xl">
+    <AuthBg>
+      <Card className="w-full max-w-xl mx-8">
         <div className="flex justify-center">
           <img src={logo} className="h-30 mb-2" />
         </div>
+
         {error && <p className="text-center text-red-500">{error}</p>}
         {success && <p className="text-center text-green-500">{success}</p>}
+
         {verifyEmail && (
           <WarningCard>
             <p className="text-center text-yellow-700 font-medium">
@@ -190,6 +159,7 @@ function SignInPage() {
             </button>
           </WarningCard>
         )}
+
         <LabeledInputField
           title="Email"
           required
@@ -214,32 +184,35 @@ function SignInPage() {
             { label: "hospital admin", value: "hospital admin" },
             { label: "hospital sub admin", value: "hospital sub admin" },
             { label: "hospital front desk", value: "hospital front desk" },
-            // {
-            //   label: "hospital lab technician",
-            //   value: "hospital lab technician",
-            // },
+            {
+              label: "hospital lab technician",
+              value: "hospital lab technician",
+            },
           ]}
         />
+
         <AuthButton
           className="my-2"
           label={loading ? "Signing In ..." : "Sign In"}
           disabled={loading}
           onClick={handleSignIn}
         />
+
         <a
           href={ROUTES.AUTH.FORGOT_PASSWORD}
           className="text-center text-primary"
         >
           Forgot password?
         </a>
+
         <div className="flex justify-center gap-1">
           <p className="text-center">Don't have an account? </p>
           <a href={ROUTES.AUTH.SIGN_UP} className="text-primary">
             Sign Up
           </a>
         </div>
-      </div>
-    </div>
+      </Card>
+    </AuthBg>
   );
 }
 

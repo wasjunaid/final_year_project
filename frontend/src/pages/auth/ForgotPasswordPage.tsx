@@ -1,10 +1,11 @@
-import bgImg from "../../assets/images/landing-hero-section.png";
 import logo from "../../assets/icons/JAW-transparent.png";
 import LabeledInputField from "../../components/LabeledInputField";
 import AuthButton from "./components/AuthButton";
 import { useState } from "react";
 import api from "../../services/api";
 import EndPoints from "../../constants/endpoints";
+import AuthBg from "./components/AuthBg";
+import Card from "../../components/Card";
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -35,18 +36,8 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <div
-      className={`
-        h-screen 
-        bg-cover 
-        bg-center 
-        flex 
-        justify-center 
-        items-center 
-      `}
-      style={{ backgroundImage: `url(${bgImg})` }}
-    >
-      <div className="flex flex-col gap-4 justify-center mx-8 p-8 bg-white rounded-md shadow-md max-w-md w-full">
+    <AuthBg>
+      <Card className="mx-8 max-w-md w-full">
         <div className="flex justify-center">
           <img src={logo} className="h-30 mb-4" />
         </div>
@@ -68,8 +59,8 @@ function ForgotPasswordPage() {
           onClick={handleForgotPassword}
           disabled={loading}
         />
-      </div>
-    </div>
+      </Card>
+    </AuthBg>
   );
 }
 

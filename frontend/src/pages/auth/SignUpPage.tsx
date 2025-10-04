@@ -1,4 +1,3 @@
-import bgImg from "../../assets/images/landing-hero-section.png";
 import logo from "../../assets/icons/JAW-transparent.png";
 import LabeledInputField from "../../components/LabeledInputField";
 import LabeledDropDownField from "../../components/LabeledDropDownField";
@@ -9,6 +8,8 @@ import PasswordField from "./components/PasswordField";
 import api from "../../services/api";
 import { useState } from "react";
 import EndPoints from "../../constants/endpoints";
+import AuthBg from "./components/AuthBg";
+import Card from "../../components/Card";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -58,18 +59,8 @@ function SignUpPage() {
   };
 
   return (
-    <div
-      className={`
-        h-screen 
-        bg-cover 
-        bg-center 
-        flex 
-        justify-center 
-        items-center 
-      `}
-      style={{ backgroundImage: `url(${bgImg})` }}
-    >
-      <div className="flex flex-col gap-3 justify-center mx-8 p-8 bg-white rounded-md shadow-md w-full max-w-xl">
+    <AuthBg>
+      <Card className="w-full max-w-xl mx-8">
         <div className="flex justify-center">
           <img src={logo} className="h-30 mb-2" />
         </div>
@@ -116,8 +107,8 @@ function SignUpPage() {
             Sign In
           </Link>
         </div>
-      </div>
-    </div>
+      </Card>
+    </AuthBg>
   );
 }
 

@@ -1,4 +1,3 @@
-import bgImg from "../../assets/images/landing-hero-section.png";
 import logo from "../../assets/icons/JAW-transparent.png";
 import AuthButton from "./components/AuthButton";
 import PasswordField from "./components/PasswordField";
@@ -7,6 +6,8 @@ import api from "../../services/api";
 import EndPoints from "../../constants/endpoints";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import ROUTES from "../../constants/routes";
+import AuthBg from "./components/AuthBg";
+import Card from "../../components/Card";
 
 function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -58,18 +59,8 @@ function ResetPasswordPage() {
   };
 
   return (
-    <div
-      className={`
-        h-screen 
-        bg-cover 
-        bg-center 
-        flex 
-        justify-center 
-        items-center
-      `}
-      style={{ backgroundImage: `url(${bgImg})` }}
-    >
-      <div className="flex flex-col gap-4 justify-center mx-8 p-8 bg-white rounded-md shadow-md w-full max-w-xl">
+    <AuthBg>
+      <Card className="mx-8 w-full max-w-xl">
         <div className="flex justify-center">
           <img src={logo} className="h-30 mb-4" />
         </div>
@@ -119,8 +110,8 @@ function ResetPasswordPage() {
             />
           </>
         )}
-      </div>
-    </div>
+      </Card>
+    </AuthBg>
   );
 }
 
