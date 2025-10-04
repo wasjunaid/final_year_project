@@ -20,6 +20,9 @@ const ROUTES = {
   HOSPITAL_PORTAL: "/hospital",
   MEDICAL_CODER_PORTAL: "/medical-coder",
 
+  // other routes
+  APPOINTMENT_DETAIL: "/appointment-detail",
+
   // NOT_FOUND: "/not-found",
 };
 

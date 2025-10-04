@@ -139,11 +139,11 @@ function App() {
             }
           />
           <Route
-            path="/appointments/:id"
+            path={ROUTES.APPOINTMENT_DETAIL}
             element={
-              <Protected>
-                <AppointmentDetailsPage />
-              </Protected>
+              // <Protected>
+              <AppointmentDetailsPage />
+              // </Protected>
             }
           />
           <Route

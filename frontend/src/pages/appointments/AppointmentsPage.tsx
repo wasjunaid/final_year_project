@@ -7,6 +7,7 @@ import { ROLES } from "../../constants/roles";
 import api from "../../services/api";
 import { type Appointment } from "../../models/Appointment";
 import StatusCodes from "../../constants/StatusCodes";
+import ROUTES from "../../constants/routes";
 
 const columns = [
   {
@@ -95,7 +96,7 @@ function AppointmentsPage() {
           data={data}
           searchable={true}
           onRowClick={(row) =>
-            navigate(`/appointments/${row.appointment_id}`, { state: row })
+            navigate(ROUTES.APPOINTMENT_DETAIL, { state: row })
           }
         />
       )}
