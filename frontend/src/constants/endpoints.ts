@@ -3,7 +3,8 @@ const EndPoints = {
     signIn: "/auth/sign-in", //POST
     signUp: "/auth/sign-up", //POST
     refreshToken: "/auth/refresh-jwt", //POST
-    google: "/auth/google",
+    google: "/auth/google", //GET
+    // googleCallback: "/auth/google/callback", //GET (handled by backend)
     forgotPassword: "/token/password-reset", //POST
     resetPassword: "/token/password-reset/reset", //POST
   },
@@ -66,7 +67,6 @@ const EndPoints = {
   },
   logs: "/log", //GET
   documents: {
-    // "/document",
     get: "/document", //GET
     upload: "/document/upload", //POST
   },
@@ -74,11 +74,6 @@ const EndPoints = {
     getAll: "/system/admin", // GET
     create: "/system/admin", // POST
     delete: "/system/admin", // DELETE /:system_admin_id
-  },
-  ehr: {
-    // "/ehr/access-request"
-    // "/ehr/access"
-    // "/ehr"
   },
 } as const;
 

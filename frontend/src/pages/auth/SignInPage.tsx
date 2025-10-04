@@ -15,6 +15,7 @@ import { jwtDecode } from "jwt-decode";
 import rolePortalRoute from "./utils/rolePortalNavigation";
 import AuthBg from "./components/AuthBg";
 import Card from "../../components/Card";
+import GoogleAuthButton from "./components/GoogleAuthButton";
 
 function SignInPage() {
   const navigate = useNavigate();
@@ -154,7 +155,7 @@ function SignInPage() {
               {resendLoading
                 ? "Sending..."
                 : resendSuccess
-                ? "Didn’t receive? Resend"
+                ? "Didn't receive? Resend"
                 : "Send Verification Email"}
             </button>
           </WarningCard>
@@ -211,6 +212,14 @@ function SignInPage() {
             Sign Up
           </a>
         </div>
+
+        <div className="flex items-center my-4">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="px-3 text-gray-500">or</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+
+        <GoogleAuthButton />
       </Card>
     </AuthBg>
   );

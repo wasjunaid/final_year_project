@@ -1,9 +1,4 @@
 const ROUTES = {
-  //tests
-  COMPONENTS_TEST: "/components-test",
-  PATIENT_PORTAL_TEST: "/patient-portal-test",
-  TABLE_COMPONENT_TEST: "/table-component-test",
-
   //auth routes
   AUTH: {
     VERIFY_EMAIL: "/verify-email",
@@ -11,7 +6,7 @@ const ROUTES = {
     RESET_PASSWORD: "/reset-password",
     SIGN_IN: "/sign-in",
     SIGN_UP: "/sign-up",
-    GOOGLE_AUTH_SUCCESS: "/auth/google/success",
+    GOOGLE_AUTH_SUCCESS: "/google/success",
   },
 
   //landing page

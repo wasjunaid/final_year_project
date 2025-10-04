@@ -23,6 +23,7 @@ import EmailVerification from "./pages/auth/EmailVerification";
 import AppointmentRequestDetails from "./pages/appointments/AppointmentRequestDetails";
 import AppointmentDetailsPage from "./pages/appointments/AppointmentDetailPage";
 import DoctorAppointmentDetailsPage from "./pages/doctor/DoctorAppointmentDetailsPage";
+import GoogleAuthSuccess from "./pages/auth/GoogleAuthSuccess";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -62,6 +63,10 @@ function App() {
           />
           <Route path={ROUTES.AUTH.SIGN_UP} element={<SignUpPage />} />
           <Route path={ROUTES.AUTH.SIGN_IN} element={<SignInPage />} />
+          <Route
+            path={ROUTES.AUTH.GOOGLE_AUTH_SUCCESS}
+            element={<GoogleAuthSuccess />}
+          />
 
           {/* Portals */}
           <Route
@@ -123,7 +128,7 @@ function App() {
           {/* landing page */}
           <Route path={ROUTES.HOME} element={<LandingPage />} />
 
-          {/* define more routes here... */}
+          {/* Other Routes */}
 
           <Route
             path="/appointments/requests/:id"
