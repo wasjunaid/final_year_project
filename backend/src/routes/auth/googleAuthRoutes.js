@@ -13,8 +13,7 @@ router.get(
 // Google OAuth callback
 router.get(
   '/google/callback',
-  GoogleAuthController.googleAuthCallback,
-  passport.authenticate('google', { session: false, failureRedirect: '/sign-in?error=google_auth_failed' }),
+  passport.authenticate('google', { session: false, failureRedirect: process.env.FRONTEND_URL + '/sign-in?error=google_auth_failed' }),
   GoogleAuthController.googleAuthSuccess
 );
 

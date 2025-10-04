@@ -27,7 +27,7 @@ class GoogleAuthController {
     async googleAuthSuccess(req, res) {
         const { tokens } = req.user;
         
-        res.redirect(`${FRONTEND_URL}/auth/google/success`
+        res.redirect(`${FRONTEND_URL}/google/success`
             + `?accessToken=${tokens.accessToken}`
             + `&refreshToken=${tokens.refreshToken}`
         );
