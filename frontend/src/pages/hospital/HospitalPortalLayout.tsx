@@ -8,11 +8,13 @@ import {
   FaCalendarAlt,
   FaFileMedical,
   FaUsers,
+  FaUserMd,
 } from "react-icons/fa";
 import AppointmentsPage from "../appointments/AppointmentsPage";
 import NotificationPage from "../notification/NotificaitonPage";
 import HospitalAccountsTabLayout from "./HospitalAccountsTabLayout";
 import HospitalProfile from "./HospitalProfile";
+import HospitalAssciationTabLayout from "./HospitalAssociationTabLayout";
 
 function HospitalPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -22,7 +24,7 @@ function HospitalPortalLayout() {
     { label: "Hospital", icon: <FaHospital />, page: "hospital" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
     { label: "Pannel", icon: <FaFileMedical />, page: "pannel" },
-    // { label: "Doctors", icon: <FaUserMd />, page: "doctors" },
+    { label: "Doctors", icon: <FaUserMd />, page: "doctors_association" },
     // { label: "Coders", icon: <FaUserCog />, page: "coders" },
     { label: "Accounts", icon: <FaUsers />, page: "accounts" },
   ];
@@ -30,13 +32,13 @@ function HospitalPortalLayout() {
   const renderPage = () => {
     switch (selectedPage) {
       case "hospital":
-        return <HospitalProfile/>;
+        return <HospitalProfile />;
       case "appointments":
         return <AppointmentsPage />;
       case "pannel":
         return <h2 className="p-4">🧾 Insurances Page</h2>;
-      case "doctors":
-        return <h2 className="p-4">👨‍⚕️ Doctors Page</h2>;
+      case "doctors_association":
+        return <HospitalAssciationTabLayout />;
       case "coders":
         return <h2 className="p-4">💻 Coders Page</h2>;
       case "accounts":

@@ -28,7 +28,7 @@ function CreateAppointmentPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
-  
+
   // Data loading state
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -43,7 +43,7 @@ function CreateAppointmentPage() {
         const res = await api.get(EndPoints.hospital.get);
         const hospitalOptions = res.data.data.map((h: Hospital) => ({
           value: h.hospital_id,
-          label: h.name
+          label: h.name,
         }));
         setHospitals(hospitalOptions);
       } catch (err: any) {
@@ -73,9 +73,11 @@ function CreateAppointmentPage() {
       if (!hospitalId) return true; // Show all doctors if no hospital selected
       return doctor.hospital_id === parseInt(hospitalId); // Use parseInt for string comparison
     })
-    .map(doctor => ({
+    .map((doctor) => ({
       value: doctor.doctor_id,
-      label: `${doctor.email} ${doctor.specialization ? `(${doctor.specialization})` : ''} - ${doctor.hospital_name || 'No Hospital'}`
+      label: `${doctor.email} ${
+        doctor.specialization ? `(${doctor.specialization})` : ""
+      } - ${doctor.hospital_name || "No Hospital"}`,
     }));
 
   const handleSubmit = async () => {
@@ -93,7 +95,7 @@ function CreateAppointmentPage() {
         doctor_id: doctorId,
         date,
         time,
-        reason
+        reason,
       });
 
       if (res.data.success) {
@@ -106,7 +108,9 @@ function CreateAppointmentPage() {
         setReason("");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create appointment request");
+      setError(
+        err.response?.data?.message || "Failed to create appointment request"
+      );
     } finally {
       setLoading(false);
     }
@@ -124,7 +128,10 @@ function CreateAppointmentPage() {
             setHospitalId(e.target.value);
             setDoctorId(""); // Reset doctor when hospital changes
           }}
-          options={hospitals}
+          options={hospitals.map((h) => ({
+            value: h.hospital_id,
+            label: h.name,
+          }))}
           required
         />
         <div className="w-full"></div>
@@ -138,7 +145,11 @@ function CreateAppointmentPage() {
           options={filteredDoctors}
           disabled={loading}
           required
-          placeholder={hospitalId ? "Select doctor from this hospital" : "Select any doctor"}
+          placeholder={
+            hospitalId
+              ? "Select doctor from this hospital"
+              : "Select any doctor"
+          }
         />
         <div className="w-full"></div>
       </div>
