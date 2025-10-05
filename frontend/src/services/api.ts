@@ -5,7 +5,7 @@ import StatusCodes from "../constants/StatusCodes";
 import { tokenService } from "./tokenService";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:5000",
   headers: {
     "Content-Type": "application/json",
   },
@@ -52,8 +52,8 @@ api.interceptors.response.use(
           refreshToken,
         });
 
-        const newAccessToken = res.data.accessToken;
-        const newRefreshToken = res.data.refreshToken;
+        const newAccessToken = res.data.data.accessToken;
+        const newRefreshToken = res.data.data.refreshToken;
 
         if (!newAccessToken) throw new Error("No access token in refresh");
 
@@ -66,7 +66,8 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         return api(originalRequest);
-      } catch {
+      } catch (err) {
+        console.error("Error refreshing token:", err);
         tokenService.clearTokens();
         window.location.href = ROUTES.AUTH.SIGN_IN;
         return Promise.reject(error);

@@ -16,6 +16,12 @@ router.get(
     DoctorController.getDoctorsForHospital
 );
 
+//TODO: fix this jugar
+router.get(
+    '/getAll',
+    DoctorController.getDoctorsForAppointments
+);
+
 router.get(
     '/appointments',
     allowedRoles(['patient', 'hospital front desk']),

@@ -3,9 +3,15 @@ import { useNavigate } from "react-router-dom";
 import DataTable from "../../components/DataTable";
 import EndPoints from "../../constants/endpoints";
 import { useUserRole } from "../../hooks/useUserRole";
-import { ROLES } from "../../constants/roles";
+import { ROLES, type UserRole } from "../../constants/roles";
 import api from "../../services/api";
 import StatusCodes from "../../constants/StatusCodes";
+import ROUTES from "../../constants/routes";
+import {
+  AppointmentRequestStatus,
+  type AppointmentRequest,
+  type AppointmentRequestStatusType,
+} from "../../models/AppointmentRequest";
 
 // Columns for patient view (includes hospital name)
 const patientColumns = [
@@ -37,19 +43,12 @@ const patientColumns = [
   },
   { key: "reason", label: "Reason" },
   {
-    key: "status",
+    key: "appointment_status",
     label: "Status",
+    maxWidth: "10rem",
     render: (row: any) => (
-      <span
-        className={`${
-          row.status === "active"
-            ? "text-green-500"
-            : row.status === "processing"
-            ? "text-yellow-500"
-            : "text-red-500"
-        }`}
-      >
-        {row.status}
+      <span className={`${getStatusColor(row.appointment_status)}`}>
+        {row.appointment_status}
       </span>
     ),
   },
@@ -90,28 +89,55 @@ const hospitalColumns = [
   },
   { key: "reason", label: "Reason" },
   {
-    key: "status",
+    key: "appointment_status",
     label: "Status",
     render: (row: any) => (
-      <span
-        className={`${
-          row.status === "active"
-            ? "text-green-500"
-            : row.status === "processing"
-            ? "text-yellow-500"
-            : "text-red-500"
-        }`}
-      >
-        {row.status}
+      <span className={`${getStatusColor(row.appointment_status)}`}>
+        {row.appointment_status}
       </span>
     ),
   },
 ];
 
+const buttons = [
+  { label: "All", value: "All" },
+  { label: "Approved", value: "approved" },
+  { label: "Processing", value: "processing" },
+  { label: "Cancelled", value: "cancelled" },
+  { label: "Denied", value: "denied" },
+];
+
+const getEndPoints = (role?: UserRole): string => {
+  switch (role) {
+    case ROLES.PATIENT:
+      return EndPoints.appointments.request.patient;
+    case ROLES.HOSPITAL_ADMIN:
+    case ROLES.HOSPITAL_SUB_ADMIN:
+    case ROLES.HOSPITAL_FRONT_DESK:
+      return EndPoints.appointments.request.hospital;
+    default:
+      return "";
+  }
+};
+
+const getStatusColor = (status: AppointmentRequestStatusType): string => {
+  switch (status) {
+    case AppointmentRequestStatus.approved:
+      return "text-green-500";
+    case AppointmentRequestStatus.processing:
+      return "text-yellow-500";
+    case AppointmentRequestStatus.cancelled:
+    case AppointmentRequestStatus.denied:
+      return "text-red-500";
+    default:
+      return "text-gray-500";
+  }
+};
+
 function AppointmentRequestsPage() {
-  const navigate = useNavigate(); // Add this
+  const navigate = useNavigate();
   const role = useUserRole();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<AppointmentRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -119,17 +145,9 @@ function AppointmentRequestsPage() {
     const fetchRequests = async () => {
       setLoading(true);
       setError("");
-      let endpoint = "";
 
-      if (role === ROLES.PATIENT) {
-        endpoint = EndPoints.appointments.request.patient;
-      } else if (
-        role === ROLES.HOSPITAL_ADMIN ||
-        role === ROLES.HOSPITAL_SUB_ADMIN ||
-        role === ROLES.HOSPITAL_FRONT_DESK
-      ) {
-        endpoint = EndPoints.appointments.request.hospital;
-      } else {
+      const endpoint = getEndPoints(role);
+      if (!endpoint) {
         setError("Role not supported for appointment requests");
         setLoading(false);
         return;
@@ -154,31 +172,26 @@ function AppointmentRequestsPage() {
     fetchRequests();
   }, [role]);
 
-  const handleRowClick = (row: any) => {
-    navigate(`/appointments/requests/${row.appointment_request_id}`);
-  };
-
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Appointment Requests</h2>
+    <div className="">
+      {loading && (
+        <div className="flex justify-center items-center">Loading...</div>
+      )}
 
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      {loading ? (
-        <div>Loading...</div>
-      ) : (
+      {!loading && !error && (
         <DataTable
+          buttons={buttons}
+          defaultFilter="All"
+          filterKey="appointment_status"
           columns={role === ROLES.PATIENT ? patientColumns : hospitalColumns}
           data={data}
           searchable={true}
-          onRowClick={handleRowClick} // Add this
+          onRowClick={(row) =>
+            navigate(ROUTES.APPOINTMENT_REQUEST_DETAILS, { state: row })
+          }
         />
-      )}
-
-      {!loading && data.length === 0 && (
-        <div className="text-gray-500 text-center mt-4">
-          No appointment requests found.
-        </div>
       )}
     </div>
   );

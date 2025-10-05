@@ -30,7 +30,7 @@ function GoogleAuthSuccess() {
 
       setTimeout(() => {
         navigate(rolePortalRoute({ role }) ?? ROUTES.HOME);
-      }, 100);
+      }, 500);
     } else {
       setError("Missing tokens.");
     }

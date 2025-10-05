@@ -1,16 +1,14 @@
 import { useState } from "react";
 import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
-
-// Importing icons from react-icons
 import { FaShareAlt, FaHospital } from "react-icons/fa";
 import AdminHospitalsTabLayout from "./AdminHospitalsTabLayout";
 import AdminHospitalStaffTabLayout from "./AdminHosptalStaffTabLayout";
 import NotificationPage from "../notification/NotificaitonPage";
-import AdminDataSharingTabLayout from "./AdminDataSharingTabLayout";
 import AdminAdminsTabLayout from "./AdminAdminsTabLayout";
 import { useAuth } from "../../hooks/useAuth";
 import { ROLES } from "../../constants/roles";
+import LogsPage from "../logs/LogsPage";
 
 function AdminPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -41,7 +39,7 @@ function AdminPortalLayout() {
       case "hospital_staff":
         return <AdminHospitalStaffTabLayout />;
       case "dataaccess":
-        return <AdminDataSharingTabLayout />;
+        return <LogsPage />;
       case "notifications":
         return <NotificationPage />;
       default:

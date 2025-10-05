@@ -22,7 +22,6 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerification from "./pages/auth/EmailVerification";
 import AppointmentRequestDetails from "./pages/appointments/AppointmentRequestDetails";
 import AppointmentDetailsPage from "./pages/appointments/AppointmentDetailPage";
-import DoctorAppointmentDetailsPage from "./pages/doctor/DoctorAppointmentDetailsPage";
 import GoogleAuthSuccess from "./pages/auth/GoogleAuthSuccess";
 
 interface ProtectedProps {
@@ -131,7 +130,7 @@ function App() {
           {/* Other Routes */}
 
           <Route
-            path="/appointments/requests/:id"
+            path={ROUTES.APPOINTMENT_REQUEST_DETAILS}
             element={
               <Protected>
                 <AppointmentRequestDetails />
@@ -139,18 +138,10 @@ function App() {
             }
           />
           <Route
-            path="/appointments/:id"
+            path={ROUTES.APPOINTMENT_DETAIL}
             element={
               <Protected>
                 <AppointmentDetailsPage />
-              </Protected>
-            }
-          />
-          <Route
-            path="/doctor-appointments/:id"
-            element={
-              <Protected>
-                <DoctorAppointmentDetailsPage />
               </Protected>
             }
           />

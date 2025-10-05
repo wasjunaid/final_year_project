@@ -27,7 +27,7 @@ const EndPoints = {
     dashboard: "/doctor/dashboard",
     profile: "/doctor/", //GET
     getForHospital: "/doctor/hospital/", //GET (:hospital_id)
-    getAll: "/doctor/appointments", //GET
+    getAll: "/doctor/getAll", //GET
   },
   hospital: {
     create: "/hospital/", //POST (name, address)
@@ -64,6 +64,14 @@ const EndPoints = {
       reschedule: "/appointment/request/reschedule/", //PUT (:appointment_request_id)
       cancel: "/appointment/request/cancel/", //PUT (:appointment_request_id)
     },
+  },
+  hospitalAssociationRequest: {
+    person: "/hospital/association-request/person", // GET - Get requests for logged-in person
+    hospital: "/hospital/association-request/hospital/", // GET (:hospital_id) - Get requests for hospital
+    create: "/hospital/association-request/", // POST - Create new request
+    approve: "/hospital/association-request/approve/", // PUT (:hospital_association_request_id)
+    delete: "/hospital/association-request/", // DELETE (:hospital_association_request_id)
+    deleteByPersonAndRole: "/hospital/association-request/person", // DELETE - Delete by person and role
   },
   logs: "/log", //GET
   documents: {

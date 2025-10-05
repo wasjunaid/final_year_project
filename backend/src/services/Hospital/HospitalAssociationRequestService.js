@@ -132,7 +132,7 @@ class HospitalAssociationRequestService {
         if (!role) {
             throw new AppError("role is required", statusCodes.BAD_REQUEST);
         }
-        if (!validHospitalAssocaitionRequestRoles.includes(role)) {
+        if (!validHospitalAssociationRequestRoles.includes(role)) {
             throw new AppError(`Invalid role`, statusCodes.BAD_REQUEST);
         }
 

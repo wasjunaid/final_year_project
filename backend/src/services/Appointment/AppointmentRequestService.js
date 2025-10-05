@@ -18,6 +18,7 @@ class AppointmentRequestService {
       const query = {
         text: `SELECT ar.*,
                 h.name AS hospital_name,
+                ar.status as appointment_status,
                 ad.address AS hospital_address,
                 d.*,
                 p.first_name AS doctor_first_name,
@@ -72,6 +73,7 @@ class AppointmentRequestService {
         text: `SELECT ar.*,
                 p.first_name AS patient_first_name,
                 p.last_name AS patient_last_name,
+                ar.status as appointment_status,
                 p.email AS patient_email,
                 d.*,
                 p2.first_name AS doctor_first_name,
