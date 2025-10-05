@@ -73,6 +73,7 @@ class AppointmentRequestService {
         text: `SELECT ar.*,
                 p.first_name AS patient_first_name,
                 p.last_name AS patient_last_name,
+                ar.status as appointment_status,
                 p.email AS patient_email,
                 d.*,
                 p2.first_name AS doctor_first_name,
