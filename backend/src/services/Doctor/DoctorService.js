@@ -69,6 +69,7 @@ class DoctorService {
         text: `SELECT d.*,
                 p.first_name,
                 p.last_name,
+                p.person_id as doctor_id,
                 p.email,
                 h.hospital_id,
                 h.name AS hospital_name,
