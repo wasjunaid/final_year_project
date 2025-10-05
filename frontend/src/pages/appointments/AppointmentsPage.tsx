@@ -1,14 +1,49 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DataTable from "../../components/DataTable";
+import DataTable, {
+  type IDataTableColumnProps,
+} from "../../components/DataTable";
 import EndPoints from "../../constants/endpoints";
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES, type UserRole } from "../../constants/roles";
 import api from "../../services/api";
-import { type Appointment } from "../../models/Appointment";
+import {
+  AppointmentStatus,
+  type Appointment,
+  type AppointmentStatusType,
+} from "../../models/Appointment";
 import StatusCodes from "../../constants/StatusCodes";
 import ROUTES from "../../constants/routes";
-import getStatusColor from "./utils/getStatusColor";
+
+const getEndpoint = (role?: UserRole): string | null => {
+  switch (role) {
+    case ROLES.PATIENT:
+      return EndPoints.appointments.patient;
+    case ROLES.DOCTOR:
+      return EndPoints.appointments.doctor;
+    case ROLES.HOSPITAL_ADMIN:
+    case ROLES.HOSPITAL_SUB_ADMIN:
+    case ROLES.HOSPITAL_FRONT_DESK:
+      return EndPoints.appointments.hospital;
+    default:
+      return null;
+  }
+};
+
+const getStatusColor = (status: AppointmentStatusType): string => {
+  switch (status) {
+    case AppointmentStatus.upcoming:
+      return "text-blue-500";
+    case AppointmentStatus.completed:
+      return "text-green-500";
+    case AppointmentStatus.cancelled:
+      return "text-red-500";
+    case AppointmentStatus.inProgress:
+      return "text-yellow-500";
+    default:
+      return "text-gray-500";
+  }
+};
 
 // Patient columns (show doctor info)
 const patientColumns = [
@@ -82,7 +117,7 @@ const hospitalColumns = [
 ];
 
 // Get columns based on user role
-const getColumns = (role?: UserRole) => {
+const getColumns = (role?: UserRole): IDataTableColumnProps<Appointment>[] => {
   switch (role) {
     case ROLES.PATIENT:
       return patientColumns;
@@ -116,24 +151,12 @@ function AppointmentsPage() {
     const fetchAppointments = async () => {
       setLoading(true);
       setError("");
-      let endpoint = "";
 
-      switch (role) {
-        case ROLES.PATIENT:
-          endpoint = EndPoints.appointments.patient;
-          break;
-        case ROLES.DOCTOR:
-          endpoint = EndPoints.appointments.doctor;
-          break;
-        case ROLES.HOSPITAL_ADMIN:
-        case ROLES.HOSPITAL_SUB_ADMIN:
-        case ROLES.HOSPITAL_FRONT_DESK:
-          endpoint = EndPoints.appointments.hospital;
-          break;
-        default:
-          setError("Role not supported for appointments");
-          setLoading(false);
-          return;
+      const endpoint = getEndpoint(role);
+      if (!endpoint) {
+        setError("Role not supported for appointments");
+        setLoading(false);
+        return;
       }
 
       try {
@@ -156,7 +179,7 @@ function AppointmentsPage() {
   }, [role]);
 
   return (
-    <div className="flex h-full justify-center">
+    <div className="flex justify-center">
       {loading && (
         <div className="flex justify-center items-center">Loading...</div>
       )}

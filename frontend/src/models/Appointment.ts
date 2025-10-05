@@ -1,6 +1,6 @@
 export interface Appointment {
   appointment_id: number;
-  status: string;
+  status: AppointmentStatusType;
   cost: number;
 
   // formatted by backend as strings
@@ -32,3 +32,13 @@ export interface Appointment {
   // doctor note (EHR response only)
   doctor_note?: string;
 }
+
+export const AppointmentStatus = {
+  upcoming: "upcoming",
+  completed: "completed",
+  cancelled: "cancelled",
+  inProgress: "in progress",
+} as const;
+
+export type AppointmentStatusType =
+  (typeof AppointmentStatus)[keyof typeof AppointmentStatus];
