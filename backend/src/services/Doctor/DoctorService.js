@@ -21,7 +21,7 @@ class DoctorService {
                 a.address as hospital_address
                 FROM doctor d
                 LEFT JOIN hospital h ON d.hospital_id = h.hospital_id
-                JOIN address a ON h.address_id = a.address_id
+                LEFT JOIN address a ON h.address_id = a.address_id
                 WHERE
                 doctor_id = $1`,
         values: [doctor_id],
