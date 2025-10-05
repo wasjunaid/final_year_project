@@ -121,7 +121,7 @@ class HospitalAssociationRequestController {
         const { hospital_association_request_id } = req.params;
 
         try {
-            const approvedRequest = await HospitalAssociationRequestService.approveHospitalAssociationRequest(hospital_association_request_id);
+            const approvedRequest = await HospitalAssociationRequestService.acceptHospitalAssociationRequest(hospital_association_request_id);
 
             return res.status(statusCodes.OK).json({
                 data: approvedRequest,
