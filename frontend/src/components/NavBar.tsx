@@ -41,7 +41,7 @@ function NavBar({
         bg-white 
         shadow-md
         border-b
-        border-gray-200  
+        border-gray-200
         ${className}
       `}
       style={style}
