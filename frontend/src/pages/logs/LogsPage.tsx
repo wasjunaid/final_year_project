@@ -5,17 +5,26 @@ import api from "../../services/api";
 
 const columns = [
   { key: "log_id", label: "ID" },
-  { 
-    key: "person_name", 
+  {
+    key: "person_name",
     label: "Person",
-    render: (row: any) => `${row.first_name} ${row.last_name}`
+    render: (row: any) => `${row.first_name} ${row.last_name}`,
   },
-  { key: "action", label: "Action" },
-  { 
-    key: "created_at", 
+  {
+    key: "action",
+    label: "Action",
+    render: (row: any) => (
+      <span className="w-xl inline-block max-w-[20rem] overflow-y-auto text-wrap whitespace-nowrap">
+        {row.action}
+      </span>
+    ),
+    maxWidth: "20rem",
+  },
+  {
+    key: "created_at",
     label: "Time",
-    render: (row: any) => new Date(row.created_at).toLocaleString()
-  }
+    render: (row: any) => new Date(row.created_at).toLocaleString(),
+  },
 ];
 
 // Filter buttons for common actions
@@ -24,7 +33,7 @@ const buttons = [
   { label: "Sign In", value: "sign in" },
   { label: "Sign Up", value: "sign up" },
   { label: "Profile Update", value: "update profile" },
-  { label: "Document Upload", value: "upload document" }
+  { label: "Document Upload", value: "upload document" },
 ];
 
 function LogsPage() {
@@ -49,12 +58,12 @@ function LogsPage() {
   }, []);
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <h2 className="text-2xl font-bold mb-6">System Logs</h2>
-      
+
       {loading && <div>Loading...</div>}
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      
+
       {!loading && !error && (
         <DataTable
           columns={columns}
@@ -63,6 +72,7 @@ function LogsPage() {
           searchable={true}
           searchPlaceholder="Search logs..."
           defaultFilter="All"
+          filterKey="action"
         />
       )}
     </div>
