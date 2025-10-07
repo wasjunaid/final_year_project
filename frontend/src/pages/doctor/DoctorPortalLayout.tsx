@@ -1,11 +1,18 @@
 import { useState } from "react";
 import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
-import { FaUser, FaCalendarAlt, FaFileAlt } from "react-icons/fa";
+import {
+  FaUser,
+  FaCalendarAlt,
+  FaFileAlt,
+  FaShare,
+  FaHospitalUser,
+} from "react-icons/fa";
 import DoctorProfile from "./DoctorProfile";
 import AppointmentsPage from "../appointments/AppointmentsPage";
 import NotificationPage from "../notification/NotificaitonPage";
 import AssociationRequestsPage from "../association_request/AssociationRequestsPage";
+import DoctorEHRTabLayout from "./DoctorEHRTabLayout";
 
 function DoctorPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -15,10 +22,11 @@ function DoctorPortalLayout() {
     { label: "Profile", icon: <FaUser />, page: "profile" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
     {
-      label: "Hospital Associations",
-      icon: <FaCalendarAlt />,
+      label: "Associations",
+      icon: <FaHospitalUser />,
       page: "association-requests",
     },
+    { label: "EHR", icon: <FaShare />, page: "ehr" },
     { label: "Personal Docs", icon: <FaFileAlt />, page: "personal-docs" },
   ];
 
@@ -30,6 +38,8 @@ function DoctorPortalLayout() {
         return <AppointmentsPage />;
       case "association-requests":
         return <AssociationRequestsPage />;
+      case "ehr":
+        return <DoctorEHRTabLayout />;
       case "personal-docs":
         return <h2 className="p-4">📄 Personal Docs Page</h2>;
       case "notifications":

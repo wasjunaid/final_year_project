@@ -83,14 +83,14 @@ const EndPoints = {
     create: "/system/admin", // POST
     delete: "/system/admin", // DELETE /:system_admin_id
   },
-  ehrAccess: {
-    patient: "/ehr/access/patient/requests", //GET
-    doctor: "/ehr/access/doctor/requests", //GET
-    create: "/ehr/access", //POST
-    updateStatus: "/ehr/access/status", //PUT (:ehr_access_request_id)
-    grant: "/ehr/access/grant", //PUT (:ehr_access_request_id)
-    revoke: "/ehr/access/revoke", //PUT (:ehr_access_request_id)
-  },
+  // ehrAccess: {
+  //   patient: "/ehr/access/patient/requests", //GET
+  //   doctor: "/ehr/access/doctor/requests", //GET
+  //   create: "/ehr/access", //POST
+  //   updateStatus: "/ehr/access/status", //PUT (:ehr_access_request_id)
+  //   grant: "/ehr/access/grant", //PUT (:ehr_access_request_id)
+  //   revoke: "/ehr/access/revoke", //PUT (:ehr_access_request_id)
+  // },
   ehrAccessRequest: {
     get: "/ehr/access-request", //GET
     patient: "/ehr/access-request/patient/requests", //GET
@@ -100,8 +100,8 @@ const EndPoints = {
     revoke: "/ehr/access-request/revoke", //PUT (:ehr_access_request_id)
   },
   ehr: {
-    appointment: "/ehr/appointment", //GET
-    doctor: "/ehr/doctor", //GET
+    appointment: "/ehr/appointment", //POST
+    doctor: "/ehr/doctor", //POST
   },
 } as const;
 

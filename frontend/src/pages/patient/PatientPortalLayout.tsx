@@ -4,18 +4,20 @@ import SideBar, { type ISideBarItem } from "../../components/Sidebar";
 
 // Importing icons from react-icons
 import {
-  FaHome,
+  // FaHome,
   FaUser,
   FaCalendarAlt,
-  FaShareAlt,
+  // FaShareAlt,
   FaFileAlt,
-  FaCreditCard,
+  FaShare,
+  // FaCreditCard,
 } from "react-icons/fa";
 import PatientDemographicsPage from "./PatientDemographicsPage";
 import PatientAppointmentsTabLayout from "./PatientAppointmentsTabLayout";
 import PatientDasboardTab from "./PatientDasboardTab";
 import NotificationPage from "../notification/NotificaitonPage";
 import PatientDocumentsTabLayout from "./PatientDocumentsTabLayout";
+import EHRAccessRequestsPage from "../ehr/EHRAccessRequestsPage";
 
 function PatientPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,7 +28,8 @@ function PatientPortalLayout() {
     { label: "Demographics", icon: <FaUser />, page: "demographics" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
     // { label: "Data Sharing", icon: <FaShareAlt />, page: "datasharing" },
-    { label: "EHR", icon: <FaFileAlt />, page: "ehr" },
+    { label: "Documents", icon: <FaFileAlt />, page: "documents" },
+    { label: "EHR", icon: <FaShare />, page: "ehr" },
     // { label: "Billing", icon: <FaCreditCard />, page: "billing" },
   ];
 
@@ -40,8 +43,10 @@ function PatientPortalLayout() {
         return <PatientAppointmentsTabLayout />;
       case "datasharing":
         return <h2 className="p-4">🔗 Data Sharing Page</h2>;
+      case "documents":
+        return <PatientDocumentsTabLayout />;
       case "ehr":
-        return <PatientDocumentsTabLayout />
+        return <EHRAccessRequestsPage />;
       case "billing":
         return <h2 className="p-4">💳 Billing Page</h2>;
       case "notifications":
