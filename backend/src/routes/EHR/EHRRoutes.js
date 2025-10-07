@@ -3,12 +3,12 @@ const EHRController = require("../../controllers/EHR/EHRController");
 
 const router = express.Router();
 
-router.get(
+router.post(
     "/appointment",
     EHRController.getEHRAgainstAppointment
 );
 
-router.get(
+router.post(
     "/doctor",
     EHRController.getEHRForDoctor
 );
