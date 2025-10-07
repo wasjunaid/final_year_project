@@ -9,12 +9,14 @@ import {
   FaFileMedical,
   FaUsers,
   FaUserMd,
+  FaFileAlt,
 } from "react-icons/fa";
 import AppointmentsPage from "../appointments/AppointmentsPage";
 import NotificationPage from "../notification/NotificaitonPage";
 import HospitalAccountsTabLayout from "./HospitalAccountsTabLayout";
 import HospitalProfile from "./HospitalProfile";
 import HospitalAssciationTabLayout from "./HospitalAssociationTabLayout";
+import HospitalDocumentsTabLayout from "./HospitalDocumentsTabLayout";
 
 function HospitalPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -23,6 +25,7 @@ function HospitalPortalLayout() {
   const sidebarItems: ISideBarItem[] = [
     { label: "Hospital", icon: <FaHospital />, page: "hospital" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
+    { label: "Documents", icon: <FaFileAlt />, page: "documents" },
     { label: "Pannel", icon: <FaFileMedical />, page: "pannel" },
     { label: "Doctors", icon: <FaUserMd />, page: "doctors_association" },
     // { label: "Coders", icon: <FaUserCog />, page: "coders" },
@@ -35,6 +38,8 @@ function HospitalPortalLayout() {
         return <HospitalProfile />;
       case "appointments":
         return <AppointmentsPage />;
+      case "documents":
+        return <HospitalDocumentsTabLayout />;
       case "pannel":
         return <h2 className="p-4">🧾 Insurances Page</h2>;
       case "doctors_association":

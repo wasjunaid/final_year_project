@@ -4,8 +4,9 @@ import SideBar, { type ISideBarItem } from "../../components/Sidebar";
 
 // Importing icons from react-icons
 import FrontDeskAppointmentTabLayout from "./FrontDeskAppointmentTabLayout";
+import FrontDeskDocumentsLayout from "./FrontDeskDocumentsLayout";
 import NotificationPage from "../notification/NotificaitonPage";
-import { FaCalendarAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaFileAlt } from "react-icons/fa";
 
 function FrontDeskPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -14,6 +15,7 @@ function FrontDeskPortalLayout() {
   const sidebarItems: ISideBarItem[] = [
     // { label: "Profile", icon: <FaUser />, page: "profile" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
+    { label: "Documents", icon: <FaFileAlt />, page: "documents" },
   ];
 
   const renderPage = () => {
@@ -22,6 +24,8 @@ function FrontDeskPortalLayout() {
         return <h2 className="p-4">👤 Demographics Page</h2>;
       case "appointments":
         return <FrontDeskAppointmentTabLayout />;
+      case "documents":
+        return <FrontDeskDocumentsLayout />;
       case "notifications":
         return <NotificationPage />;
       default:

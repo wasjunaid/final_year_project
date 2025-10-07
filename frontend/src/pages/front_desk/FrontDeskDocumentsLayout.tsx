@@ -21,7 +21,7 @@ function renderPage(page: PAGE) {
   }
 }
 
-function PatientDocumentsTabLayout() {
+function FrontDeskDocumentsLayout() {
   const [page, setPage] = useState<PAGE>(PAGE.documents);
 
   return (
@@ -46,4 +46,4 @@ function PatientDocumentsTabLayout() {
   );
 }
 
-export default PatientDocumentsTabLayout;
+export default FrontDeskDocumentsLayout;

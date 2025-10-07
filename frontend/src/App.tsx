@@ -23,6 +23,7 @@ import EmailVerification from "./pages/auth/EmailVerification";
 import AppointmentRequestDetails from "./pages/appointments/AppointmentRequestDetails";
 import AppointmentDetailsPage from "./pages/appointments/AppointmentDetailPage";
 import GoogleAuthSuccess from "./pages/auth/GoogleAuthSuccess";
+import DocumentDetailsPage from "./pages/documents/DocumentDetailsPage";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -142,6 +143,14 @@ function App() {
             element={
               <Protected>
                 <AppointmentDetailsPage />
+              </Protected>
+            }
+          />
+          <Route
+            path={ROUTES.DOCUMENT_DETAILS}
+            element={
+              <Protected>
+                <DocumentDetailsPage />
               </Protected>
             }
           />
