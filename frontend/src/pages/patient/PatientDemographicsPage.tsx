@@ -19,6 +19,9 @@ function PatientDemographicsPage() {
     first_name: "",
     last_name: "",
     email: "",
+    address_id: -1,
+    cnic: "",
+    is_verified: false,
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
