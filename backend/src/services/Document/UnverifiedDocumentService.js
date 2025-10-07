@@ -81,31 +81,31 @@ class UnverifiedDocumentService {
     }
 
     static async uploadUnverifiedDocument(person_id, {
-            original_name,
-            file_name,
+            originalname,
+            filename,
             mimetype,
-            file_path,
-            file_size,
+            filepath,
+            filesize,
             document_type,
             detail
         }) {
         if (!person_id) {
             throw new AppError("person_id is required", statusCodes.BAD_REQUEST);
         }
-        if (!original_name) {
-            throw new AppError("original_name is required", statusCodes.BAD_REQUEST);
+        if (!originalname) {
+            throw new AppError("originalname is required", statusCodes.BAD_REQUEST);
         }
-        if (!file_name) {
-            throw new AppError("file_name is required", statusCodes.BAD_REQUEST);
+        if (!filename) {
+            throw new AppError("filename is required", statusCodes.BAD_REQUEST);
         }
         if (!mimetype) {
             throw new AppError("mimetype is required", statusCodes.BAD_REQUEST);
         }
-        if (!file_path) {
-            throw new AppError("file_path is required", statusCodes.BAD_REQUEST);
+        if (!filepath) {
+            throw new AppError("filepath is required", statusCodes.BAD_REQUEST);
         }
-        if (!file_size) {
-            throw new AppError("file_size is required", statusCodes.BAD_REQUEST);
+        if (!filesize) {
+            throw new AppError("filesize is required", statusCodes.BAD_REQUEST);
         }
         if (!document_type) {
             throw new AppError("document_type is required", statusCodes.BAD_REQUEST);
@@ -126,7 +126,7 @@ class UnverifiedDocumentService {
                 VALUES
                 ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 RETURNING *`,
-                values: [document_id, person_id, original_name, file_name, mimetype, file_path, file_size, document_type, detail]
+                values: [document_id, person_id, originalname, filename, mimetype, filepath, filesize, document_type, detail]
             };
             const result = await pool.query(query);
             if (result.rows.length === 0) {

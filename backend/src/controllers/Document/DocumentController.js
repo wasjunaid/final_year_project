@@ -39,7 +39,7 @@ class DocumentController {
             const { person_id } = req.user;
             const { document_type, uploaded_for, appointment_id, detail, lab_test_id } = req.body;
             const { originalname, filename, mimetype, size } = req.file;
-            const filePath = req.file.path;
+            const filepath = req.file.path;
 
             let document;
             if (!uploaded_for) {
@@ -47,8 +47,8 @@ class DocumentController {
                     originalname,
                     filename,
                     mimetype,
-                    filePath,
-                    size,
+                    filepath,
+                    filesize: size,
                     document_type,
                     detail
                 });
@@ -57,9 +57,9 @@ class DocumentController {
                     originalname,
                     filename,
                     mimetype,
-                    filePath,
-                    size,
-                    document_type,
+                    filepath,
+                    filesize: size,
+                    // document_type,
                     detail,
                     uploaded_by: person_id,
                     appointment_id,

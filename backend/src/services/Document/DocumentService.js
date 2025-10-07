@@ -31,11 +31,11 @@ class DocumentService {
     }
 
     static async uploadDocument(person_id, {
-            original_name,
-            file_name,
+            originalname,
+            filename,
             mimetype,
-            file_path,
-            file_size,
+            filepath,
+            filesize,
             document_type,
             detail,
             uploaded_by = -1,
@@ -45,24 +45,26 @@ class DocumentService {
         if (!person_id) {
             throw new AppError("person_id is required", statusCodes.BAD_REQUEST);
         }
-        if (!original_name) {
-            throw new AppError("original_name is required", statusCodes.BAD_REQUEST);
+        if (!originalname) {
+            throw new AppError("originalname is required", statusCodes.BAD_REQUEST);
         }
-        if (!file_name) {
-            throw new AppError("file_name is required", statusCodes.BAD_REQUEST);
+        if (!filename) {
+            throw new AppError("filename is required", statusCodes.BAD_REQUEST);
         }
         if (!mimetype) {
             throw new AppError("mimetype is required", statusCodes.BAD_REQUEST);
         }
-        if (!file_path) {
-            throw new AppError("file_path is required", statusCodes.BAD_REQUEST);
+
+        console.log(`ye ha filepath check kr raha hu: ${filepath}`);
+        if (!filepath) {
+            throw new AppError("filepath is required", statusCodes.BAD_REQUEST);
         }
-        if (!file_size) {
-            throw new AppError("file_size is required", statusCodes.BAD_REQUEST);
+        if (!filesize) {
+            throw new AppError("filesize is required", statusCodes.BAD_REQUEST);
         }
-        if (!document_type) {
-            throw new AppError("document_type is required", statusCodes.BAD_REQUEST);
-        }
+        // if (!document_type) {
+        //     throw new AppError("document_type is required", statusCodes.BAD_REQUEST);
+        // }
         if (!detail) {
             throw new AppError("detail is required", statusCodes.BAD_REQUEST);
         }
@@ -71,23 +73,23 @@ class DocumentService {
             let result;
             if (uploaded_by !== -1 || appointment_id !== -1 || lab_test_id !== -1) {
                 result = await VerifiedDocumentService.uploadVerifiedDocument(person_id, {
-                    original_name,
-                    file_name,
+                    originalname,
+                    filename,
                     mimetype,
-                    file_path,
-                    file_size,
-                    document_type,
+                    filepath,
+                    filesize,
+                    // document_type,
                     uploaded_by,
                     appointment_id,
                     detail
                 });
             } else {
                 result = await UnverifiedDocumentService.uploadUnverifiedDocument(person_id, {
-                    original_name,
-                    file_name,
+                    originalname,
+                    filename,
                     mimetype,
-                    file_path,
-                    file_size,
+                    filepath,
+                    filesize,
                     document_type,
                     detail
                 });
