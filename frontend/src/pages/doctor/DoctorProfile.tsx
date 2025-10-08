@@ -19,6 +19,9 @@ function DoctorProfile() {
     first_name: "",
     last_name: "",
     email: "",
+    address_id: -1,
+    cnic: "",
+    is_verified: false,
   });
   const [doctorForm, setDoctorForm] = useState<Doctor>({
     doctor_id: 0,
@@ -34,7 +37,7 @@ function DoctorProfile() {
   // Add hospital info state
   const [hospitalInfo, setHospitalInfo] = useState({
     hospital_name: "",
-    hospital_address: ""
+    hospital_address: "",
   });
 
   // Fetch person and doctor data on mount
@@ -49,7 +52,7 @@ function DoctorProfile() {
         ]);
         setPerson(personRes.data.data);
         setPersonForm(personRes.data.data);
-        
+
         const doctorData = doctorRes.data.data;
         setDoctor(doctorData);
         setDoctorForm(doctorData);
@@ -58,12 +61,12 @@ function DoctorProfile() {
         if (doctorData.hospital_id) {
           setHospitalInfo({
             hospital_name: doctorData.hospital_name || "Not assigned",
-            hospital_address: doctorData.hospital_address || "Not available"
+            hospital_address: doctorData.hospital_address || "Not available",
           });
         } else {
           setHospitalInfo({
             hospital_name: "Not assigned to any hospital",
-            hospital_address: "N/A"
+            hospital_address: "N/A",
           });
         }
       } catch (err: any) {
@@ -132,7 +135,7 @@ function DoctorProfile() {
 
       <div className="flex items-center justify-between">
         <ProfileInfoCard
-          fullName={`${person.first_name || ''} ${person.last_name || ''}`}
+          fullName={`${person.first_name || ""} ${person.last_name || ""}`}
           email={person.email}
           // subtitle={hospitalInfo.hospital_name} // Add hospital name as subtitle
           imageElement={<img className="h-20" src={profileAvatar} />}
