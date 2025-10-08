@@ -92,7 +92,7 @@ const EndPoints = {
   //   revoke: "/ehr/access/revoke", //PUT (:ehr_access_request_id)
   // },
   ehrAccessRequest: {
-    get: "/ehr/access-request", //GET
+    // get: "/ehr/access-request", //GET
     patient: "/ehr/access-request/patient/requests", //GET
     doctor: "/ehr/access-request/doctor/requests", //GET
     create: "/ehr/access-request", //POST

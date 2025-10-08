@@ -14,7 +14,7 @@ function CreateEHRAccessRequestPage() {
   const [loading, setLoading] = useState(false);
 
   // Form state
-  const [patientId, setPatientId] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
 
   const isDoctor = role === ROLES.DOCTOR;
 
@@ -23,8 +23,8 @@ function CreateEHRAccessRequestPage() {
     setError("");
     setSuccess("");
 
-    if (!patientId.trim()) {
-      setError("Patient ID is required");
+    if (!patientEmail.trim()) {
+      setError("Patient Email is required");
       return;
     }
 
@@ -32,11 +32,11 @@ function CreateEHRAccessRequestPage() {
 
     try {
       await api.post(EndPoints.ehrAccessRequest.create, {
-        patient_id: parseInt(patientId),
+        patient_email: patientEmail,
       });
 
       setSuccess("EHR access request sent successfully!");
-      setPatientId(""); // Clear form on success
+      setPatientEmail(""); // Clear form on success
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create request");
     } finally {
@@ -57,7 +57,6 @@ function CreateEHRAccessRequestPage() {
 
   return (
     <div className="flex flex-col h-full p-6">
-      <p>TODO: maybe change id to email</p>
       {/* Messages */}
       {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
@@ -76,13 +75,13 @@ function CreateEHRAccessRequestPage() {
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <LabeledInputField
-              title="Patient ID"
-              value={patientId}
-              onChange={(e) => setPatientId(e.target.value)}
-              placeholder="Enter the patient's ID number"
-              type="number"
+              title="Patient Email"
+              value={patientEmail}
+              onChange={(e) => setPatientEmail(e.target.value)}
+              placeholder="Enter the patient's email address"
+              type="email"
               required
-              hint="Enter the unique ID of the patient whose EHR you want to access"
+              hint="Enter the Email of the patient whose EHR you want to access"
             />
 
             <div className="border-t border-gray-200 pt-6">
@@ -105,19 +104,8 @@ function CreateEHRAccessRequestPage() {
                   label={loading ? "Sending Request..." : "Send Request"}
                   icon={<FaPaperPlane />}
                   type="submit"
-                  disabled={loading || !patientId.trim()}
+                  disabled={loading || !patientEmail.trim()}
                 />
-                {/* <Button
-                  label="Clear Form"
-                  variant="secondary"
-                  onClick={() => {
-                    setPatientId("");
-                    setError("");
-                    setSuccess("");
-                  }}
-                  type="button"
-                  disabled={loading}
-                /> */}
               </div>
             </div>
           </form>
