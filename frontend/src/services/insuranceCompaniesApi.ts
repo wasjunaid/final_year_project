@@ -8,7 +8,7 @@ import type {
 } from "../models/InsuranceCompany";
 
 export class InsuranceCompanyApi {
-  // GET /insurance-company
+  // GET /insurance/company
   static async getInsuranceCompanies(): Promise<
     ApiResponse<InsuranceCompany[]>
   > {
@@ -16,7 +16,7 @@ export class InsuranceCompanyApi {
     return response.data;
   }
 
-  // POST /insurance-company
+  // POST /insurance/company
   static async createInsuranceCompany(
     body: CreateInsuranceCompanyRequest
   ): Promise<ApiResponse<CreateInsuranceCompanyRequest>> {
@@ -24,23 +24,30 @@ export class InsuranceCompanyApi {
     return response.data;
   }
 
-  // PUT /insurance-company/:id
+  // PUT /insurance/company/:insurance_company_id
   static async updateInsuranceCompany(
-    id: number,
+    insurance_company_id: number,
     body: UpdateInsuranceCompanyRequest
   ): Promise<ApiResponse<UpdateInsuranceCompanyRequest>> {
-    console.log("Updating company with ID:", id, "and data:", body);
     const response = await api.put(
-      `${EndPoints.insuranceCompany.update}/${id}`,
+      EndPoints.insuranceCompany.update.replace(
+        ":insurance_company_id",
+        String(insurance_company_id)
+      ),
       body
     );
     return response.data;
   }
 
-  // DELETE /insurance-company/:id
-  static async deleteInsuranceCompany(id: number): Promise<ApiResponse<null>> {
+  // DELETE /insurance/company/:insurance_company_id
+  static async deleteInsuranceCompany(
+    insurance_company_id: number
+  ): Promise<ApiResponse<null>> {
     const response = await api.delete(
-      `${EndPoints.insuranceCompany.delete}/${id}`
+      EndPoints.insuranceCompany.delete.replace(
+        ":insurance_company_id",
+        String(insurance_company_id)
+      )
     );
     return response.data;
   }

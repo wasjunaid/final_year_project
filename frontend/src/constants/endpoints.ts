@@ -106,8 +106,14 @@ const EndPoints = {
   insuranceCompany: {
     getAll: "/insurance/company", // GET
     create: "/insurance/company", // POST
-    update: "/insurance/company", // PUT (:insurance_company_id)
-    delete: "/insurance/company", // DELETE (:insurance_company_id)
+    update: "/insurance/company/:insurance_company_id", // PUT
+    delete: "/insurance/company/:insurance_company_id", // DELETE
+  },
+  patientInsurance: {
+    getAll: "/patient/insurance", // GET
+    create: "/patient/insurance", // POST
+    update: "/patient/insurance/:patient_insurance_id", // PUT
+    delete: "/patient/insurance/:patient_insurance_id", // DELETE
   },
 } as const;
 

@@ -25,6 +25,10 @@ export const useInsuranceCompanies = () => {
       const response = await InsuranceCompanyApi.getInsuranceCompanies();
       setCompanies(response.data);
     } catch (err: any) {
+      if (err.response?.status === 404) {
+        setCompanies([]);
+        return;
+      }
       setError(
         err.response?.data?.message || "Failed to fetch insurance companies"
       );
@@ -45,7 +49,7 @@ export const useInsuranceCompanies = () => {
       const response = await InsuranceCompanyApi.createInsuranceCompany(data);
 
       // Add the new company to the list
-      setCompanies((prev) => [...prev, response.data]);
+      setCompanies((prev) => [...prev, response.data as InsuranceCompany]);
       setSuccess("Insurance company created successfully");
 
       return true;
