@@ -9,6 +9,7 @@ import AdminAdminsTabLayout from "./AdminAdminsTabLayout";
 import { useAuth } from "../../hooks/useAuth";
 import { ROLES } from "../../constants/roles";
 import LogsPage from "../logs/LogsPage";
+import AdminInsuranceCompanyTabLayout from "./AdminInsuranceCompanyTabLayout";
 
 function AdminPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -25,6 +26,11 @@ function AdminPortalLayout() {
   if (user?.role === ROLES.SUPER_ADMIN) {
     sidebarItems.push(
       { label: "Admins", icon: <FaHospital />, page: "admins" },
+      {
+        label: "Insurance Companies",
+        icon: <FaHospital />,
+        page: "insurance_companies",
+      },
       { label: "Hospitals", icon: <FaHospital />, page: "hospitals" },
       { label: "Hospital Staff", icon: <FaHospital />, page: "hospital_staff" }
     );
@@ -36,6 +42,8 @@ function AdminPortalLayout() {
         return <AdminHospitalsTabLayout />;
       case "admins":
         return <AdminAdminsTabLayout />;
+      case "insurance_companies":
+        return <AdminInsuranceCompanyTabLayout />;
       case "hospital_staff":
         return <AdminHospitalStaffTabLayout />;
       case "dataaccess":
