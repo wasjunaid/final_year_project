@@ -103,6 +103,12 @@ const EndPoints = {
     appointment: "/ehr/appointment", //POST
     doctor: "/ehr/doctor", //POST
   },
+  insuranceCompany: {
+    getAll: "/insurance/company", // GET
+    create: "/insurance/company", // POST
+    update: "/insurance/company", // PUT (:insurance_company_id)
+    delete: "/insurance/company", // DELETE (:insurance_company_id)
+  },
 } as const;
 
 export default EndPoints;
