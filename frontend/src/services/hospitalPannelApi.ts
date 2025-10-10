@@ -21,7 +21,7 @@ class HospitalPannelApi {
 
   static async remove(hospital_pannel_id: number): Promise<ApiResponse<void>> {
     const response = await api.delete(
-      EndPoints.hospitalPannel.getAll.replace(
+      EndPoints.hospitalPannel.remove.replace(
         ":hospital_pannel_id",
         String(hospital_pannel_id)
       )
