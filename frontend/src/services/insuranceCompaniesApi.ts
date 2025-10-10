@@ -28,7 +28,7 @@ export class InsuranceCompanyApi {
   static async updateInsuranceCompany(
     insurance_company_id: number,
     body: UpdateInsuranceCompanyRequest
-  ): Promise<ApiResponse<UpdateInsuranceCompanyRequest>> {
+  ): Promise<ApiResponse<null>> {
     const response = await api.put(
       EndPoints.insuranceCompany.update.replace(
         ":insurance_company_id",

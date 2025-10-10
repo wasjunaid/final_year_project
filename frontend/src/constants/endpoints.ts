@@ -115,6 +115,11 @@ const EndPoints = {
     update: "/patient/insurance/:patient_insurance_id", // PUT
     delete: "/patient/insurance/:patient_insurance_id", // DELETE
   },
+  hospitalPannel: {
+    getAll: "/hospital/pannel", // GET
+    insert: "/hospital/pannel", // POST
+    remove: "/hospital/pannel/:hospital_pannel_id", // DELETE
+  },
 } as const;
 
 export default EndPoints;
