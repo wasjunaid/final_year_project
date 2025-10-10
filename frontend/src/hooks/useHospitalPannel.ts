@@ -1,108 +1,80 @@
-import { useEffect, useState } from "react";
-import type { HospitalPannel } from "../models/HospitalPannel";
-import StatusCodes from "../constants/StatusCodes";
-import HospitalPannelApi from "../services/hospitalPannelApi";
+import { useState, useEffect } from "react";
+import hospitalPannelApi from "../services/hospitalPannelApi";
+import type {
+  HospitalPannel,
+  InsertHospitalPannelRequest,
+} from "../models/HospitalPannel";
 
-export const useHospitalPannel = () => {
-  const [hospitalPannels, setHospitalPannels] = useState<HospitalPannel[]>([]);
-  const [loading, setLoading] = useState(true);
+export function useHospitalPannel() {
+  const [panels, setPanels] = useState<HospitalPannel[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
 
-  //loading states for individual operations
-  const [addPannelLoading, setAddPannelLoading] = useState(false);
-  const [removePannelLoading, setRemovePannelLoading] = useState(false);
-
-  //fetch all hospital pannels
-  const fetchHospitalPannels = async (): Promise<void> => {
+  const fetchPanels = async () => {
     try {
       setLoading(true);
       setError("");
-
-      const response = await HospitalPannelApi.getAll();
-      setHospitalPannels(response.data);
+      const res = await hospitalPannelApi.getAll();
+      setPanels(res.data || []);
     } catch (err: any) {
-      if (err.response?.status === StatusCodes.NOT_FOUND) {
-        setHospitalPannels([]);
-        return;
-      }
-      setError(
-        err.response?.data?.message || "Failed to fetch hospital pannels"
-      );
+      setError(err?.response?.data?.message || "Failed to fetch panel list");
     } finally {
       setLoading(false);
     }
   };
 
-  const addHospitalPannel = async (
-    insurance_company_id: string
-  ): Promise<boolean> => {
+  const insertPanel = async (body: InsertHospitalPannelRequest) => {
     try {
-      setAddPannelLoading(true);
-
-      await HospitalPannelApi.insert({ insurance_company_id });
-
-      //TODO: add local update or fetch again
-
-      setSuccess("Hospital pannel added successfully");
+      setLoading(true);
+      setError("");
+      const res = await hospitalPannelApi.insert(body);
+      setPanels((prev) => [res.data, ...prev]);
+      setSuccess("Panel item added");
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message ?? "Failed to add hospital pannel");
+      setError(err?.response?.data?.message || "Failed to add panel");
       return false;
     } finally {
-      setAddPannelLoading(false);
+      setLoading(false);
     }
   };
 
-  const removeHospitalPannel = async (
-    insurance_company_id: number
-  ): Promise<boolean> => {
+  const removePanel = async (hospital_panel_list_id: number) => {
     try {
-      setRemovePannelLoading(true);
-
-      await HospitalPannelApi.remove(insurance_company_id);
-
-      //TODO: add local update or fetch again
-
-      setSuccess("Hospital pannel removed successfully");
-      return true;
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ?? "Failed to remove hospital pannel"
+      setLoading(true);
+      setError("");
+      await hospitalPannelApi.remove(hospital_panel_list_id);
+      setPanels((prev) =>
+        prev.filter((p) => p.hospital_pannel_list_id !== hospital_panel_list_id)
       );
+      setSuccess("Panel item removed");
+      return true;
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to remove panel");
       return false;
     } finally {
-      setRemovePannelLoading(false);
+      setLoading(false);
     }
   };
 
-  //clear messages
-  const clearMessages = () => {
-    setError("");
-    setSuccess("");
-  };
-
-  //auto fetch on component mount
   useEffect(() => {
-    fetchHospitalPannels();
+    fetchPanels();
   }, []);
 
   return {
-    hospitalPannels,
+    panels,
     loading,
     error,
     success,
-
-    //individual loading states
-    addPannelLoading,
-    removePannelLoading,
-
-    //functions
-    fetchHospitalPannels,
-    addHospitalPannel,
-    removeHospitalPannel,
-
-    //clear messages
-    clearMessages,
+    fetchPanels,
+    insertPanel,
+    removePanel,
+    clearMessages: () => {
+      setError("");
+      setSuccess("");
+    },
   };
-};
+}
+
+export default useHospitalPannel;

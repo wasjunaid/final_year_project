@@ -4,6 +4,7 @@ interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   icon?: ReactNode;
   variant?: "primary" | "secondary" | "danger" | "success" | "warning";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }
 
@@ -12,6 +13,7 @@ function Button({
   icon,
   onClick,
   variant = "primary",
+  size = "md",
   className = "",
   ...rest
 }: IButtonProps) {
@@ -32,18 +34,44 @@ function Button({
     }
   };
 
+  const getSizeStyles = () => {
+    switch (size) {
+      case "xs":
+        return "text-xs px-2 py-0.5";
+      case "sm":
+        return "text-sm px-3 py-1";
+      case "lg":
+        return "text-base px-5 py-2";
+      default:
+        return "text-sm px-4 py-1.5"; // md
+    }
+  };
+
+  const getIconSize = () => {
+    switch (size) {
+      case "xs":
+        return "text-sm";
+      case "sm":
+        return "text-base";
+      case "lg":
+        return "text-xl";
+      default:
+        return "text-lg"; // md
+    }
+  };
+
   return (
     <button
       onClick={onClick}
       {...rest}
-      // className={`inline-flex justify-center items-center gap-2 py-1 px-4 rounded-full
-      //   transition-colors duration-200 bg-primary text-white ${className}`}
-      className={`inline-flex justify-center items-center gap-2 py-1 px-4 rounded-md 
-        transition-colors duration-200 font-medium ${getVariantStyles()} 
+      className={`inline-flex justify-center items-center gap-2 rounded-md 
+        transition-colors duration-200 font-medium ${getVariantStyles()} ${getSizeStyles()} 
         disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {icon && (
-        <span className="flex items-center text-lg text-white">{icon}</span>
+        <span className={`flex items-center ${getIconSize()} text-white`}>
+          {icon}
+        </span>
       )}
       <span>{label}</span>
     </button>
