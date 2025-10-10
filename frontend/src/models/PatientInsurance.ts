@@ -17,6 +17,5 @@ export interface CreatePatientInsuranceRequest {
 }
 
 export interface UpdatePatientInsuranceRequest {
-  insurance_number: number;
   is_primary: boolean;
 }

@@ -18,21 +18,24 @@ import type {
   IDataTableColumnProps,
   IDataTableButtonProps,
 } from "../../components/DataTable";
+import { useAuth } from "../../hooks/useAuth";
 
 function PatientInsurancePage() {
+  const { user } = useAuth();
   const role = useUserRole();
   const {
+    fetchInsurances,
     insurances,
     loading,
-    deleting,
     error,
     success,
+    updateInsurance,
     deleteInsurance,
+    deleting,
     hasInsurances,
     insuranceCount,
     primaryInsuranceCount,
     verifiedInsuranceCount,
-    updateInsurance,
   } = usePatientInsurance();
 
   //   const { companies } = useInsuranceCompanies(); // To get company names
@@ -72,14 +75,14 @@ function PatientInsurancePage() {
     }
   };
 
-  // Handle set as primary
-  const handleSetPrimary = async (insurance: PatientInsurance) => {
-    if (insurance.is_primary) return;
-
-    await updateInsurance(insurance.patient_insurance_id, {
-      insurance_number: insurance.insurance_number,
-      is_primary: true,
+  const handleEditSuccess = async () => {
+    setIsEditModalOpen(false);
+    await updateInsurance(user!.person_id, {
+      is_primary: editingInsurance!.is_primary,
     });
+    console.log("Updated insurance", editingInsurance);
+    // fetch again
+    await fetchInsurances();
   };
 
   // Modal handlers
@@ -186,18 +189,6 @@ function PatientInsurancePage() {
         <div className="flex justify-end gap-2">
           {hasAccess && (
             <div className="flex gap-3">
-              {!insurance.is_primary && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSetPrimary(insurance);
-                  }}
-                  className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                  title="Set as Primary"
-                >
-                  <FaShieldAlt />
-                </button>
-              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -385,10 +376,10 @@ function PatientInsurancePage() {
 
       {/* Edit Insurance Modal */}
       <EditPatientInsuranceModal
-        insurance={editingInsurance}
         isOpen={isEditModalOpen}
         onClose={handleEditModalClose}
-        onSuccess={() => {}}
+        insurance={editingInsurance!}
+        onSuccess={handleEditSuccess}
       />
 
       {/* Create Insurance Modal */}
