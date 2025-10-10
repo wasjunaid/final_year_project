@@ -2,6 +2,7 @@ const { pool } = require("../../config/databaseConfig");
 const { validEHRAccessRequestStatuses } = require("../../database/EHR/EHRAccessRequestTableQuery");
 const { statusCodes } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../utils/AppErrorUtil");
+const { PersonService } = require("../Person/PersonService");
 
 class EHRAccessRequestService {
     static async getEHRAccessRequest(doctor_id, patient_id) {
@@ -76,13 +77,18 @@ class EHRAccessRequestService {
         }
     }
 
-    static async insertEHRAccessRequest(doctor_id, patient_id) {
+    static async insertEHRAccessRequest(doctor_id, patient_email) {
         if (!doctor_id) {
             throw new AppError("doctor_id is required", statusCodes.BAD_REQUEST);
         }
-        if (!patient_id) {
-            throw new AppError("patient_id is required", statusCodes.BAD_REQUEST);
+        if (!patient_email) {
+            throw new AppError("patient_email is required", statusCodes.BAD_REQUEST);
         }
+        const patient = await PersonService.getPersonByEmail(patient_email);
+        if (!patient) {
+            throw new AppError("Patient not found", statusCodes.NOT_FOUND);
+        }
+        const patient_id = patient.person_id;
 
         try {
             const checkExists = await this.checkEHRAccessRequestExists(doctor_id, patient_id);

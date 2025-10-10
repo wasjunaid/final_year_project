@@ -74,10 +74,10 @@ class EHRAccessRequestController {
 
     async insertEHRAccessRequest(req, res) {
         const { person_id } = req.user;
-        const { patient_id } = req.body;
+        const { patient_email } = req.body;
 
         try {
-            const newRequest = await EHRAccessRequestService.insertEHRAccessRequest(person_id, patient_id);
+            const newRequest = await EHRAccessRequestService.insertEHRAccessRequest(person_id, patient_email);
 
             return res.status(statusCodes.CREATED).json({
                 data: newRequest,

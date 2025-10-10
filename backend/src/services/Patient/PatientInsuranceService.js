@@ -73,7 +73,7 @@ class PatientInsuranceService {
 
     static async updatePatientInsurance(patient_id, {
         patient_insurance_id,
-        insurance_number,
+        // insurance_number,
         is_primary
     }) {
         if (!patient_id) {
@@ -82,9 +82,9 @@ class PatientInsuranceService {
         if (!patient_insurance_id) {
             throw new AppError("patient_insurance_id is required", statusCodes.BAD_REQUEST);
         }
-        if (!insurance_number) {
-            throw new AppError("insurance_number is required", statusCodes.BAD_REQUEST);
-        }
+        // if (!insurance_number) {
+        //     throw new AppError("insurance_number is required", statusCodes.BAD_REQUEST);
+        // }
         if (is_primary === undefined) {
             throw new AppError("is_primary is required", statusCodes.BAD_REQUEST);
         }
@@ -92,14 +92,14 @@ class PatientInsuranceService {
         try {
             const query = {
                 text: `UPDATE patient_insurance
-                SET insurance_number = $1,
-                is_primary = $2,
+                SET
+                is_primary = $1,
                 is_verified = false,
                 updated_at = CURRENT_TIMESTAMP
                 WHERE
-                patient_insurance_id = $3
+                patient_insurance_id = $2
                 RETURNING *`,
-                values: [insurance_number, is_primary, patient_insurance_id]
+                values: [is_primary, patient_insurance_id]
             };
             const result = await pool.query(query);
             if (result.rows.length === 0) {

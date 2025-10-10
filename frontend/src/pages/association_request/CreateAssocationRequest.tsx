@@ -10,7 +10,6 @@ import {
 } from "../../models/HospitalAssociationRequest";
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
-import type { IDropdownOption } from "../../components/DropDownField";
 
 const roleOptions = [
   { value: HospitalAssociationRequestRole.doctor, label: "Doctor" },
@@ -36,7 +35,7 @@ function CreateAssociationRequestPage() {
   const [selectedPersonEmail, setSelectedPersonEmail] = useState("");
 
   // Data lists
-  const [persons, setPersons] = useState<IDropdownOption[]>([]);
+  // const [persons, setPersons] = useState<IDropdownOption[]>([]);
 
   // Hospital staff state
   const [hospitalId, setHospitalId] = useState("");
@@ -45,6 +44,7 @@ function CreateAssociationRequestPage() {
   const isHospitalAdmin =
     role === ROLES.HOSPITAL_ADMIN || role === ROLES.HOSPITAL_SUB_ADMIN;
 
+  //TODO find a better way to fetch hospital id
   // Fetch hospital ID for hospital admin/sub admin
   useEffect(() => {
     const fetchHospitalId = async () => {
@@ -68,61 +68,15 @@ function CreateAssociationRequestPage() {
         } finally {
           setFetchingData(false);
         }
+      } else {
+        setError(
+          "Access Denied: Only Hospital Admin and Hospital Sub Admin can create association requests"
+        );
       }
     };
 
     fetchHospitalId();
   }, [isHospitalAdmin]);
-
-  // Fetch doctors or medical coders based on selected role
-  useEffect(() => {
-    const fetchPersons = async () => {
-      if (!isHospitalAdmin || !selectedRole) return;
-
-      setPersons([]);
-      setSelectedPersonEmail("");
-      setError("");
-
-      try {
-        let endpoint = "";
-
-        switch (selectedRole) {
-          case HospitalAssociationRequestRole.doctor:
-            endpoint = EndPoints.doctor.getAll;
-            break;
-          case HospitalAssociationRequestRole.medicalCoder:
-            // TODO: Add medical coder endpoint when available
-            endpoint = "/medical-coder";
-            break;
-          default:
-            endpoint = "";
-            break;
-        }
-
-        const res = await api.get(endpoint);
-        const personOptions = res.data.data.map((p: any) => ({
-          value: p.email,
-          label:
-            p.first_name && p.last_name
-              ? `${p.first_name} ${p.last_name} (${p.email})`
-              : p.email,
-        }));
-        setPersons(personOptions);
-      } catch (err: any) {
-        console.error("Failed to fetch persons:", err);
-        setError(
-          err.response?.data?.message ||
-            `Failed to fetch ${
-              selectedRole === HospitalAssociationRequestRole.doctor
-                ? "doctors"
-                : "medical coders"
-            }`
-        );
-      }
-    };
-
-    fetchPersons();
-  }, [selectedRole, isHospitalAdmin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +85,7 @@ function CreateAssociationRequestPage() {
 
     // Validation
     if (!selectedPersonEmail) {
-      setError("Please select a person");
+      setError("Please Enter email address");
       return;
     }
 
@@ -213,20 +167,16 @@ function CreateAssociationRequestPage() {
 
           {/* Select Person (Doctor/Medical Coder) */}
           {selectedRole && (
-            <LabeledDropDownField
-              label={
+            <LabeledInputField
+              title={
                 selectedRole === HospitalAssociationRequestRole.doctor
-                  ? "Select Doctor"
-                  : "Select Medical Coder"
+                  ? "Enter Email address of Doctor"
+                  : "Enter Email address of Medical Coder"
               }
               value={selectedPersonEmail}
               onChange={(e) => setSelectedPersonEmail(e.target.value)}
-              options={persons}
-              placeholder={
-                persons.length === 0
-                  ? "No available options"
-                  : "Select a person"
-              }
+              placeholder={"Enter email address"}
+              type="email"
               required
             />
           )}

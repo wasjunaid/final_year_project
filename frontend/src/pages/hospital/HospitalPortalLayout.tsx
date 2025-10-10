@@ -17,6 +17,7 @@ import HospitalAccountsTabLayout from "./HospitalAccountsTabLayout";
 import HospitalProfile from "./HospitalProfile";
 import HospitalAssciationTabLayout from "./HospitalAssociationTabLayout";
 import HospitalDocumentsTabLayout from "./HospitalDocumentsTabLayout";
+import HospitalPannelListPage from "../hospital_pannel/HospitalPannelListPage";
 
 function HospitalPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -41,7 +42,7 @@ function HospitalPortalLayout() {
       case "documents":
         return <HospitalDocumentsTabLayout />;
       case "pannel":
-        return <h2 className="p-4">🧾 Insurances Page</h2>;
+        return <HospitalPannelListPage />;
       case "doctors_association":
         return <HospitalAssciationTabLayout />;
       case "coders":

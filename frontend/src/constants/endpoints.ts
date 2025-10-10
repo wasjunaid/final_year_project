@@ -92,7 +92,7 @@ const EndPoints = {
   //   revoke: "/ehr/access/revoke", //PUT (:ehr_access_request_id)
   // },
   ehrAccessRequest: {
-    get: "/ehr/access-request", //GET
+    // get: "/ehr/access-request", //GET
     patient: "/ehr/access-request/patient/requests", //GET
     doctor: "/ehr/access-request/doctor/requests", //GET
     create: "/ehr/access-request", //POST
@@ -102,6 +102,23 @@ const EndPoints = {
   ehr: {
     appointment: "/ehr/appointment", //POST
     doctor: "/ehr/doctor", //POST
+  },
+  insuranceCompany: {
+    getAll: "/insurance/company", // GET
+    create: "/insurance/company", // POST
+    update: "/insurance/company/:insurance_company_id", // PUT
+    delete: "/insurance/company/:insurance_company_id", // DELETE
+  },
+  patientInsurance: {
+    getAll: "/patient/insurance", // GET
+    create: "/patient/insurance", // POST
+    update: "/patient/insurance/:patient_insurance_id", // PUT
+    delete: "/patient/insurance/:patient_insurance_id", // DELETE
+  },
+  hospitalPannel: {
+    getAll: "/hospital/pannel", // GET
+    insert: "/hospital/pannel", // POST
+    remove: "/hospital/pannel/:hospital_pannel_id", // DELETE
   },
 } as const;
 

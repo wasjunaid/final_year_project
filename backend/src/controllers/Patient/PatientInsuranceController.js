@@ -55,12 +55,11 @@ class PatientInsuranceController {
     async updatePatientInsurance(req, res) {
         const { person_id } = req.user;
         const { patient_insurance_id } = req.params;
-        const { insurance_number, is_primary } = req.body;
+        const {  is_primary } = req.body;
 
         try {
             const updatedInsurance = await PatientInsuranceService.updatePatientInsurance(person_id, {
                 patient_insurance_id,
-                insurance_number,
                 is_primary
             });
 
