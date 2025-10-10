@@ -154,7 +154,7 @@ const routes = (app) => {
         PatientInsuranceRouter
     );
     app.use(
-        "/hospital/panel-list",
+        "/hospital/pannel",
         verifyAccessJWT,
         HospitalPanelListRouter
     );
