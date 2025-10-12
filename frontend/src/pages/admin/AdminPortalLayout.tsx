@@ -1,7 +1,7 @@
 import { useState } from "react";
 import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
-import { FaShareAlt, FaHospital } from "react-icons/fa";
+import { FaShareAlt, FaHospital, FaPills } from "react-icons/fa";
 import AdminHospitalsTabLayout from "./AdminHospitalsTabLayout";
 import AdminHospitalStaffTabLayout from "./AdminHosptalStaffTabLayout";
 import NotificationPage from "../notification/NotificaitonPage";
@@ -10,6 +10,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { ROLES } from "../../constants/roles";
 import LogsPage from "../logs/LogsPage";
 import AdminInsuranceCompanyTabLayout from "./AdminInsuranceCompanyTabLayout";
+import MedicinesListPage from "../medicine/MedicinesListPage";
 
 function AdminPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -21,6 +22,15 @@ function AdminPortalLayout() {
   const sidebarItems: ISideBarItem[] = [
     { label: "Data Access", icon: <FaShareAlt />, page: "dataaccess" },
   ];
+
+  // Show medicines for both super admin and admin
+  if (user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.ADMIN) {
+    sidebarItems.push({
+      label: "Medicines",
+      icon: <FaPills />,
+      page: "medicines",
+    });
+  }
 
   // Only show these if SUPER_ADMIN
   if (user?.role === ROLES.SUPER_ADMIN) {
@@ -38,16 +48,18 @@ function AdminPortalLayout() {
 
   const renderPage = () => {
     switch (selectedPage) {
-      case "hospitals":
-        return <AdminHospitalsTabLayout />;
+      case "dataaccess":
+        return <LogsPage />;
+      case "medicines":
+        return <MedicinesListPage />;
       case "admins":
         return <AdminAdminsTabLayout />;
       case "insurance_companies":
         return <AdminInsuranceCompanyTabLayout />;
+      case "hospitals":
+        return <AdminHospitalsTabLayout />;
       case "hospital_staff":
         return <AdminHospitalStaffTabLayout />;
-      case "dataaccess":
-        return <LogsPage />;
       case "notifications":
         return <NotificationPage />;
       default:
