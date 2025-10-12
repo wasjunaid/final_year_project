@@ -10,6 +10,7 @@ import {
   FaUsers,
   FaUserMd,
   FaFileAlt,
+  FaFlask,
 } from "react-icons/fa";
 import AppointmentsPage from "../appointments/AppointmentsPage";
 import NotificationPage from "../notification/NotificaitonPage";
@@ -18,6 +19,7 @@ import HospitalProfile from "./HospitalProfile";
 import HospitalAssciationTabLayout from "./HospitalAssociationTabLayout";
 import HospitalDocumentsTabLayout from "./HospitalDocumentsTabLayout";
 import HospitalPannelListPage from "../hospital_pannel/HospitalPannelListPage";
+import LabTestsPage from "../lab_tests/LabTestsPage";
 
 function HospitalPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -28,6 +30,7 @@ function HospitalPortalLayout() {
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
     { label: "Documents", icon: <FaFileAlt />, page: "documents" },
     { label: "Pannel", icon: <FaFileMedical />, page: "pannel" },
+    { label: "Lab Tests", icon: <FaFlask />, page: "lab_tests" },
     { label: "Doctors", icon: <FaUserMd />, page: "doctors_association" },
     // { label: "Coders", icon: <FaUserCog />, page: "coders" },
     { label: "Accounts", icon: <FaUsers />, page: "accounts" },
@@ -43,6 +46,8 @@ function HospitalPortalLayout() {
         return <HospitalDocumentsTabLayout />;
       case "pannel":
         return <HospitalPannelListPage />;
+      case "lab_tests":
+        return <LabTestsPage />;
       case "doctors_association":
         return <HospitalAssciationTabLayout />;
       case "coders":

@@ -120,6 +120,22 @@ const EndPoints = {
     insert: "/hospital/pannel", // POST
     remove: "/hospital/pannel/:hospital_pannel_id", // DELETE
   },
+  labTest: {
+    getAll: "/lab-test", //GET
+    create: "/lab-test", //POST
+    update: "/lab-test/:lab_test_id", //PUT
+  },
+  medicine: {
+    getAll: "/medicine", //GET
+    create: "/medicine", //POST
+    update: "/medicine/:medicine_id", //PUT
+  },
+  prescription: {
+    getByAppointment: "/prescription/:appointment_id", //GET
+    create: "/prescription", //POST
+    update: "/prescription/:prescription_id", //PUT
+    delete: "/prescription/:prescription_id", //DELETE
+  },
 } as const;
 
 export default EndPoints;
