@@ -13,6 +13,8 @@ import AppointmentsPage from "../appointments/AppointmentsPage";
 import NotificationPage from "../notification/NotificaitonPage";
 import AssociationRequestsPage from "../association_request/AssociationRequestsPage";
 import DoctorEHRTabLayout from "./DoctorEHRTabLayout";
+import PrescriptionsPage from "../prescription/PrescriptionsPage";
+import DocumentsPage from "../documents/DocumentsPage";
 
 function DoctorPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,6 +28,7 @@ function DoctorPortalLayout() {
       icon: <FaHospitalUser />,
       page: "association-requests",
     },
+    { label: "Prescriptions", icon: <FaFileAlt />, page: "prescriptions" },
     { label: "EHR", icon: <FaShare />, page: "ehr" },
     { label: "Personal Docs", icon: <FaFileAlt />, page: "personal-docs" },
   ];
@@ -41,7 +44,9 @@ function DoctorPortalLayout() {
       case "ehr":
         return <DoctorEHRTabLayout />;
       case "personal-docs":
-        return <h2 className="p-4">📄 Personal Docs Page</h2>;
+        return <DocumentsPage />;
+      case "prescriptions":
+        return <PrescriptionsPage />;
       case "notifications":
         return <NotificationPage />;
       default:

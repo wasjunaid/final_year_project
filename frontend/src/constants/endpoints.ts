@@ -131,6 +131,7 @@ const EndPoints = {
     update: "/medicine/:medicine_id", //PUT
   },
   prescription: {
+    getAll: "/prescription", //GET TODO: add this endpoint in backend
     getByAppointment: "/prescription/:appointment_id", //GET
     create: "/prescription", //POST
     update: "/prescription/:prescription_id", //PUT

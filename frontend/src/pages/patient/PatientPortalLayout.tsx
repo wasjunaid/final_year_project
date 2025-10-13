@@ -20,6 +20,7 @@ import NotificationPage from "../notification/NotificaitonPage";
 import PatientDocumentsTabLayout from "./PatientDocumentsTabLayout";
 import EHRAccessRequestsPage from "../ehr/EHRAccessRequestsPage";
 import PatientInsurancePage from "../patient_insurance/PatientInsurancesPage";
+import PrescriptionsPage from "../prescription/PrescriptionsPage";
 
 function PatientPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -32,6 +33,7 @@ function PatientPortalLayout() {
     // { label: "Data Sharing", icon: <FaShareAlt />, page: "datasharing" },
     { label: "Insurance", icon: <FaShieldAlt />, page: "insurance" },
     { label: "Documents", icon: <FaFileAlt />, page: "documents" },
+    { label: "Prescriptions", icon: <FaFileAlt />, page: "prescriptions" },
     { label: "EHR", icon: <FaShare />, page: "ehr" },
     // { label: "Billing", icon: <FaCreditCard />, page: "billing" },
   ];
@@ -54,6 +56,8 @@ function PatientPortalLayout() {
         return <EHRAccessRequestsPage />;
       case "billing":
         return <h2 className="p-4">💳 Billing Page</h2>;
+      case "prescriptions":
+        return <PrescriptionsPage />;
       case "notifications":
         return <NotificationPage />;
       default:
