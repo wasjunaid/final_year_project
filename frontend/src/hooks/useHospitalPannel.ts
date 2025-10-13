@@ -4,6 +4,7 @@ import type {
   HospitalPannel,
   InsertHospitalPannelRequest,
 } from "../models/HospitalPannel";
+import StatusCodes from "../constants/StatusCodes";
 
 export function useHospitalPannel() {
   const [panels, setPanels] = useState<HospitalPannel[]>([]);
@@ -18,6 +19,10 @@ export function useHospitalPannel() {
       const res = await hospitalPannelApi.getAll();
       setPanels(res.data || []);
     } catch (err: any) {
+      if (err?.response?.status === StatusCodes.NOT_FOUND) {
+        setPanels([]);
+        return;
+      }
       setError(err?.response?.data?.message || "Failed to fetch panel list");
     } finally {
       setLoading(false);
