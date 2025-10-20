@@ -25,24 +25,16 @@ function AdminPortalLayout() {
 
   // Show medicines for both super admin and admin
   if (user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.ADMIN) {
-    sidebarItems.push({
-      label: "Medicines",
-      icon: <FaPills />,
-      page: "medicines",
-    });
+    sidebarItems.push({label: "Medicines", icon: <FaPills />, page: "medicines"});
   }
 
   // Only show these if SUPER_ADMIN
   if (user?.role === ROLES.SUPER_ADMIN) {
     sidebarItems.push(
-      { label: "Admins", icon: <FaHospital />, page: "admins" },
-      {
-        label: "Insurance Companies",
-        icon: <FaHospital />,
-        page: "insurance_companies",
-      },
-      { label: "Hospitals", icon: <FaHospital />, page: "hospitals" },
-      { label: "Hospital Staff", icon: <FaHospital />, page: "hospital_staff" }
+      {label: "Admins", icon: <FaHospital />, page: "admins"},
+      {label: "Insurance", icon: <FaHospital />, page: "insurance_companies"},
+      {label: "Hospitals", icon: <FaHospital />, page: "hospitals"},
+      {label: "Hospital Staff", icon: <FaHospital />, page: "hospital_staff"}
     );
   }
 
