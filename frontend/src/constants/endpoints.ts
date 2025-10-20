@@ -14,6 +14,10 @@ const EndPoints = {
   },
   notification: {
     list: "/notification", // GET
+    markAsRead: "/notification/:notification_id", // PUT
+    markAllAsRead: "/notification", // PUT
+    delete: "/notification/:notification_id", // DELETE
+    deleteAll: "/notification", // DELETE
   },
   person: {
     get: "/person", // GET
