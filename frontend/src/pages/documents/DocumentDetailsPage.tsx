@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
-  FaArrowLeft,
   FaDownload,
   FaFileAlt,
   FaUser,
@@ -125,12 +124,6 @@ function DocumentDetailsPage() {
       <div className="max-w-4xl mx-auto w-full">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={() => navigate(ROUTES.DOCUMENTS)}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            <FaArrowLeft />
-          </button>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900">
               {document.original_name}

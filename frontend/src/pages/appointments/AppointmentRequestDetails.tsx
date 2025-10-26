@@ -119,6 +119,8 @@ function AppointmentRequestDetails() {
           }
         }
 
+        console.log("watcht this");
+        console.log((selectedDoctor) || request.doctor_id);
         await api.put(
           `${EndPoints.appointments.request.updateHospitalStatus}/${request.appointment_request_id}`,
           {
@@ -167,7 +169,7 @@ function AppointmentRequestDetails() {
 
     try {
       const res = await api.get(
-        `${EndPoints.doctor.getForHospital}/${request.hospital_id}`
+        `${EndPoints.doctor.getForHospital}${request.hospital_id}`
       );
       setDoctors(res.data.data);
     } catch (error) {

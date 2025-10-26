@@ -41,11 +41,9 @@ function CreateAppointmentPage() {
     const fetchHospitals = async () => {
       try {
         const res = await api.get(EndPoints.hospital.get);
-        const hospitalOptions = res.data.data.map((h: Hospital) => ({
-          value: h.hospital_id,
-          label: h.name,
-        }));
-        setHospitals(hospitalOptions);
+        console.log("Hospital data:", res.data.data);
+        // Store the raw hospital data, not the mapped options
+        setHospitals(res.data.data || []);
       } catch (err: any) {
         setError(err.response?.data?.message || "Failed to load hospitals");
       }
@@ -126,13 +124,15 @@ function CreateAppointmentPage() {
           value={hospitalId}
           onChange={(e) => {
             setHospitalId(e.target.value);
+            console.log("Selected hospital ID:", e.target.value);
             setDoctorId(""); // Reset doctor when hospital changes
           }}
           options={hospitals.map((h) => ({
-            value: h.hospital_id,
+            value: h.hospital_id.toString(), // Convert to string for consistency
             label: h.name,
           }))}
           required
+          placeholder="Choose a hospital"
         />
         <div className="w-full"></div>
       </div>

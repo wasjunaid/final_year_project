@@ -61,8 +61,8 @@ function DocumentsPage() {
   };
 
   const handleViewDocument = (document: Document) => {
-    navigate(`${ROUTES.DOCUMENT_DETAILS}/${document.document_id}`, {
-      state: { document },
+    navigate(`${ROUTES.DOCUMENT_DETAILS.replace(":documentId", document.document_id)}`, {
+      state: { ...document },
     });
   };
 
