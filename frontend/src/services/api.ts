@@ -49,11 +49,11 @@ api.interceptors.response.use(
 
       try {
         const res = await api.post(EndPoints.auth.refreshJWT, {
-          refreshToken,
+          refreshJWT: refreshToken,
         });
 
-        const newAccessToken = res.data.data.accessToken;
-        const newRefreshToken = res.data.data.refreshToken;
+        const newAccessToken = res.data.data.accessJWT;
+        const newRefreshToken = res.data.data.refreshJWT;
 
         if (!newAccessToken) throw new Error("No access token in refresh");
 

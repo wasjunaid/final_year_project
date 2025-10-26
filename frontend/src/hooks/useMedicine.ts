@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import MedicineApi from "../services/medicineApi";
+// import MedicineApi from "../services/medicineApi";
 import type {
   Medicine,
   CreateMedicineRequest,
-  UpdateMedicineRequest,
 } from "../models/Medicine";
 import StatusCodes from "../constants/StatusCodes";
+import { medicineApi } from "../services/MedicineApi";
 
 export function useMedicine() {
   const [items, setItems] = useState<Medicine[]>([]);
@@ -17,7 +17,7 @@ export function useMedicine() {
     try {
       setLoading(true);
       setError("");
-      const res = await MedicineApi.getAll();
+      const res = await medicineApi.getAll();
       setItems(res.data ?? []);
     } catch (err: any) {
       if (err.response?.status === StatusCodes.NOT_FOUND) {
@@ -36,7 +36,7 @@ export function useMedicine() {
     try {
       setLoading(true);
       setError("");
-      const res = await MedicineApi.create(payload);
+      const res = await medicineApi.insert(payload);
       if (res.data) {
         setItems((prev) => [res.data, ...prev]);
       }
@@ -45,30 +45,6 @@ export function useMedicine() {
     } catch (err: any) {
       const message =
         err?.response?.data?.message ?? "Failed to create medicine";
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const update = useCallback(async (payload: UpdateMedicineRequest) => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await MedicineApi.update(payload);
-      if (res.data) {
-        setItems((prev) =>
-          prev.map((item) =>
-            item.medicine_id === payload.medicine_id ? res.data : item
-          )
-        );
-      }
-      setSuccess("Medicine updated");
-      return res.data ?? null;
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ?? "Failed to update medicine";
       setError(message);
       throw err;
     } finally {
@@ -92,7 +68,6 @@ export function useMedicine() {
     success,
     fetchAll,
     create,
-    update,
     clearMessages,
   };
 }

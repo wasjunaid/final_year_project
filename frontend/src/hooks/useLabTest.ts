@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
-import LabTestApi from "../services/labTestApi";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { labTestApi } from "../services/labTestApi";
 import type {
   LabTest,
   CreateLabTestRequest,
   UpdateLabTestRequest,
 } from "../models/LabTest";
+import StatusCodes from "../constants/StatusCodes";
 
 export function useLabTest() {
   const [items, setItems] = useState<LabTest[]>([]);
@@ -16,9 +17,13 @@ export function useLabTest() {
     try {
       setLoading(true);
       setError("");
-      const res = await LabTestApi.getAll();
+      const res = await labTestApi.get();
       setItems(res.data ?? []);
     } catch (err: any) {
+      if (err.response?.status === StatusCodes.NOT_FOUND) {
+        setItems([]);
+        return;
+      }
       const message =
         err?.response?.data?.message ?? "Failed to fetch lab tests";
       setError(message);
@@ -27,69 +32,94 @@ export function useLabTest() {
     }
   }, []);
 
-  const create = useCallback(async (payload: CreateLabTestRequest) => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await LabTestApi.create(payload);
-      if (res.data) {
-        setItems((prev) => [res.data, ...prev]);
+  const create = useCallback(
+    async (data: CreateLabTestRequest): Promise<boolean> => {
+      try {
+        setError("");
+        setSuccess("");
+        const res = await labTestApi.insert(data);
+        setItems((prev) => [...prev, res.data]);
+        setSuccess("Lab test created successfully");
+        return true;
+      } catch (err: any) {
+        const message =
+          err?.response?.data?.message ?? "Failed to create lab test";
+        setError(message);
+        return false;
       }
-      setSuccess("Lab test created");
-      return res.data ?? null;
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ?? "Failed to create lab test";
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
-  const update = useCallback(async (payload: UpdateLabTestRequest) => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await LabTestApi.update(payload);
-      if (res.data) {
+  const update = useCallback(
+    async (id: number, data: UpdateLabTestRequest): Promise<boolean> => {
+      try {
+        setError("");
+        setSuccess("");
+        const res = await labTestApi.update(id, data);
         setItems((prev) =>
           prev.map((item) =>
-            item.lab_test_id === payload.lab_test_id ? res.data : item
+            item.lab_test_id === id ? { ...item, ...res.data } : item
           )
         );
+        setSuccess("Lab test updated successfully");
+        return true;
+      } catch (err: any) {
+        const message =
+          err?.response?.data?.message ?? "Failed to update lab test";
+        setError(message);
+        return false;
       }
-      setSuccess("Lab test updated");
-      return res.data ?? null;
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ?? "Failed to update lab test";
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    },
+    []
+  );
+
+  const remove = useCallback(async (_id: number): Promise<boolean> => {
+    // Note: Delete functionality not available for lab tests
+    setError("Delete functionality is not available for lab tests");
+    return false;
   }, []);
+
+  const getById = useCallback(
+    (id: number): LabTest | undefined => {
+      return items.find((item) => item.lab_test_id === id);
+    },
+    [items]
+  );
 
   const clearMessages = useCallback(() => {
     setError("");
     setSuccess("");
   }, []);
 
+  const memoizedValues = useMemo(
+    () => ({
+      items,
+      loading,
+      error,
+      success,
+      fetchAll,
+      create,
+      update,
+      remove,
+      getById,
+      clearMessages,
+      hasItems: items.length > 0,
+      count: items.length,
+    }),
+    [items, loading, error, success, fetchAll, create, update, remove, getById, clearMessages]
+  );
+
   useEffect(() => {
-    void fetchAll();
+    fetchAll();
   }, [fetchAll]);
 
-  return {
-    items,
-    loading,
-    error,
-    success,
-    fetchAll,
-    create,
-    update,
-    clearMessages,
-  };
-}
+  useEffect(() => {
+    if (success || error) {
+      const timer = setTimeout(clearMessages, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, error, clearMessages]);
 
-export default useLabTest;
+  return memoizedValues;
+}

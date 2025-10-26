@@ -1,130 +1,107 @@
-import { useCallback, useEffect, useState } from "react";
-import PrescriptionApi from "../services/prescriptionApi";
-import { useUserRole } from "./useUserRole";
-import { ROLES } from "../constants/roles";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { prescriptionApi } from "../services/prescriptionApi";
 import type {
   Prescription,
   CreatePrescriptionRequest,
-  UpdatePrescriptionRequest,
 } from "../models/Prescription";
+import StatusCodes from "../constants/StatusCodes";
 
 export function usePrescriptions() {
   const [items, setItems] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const role = useUserRole();
 
-  const fetchAll = useCallback(async () => {
+  const fetchByAppointment = useCallback(async (appointmentId?: number) => {
     try {
       setLoading(true);
       setError("");
-
-      let res;
-      if (role === ROLES.PATIENT) {
-        res = await PrescriptionApi.getAllForPatient();
-      } else if (role === ROLES.DOCTOR) {
-        res = await PrescriptionApi.getAllForDoctor();
-      } else {
-        setItems([]);
-        return [];
-      }
-
-      const data = res.data ?? [];
-      setItems(data);
-      return data;
+      const res = await prescriptionApi.getAgainstAppointment(appointmentId);
+      setItems(res.data ?? []);
     } catch (err: any) {
+      if (err.response?.status === StatusCodes.NOT_FOUND) {
+        setItems([]);
+        return;
+      }
       const message =
         err?.response?.data?.message ?? "Failed to fetch prescriptions";
       setError(message);
-      setItems([]);
-      throw err;
     } finally {
       setLoading(false);
     }
-  }, [role]);
+  }, []);
 
-  const create = useCallback(async (payload: CreatePrescriptionRequest) => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await PrescriptionApi.create(payload);
-      if (res.data) {
-        setItems((prev) => [res.data, ...prev]);
+  const create = useCallback(
+    async (data: CreatePrescriptionRequest): Promise<boolean> => {
+      try {
+        setError("");
+        setSuccess("");
+        const res = await prescriptionApi.insert(data);
+        setItems((prev) => [...prev, res.data]);
+        setSuccess("Prescription created successfully");
+        return true;
+      } catch (err: any) {
+        const message =
+          err?.response?.data?.message ?? "Failed to create prescription";
+        setError(message);
+        return false;
       }
-      setSuccess("Prescription created successfully");
-      return res.data ?? null;
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ?? "Failed to create prescription";
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
-  const update = useCallback(async (payload: UpdatePrescriptionRequest) => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await PrescriptionApi.update(payload);
-      if (res.data) {
-        setItems((prev) =>
-          prev.map((item) =>
-            item.prescription_id === payload.prescription_id ? res.data! : item
-          )
-        );
-      }
-      setSuccess("Prescription updated successfully");
-      return res.data ?? null;
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ?? "Failed to update prescription";
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const getById = useCallback(
+    (id: number): Prescription | undefined => {
+      return items.find((item) => item.prescription_id === id);
+    },
+    [items]
+  );
 
-  const remove = useCallback(async (id: number) => {
-    try {
-      setLoading(true);
-      setError("");
-      await PrescriptionApi.remove(id);
-      setItems((prev) => prev.filter((item) => item.prescription_id !== id));
-      setSuccess("Prescription removed successfully");
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ?? "Failed to remove prescription";
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const getByAppointmentId = useCallback(
+    (appointmentId: number): Prescription[] => {
+      return items.filter((item) => item.appointment_id === appointmentId);
+    },
+    [items]
+  );
 
   const clearMessages = useCallback(() => {
     setError("");
     setSuccess("");
   }, []);
 
+  const memoizedValues = useMemo(
+    () => ({
+      items,
+      loading,
+      error,
+      success,
+      fetchByAppointment,
+      create,
+      getById,
+      getByAppointmentId,
+      clearMessages,
+      hasItems: items.length > 0,
+      count: items.length,
+    }),
+    [
+      items,
+      loading,
+      error,
+      success,
+      fetchByAppointment,
+      create,
+      getById,
+      getByAppointmentId,
+      clearMessages,
+    ]
+  );
+
   useEffect(() => {
-    void fetchAll();
-  }, [fetchAll]);
+    if (success || error) {
+      const timer = setTimeout(clearMessages, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, error, clearMessages]);
 
-  return {
-    items,
-    loading,
-    error,
-    success,
-    fetchAll,
-    create,
-    update,
-    remove,
-    clearMessages,
-  };
+  return memoizedValues;
 }
-
-export default usePrescriptions;
