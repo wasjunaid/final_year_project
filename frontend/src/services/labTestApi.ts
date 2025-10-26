@@ -1,37 +1,29 @@
-import api from "./api";
-import EndPoints from "../constants/endpoints";
-import type { ApiResponse } from "../models/ApiResponse";
-import type {
-  LabTest,
-  CreateLabTestRequest,
-  UpdateLabTestRequest,
-} from "../models/LabTest";
+import api from './api';
+import EndPoints from '../constants/endpoints';
+import type { ApiResponse } from '../models/ApiResponse';
+import type { 
+  LabTest, 
+  CreateLabTestRequest, 
+  UpdateLabTestRequest
+} from '../models/LabTest';
 
-class LabTestApi {
-  static async getAll(): Promise<ApiResponse<LabTest[]>> {
-    const response = await api.get(EndPoints.labTest.getAll);
+export const labTestApi = {
+  // GET /lab-test
+  get: async (): Promise<ApiResponse<LabTest[]>> => {
+    const response = await api.get(EndPoints.labTest.get);
     return response.data;
-  }
+  },
 
-  static async create(
-    payload: CreateLabTestRequest
-  ): Promise<ApiResponse<LabTest>> {
-    const response = await api.post(EndPoints.labTest.create, payload);
+  // POST /lab-test
+  insert: async (data: CreateLabTestRequest): Promise<ApiResponse<LabTest>> => {
+    const response = await api.post(EndPoints.labTest.insert, data);
     return response.data;
-  }
+  },
 
-  static async update(
-    payload: UpdateLabTestRequest
-  ): Promise<ApiResponse<LabTest>> {
-    const response = await api.put(
-      EndPoints.labTest.update.replace(
-        ":lab_test_id",
-        String(payload.lab_test_id)
-      ),
-      payload
-    );
+  // PUT /lab-test/:lab_test_id
+  update: async (lab_test_id: number, data: UpdateLabTestRequest): Promise<ApiResponse<LabTest>> => {
+    const url = EndPoints.labTest.update.replace(':lab_test_id', lab_test_id.toString());
+    const response = await api.put(url, data);
     return response.data;
-  }
-}
-
-export default LabTestApi;
+  },
+};

@@ -2,14 +2,18 @@ export interface EHRAccess {
   ehr_access_id: number;
   patient_id: number;
   doctor_id: number;
-  status: "granted" | "revoked";
+  status: 'PENDING' | 'GRANTED' | 'DENIED' | 'REVOKED';
+  granted_at?: string;
+  revoked_at?: string;
+  expires_at?: string;
   created_at: string;
   updated_at: string;
-  // Joined data
-  doctor_first_name?: string;
-  doctor_last_name?: string;
-  doctor_email?: string;
-  patient_first_name?: string;
-  patient_last_name?: string;
-  patient_email?: string;
+  // Extended fields
+  patient_name?: string;
+  doctor_name?: string;
+}
+
+export interface CreateEHRAccessRequest {
+  patient_id: number;
+  message?: string;
 }

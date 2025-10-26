@@ -1,44 +1,46 @@
 export interface Appointment {
   appointment_id: number;
-  status: AppointmentStatusType;
-  cost: number;
-
-  // formatted by backend as strings
-  date: string; // e.g. "2025-10-01"
-  time: string; // e.g. "14:30"
+  patient_id: number;
+  doctor_id: number;
+  hospital_id: number;
+  date: string;
+  time: string;
   reason: string;
-
+  status: 'PROCESSING' | 'APPROVED' | 'DENIED' | 'CANCELLED' | 'RESCHEDULED' | 'IN_PROGRESS' | 'COMPLETED';
+  appointment_cost: number;
+  lab_test_cost: number;
+  total_cost: number;
+  doctor_note?: string;
+  doctor_completed: boolean;
+  doctor_completed_at?: string;
+  lab_test_required: boolean;
+  lab_test_completed: boolean;
+  lab_test_completed_at?: string;
+  lab_test_completed_by?: number;
+  prescription_required: boolean;
+  prescription_completed: boolean;
+  prescription_completed_at?: string;
+  prescription_completed_by?: number;
+  is_fully_completed: boolean;
   created_at: string;
   updated_at: string;
-
-  // patient info (sometimes optional depending on endpoint)
-  patient_id?: number;
-  patient_first_name?: string;
-  patient_last_name?: string;
-  patient_email?: string;
-
-  // doctor info
-  doctor_id?: number;
-  doctor_first_name?: string;
-  doctor_last_name?: string;
-  doctor_email?: string;
-  specialization?: string; // available in EHR response
-
-  // hospital info
-  hospital_id?: number;
+  // Extended fields from view
+  patient_name?: string;
+  doctor_name?: string;
   hospital_name?: string;
-  hospital_address?: string;
-
-  // doctor note (EHR response only)
-  doctor_note?: string;
 }
 
-export const AppointmentStatus = {
-  upcoming: "upcoming",
-  completed: "completed",
-  cancelled: "cancelled",
-  inProgress: "in progress",
-} as const;
+export interface CreateAppointmentRequest {
+  doctor_id: number;
+  hospital_id: number;
+  date: string;
+  time: string;
+  reason: string;
+}
 
-export type AppointmentStatusType =
-  (typeof AppointmentStatus)[keyof typeof AppointmentStatus];
+export interface AppointmentRescheduleRequest {
+  appointment_id: number;
+  date: string;
+  time: string;
+  reason?: string;
+}

@@ -1,21 +1,26 @@
 export interface PatientInsurance {
   patient_insurance_id: number;
   patient_id: number;
-  insurance_number: number;
-  is_primary: boolean;
+  insurance_company_id: number;
+  policy_number: string;
+  coverage_amount: number;
   is_verified: boolean;
+  verified_at?: string;
   created_at: string;
   updated_at: string;
-  // Joined data (if needed)
+  // Extended fields
+  patient_name?: string;
   insurance_company_name?: string;
-  insurance_company_id?: number;
 }
 
 export interface CreatePatientInsuranceRequest {
-  insurance_number: number;
   insurance_company_id: number;
+  policy_number: string;
+  coverage_amount: number;
 }
 
 export interface UpdatePatientInsuranceRequest {
-  is_primary: boolean;
+  patient_insurance_id: number;
+  policy_number?: string;
+  coverage_amount?: number;
 }

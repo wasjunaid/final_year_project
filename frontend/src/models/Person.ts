@@ -1,22 +1,30 @@
 export interface Person {
-  person_id?: number;
-  first_name: string;
-  last_name: string;
+  person_id: number;
   email: string;
-  // role: UserRole;
-  gender?: GenderType;
-  address_id: number;
+  first_name?: string;
+  last_name?: string;
+  cnic?: string;
   date_of_birth?: string;
-  blood_group?: string;
-  cnic: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  address_id?: number;
+  address?: string;
+  contact_id?: number;
+  country_code?: string;
+  number?: string;
   is_verified: boolean;
-  // add more fields as needed
+  is_person_profile_complete: boolean;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-export const Gender = {
-  male: "M",
-  female: "F",
-  other: "O",
-} as const;
-
-export type GenderType = (typeof Gender)[keyof typeof Gender];
+export interface UpdatePersonRequest {
+  first_name?: string;
+  last_name?: string;
+  cnic?: string;
+  date_of_birth?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  address?: string;
+  country_code?: string;
+  number?: string;
+}

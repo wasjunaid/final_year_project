@@ -48,7 +48,7 @@ api.interceptors.response.use(
       }
 
       try {
-        const res = await api.post(EndPoints.auth.refreshToken, {
+        const res = await api.post(EndPoints.auth.refreshJWT, {
           refreshToken,
         });
 

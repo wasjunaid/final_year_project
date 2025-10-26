@@ -1,57 +1,43 @@
-import EndPoints from "../constants/endpoints";
-import type { ApiResponse } from "../models/ApiResponse";
-import type {
-  CreatePatientInsuranceRequest,
-  PatientInsurance,
+import api from './api';
+import EndPoints from '../constants/endpoints';
+import type { ApiResponse } from '../models/ApiResponse';
+import type { 
+  PatientInsurance, 
+  CreatePatientInsuranceRequest, 
   UpdatePatientInsuranceRequest,
-} from "../models/PatientInsurance";
-import api from "./api";
+} from '../models/PatientInsurance';
 
-export class PatientInsuranceApi {
-  // GET /patient/insurance
-  static async getPatientInsurances(): Promise<
-    ApiResponse<PatientInsurance[]>
-  > {
-    const response = await api.get(EndPoints.patientInsurance.getAll);
+export const patientInsuranceApi = {
+  // GET /patient-insurance
+  get: async (): Promise<ApiResponse<PatientInsurance[]>> => {
+    const response = await api.get(EndPoints.patientInsurance.get);
     return response.data;
-  }
+  },
 
-  // POST /patient/insurance
-  static async createPatientInsurance(
-    body: CreatePatientInsuranceRequest
-  ): Promise<ApiResponse<PatientInsurance>> {
-    const response = await api.post(EndPoints.patientInsurance.create, body);
+  // POST /patient-insurance
+  insert: async (data: CreatePatientInsuranceRequest): Promise<ApiResponse<PatientInsurance>> => {
+    const response = await api.post(EndPoints.patientInsurance.insert, data);
     return response.data;
-  }
+  },
 
-  // PUT /patient/insurance/:patient_insurance_id
-  static async updatePatientInsurance(
-    patient_insurance_id: number,
-    body: UpdatePatientInsuranceRequest
-  ): Promise<ApiResponse<PatientInsurance>> {
-    const response = await api.put(
-      EndPoints.patientInsurance.update.replace(
-        ":patient_insurance_id",
-        String(patient_insurance_id)
-      ),
-      body
-    );
+  // POST /patient-insurance/verify/:patient_insurance_id
+  sendVerificationRequest: async (patient_insurance_id: number): Promise<ApiResponse<null>> => {
+    const url = EndPoints.patientInsurance.sendVerificationRequest.replace(':patient_insurance_id', patient_insurance_id.toString());
+    const response = await api.post(url);
     return response.data;
-  }
+  },
 
-  // DELETE /patient/insurance/:patient_insurance_id
-  static async deletePatientInsurance(
-    patient_insurance_id: number
-  ): Promise<ApiResponse<null>> {
-    const response = await api.delete(
-      EndPoints.patientInsurance.delete.replace(
-        ":patient_insurance_id",
-        String(patient_insurance_id)
-      )
-    );
+  // PUT /patient-insurance/:patient_insurance_id
+  update: async (patient_insurance_id: number, data: UpdatePatientInsuranceRequest): Promise<ApiResponse<PatientInsurance>> => {
+    const url = EndPoints.patientInsurance.update.replace(':patient_insurance_id', patient_insurance_id.toString());
+    const response = await api.put(url, data);
     return response.data;
-  }
-}
+  },
 
-// Default export for flexibility
-export default PatientInsuranceApi;
+  // DELETE /patient-insurance/:patient_insurance_id
+  delete: async (patient_insurance_id: number): Promise<ApiResponse<null>> => {
+    const url = EndPoints.patientInsurance.delete.replace(':patient_insurance_id', patient_insurance_id.toString());
+    const response = await api.delete(url);
+    return response.data;
+  },
+};

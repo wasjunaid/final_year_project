@@ -3,22 +3,23 @@ export interface Prescription {
   appointment_id: number;
   medicine_id: number;
   dosage: string;
-  instruction: string;
+  frequency: string;
+  duration: string;
+  instructions?: string;
+  created_at: string;
+  updated_at: string;
+  // Extended fields
   medicine_name?: string;
-  created_at?: string;
-  updated_at?: string;
+  appointment_date?: string;
+  patient_name?: string;
+  doctor_name?: string;
 }
 
 export interface CreatePrescriptionRequest {
   appointment_id: number;
   medicine_id: number;
   dosage: string;
-  instruction: string;
-}
-
-export interface UpdatePrescriptionRequest {
-  prescription_id: number;
-  medicine_id: number;
-  dosage: string;
-  instruction: string;
+  frequency: string;
+  duration: string;
+  instructions?: string;
 }

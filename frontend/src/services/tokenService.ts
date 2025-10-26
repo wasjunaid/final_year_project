@@ -1,20 +1,31 @@
-// tokenService.ts
-let accessToken: string | null = null;
-let refreshToken: string | null = null;
+interface TokenData {
+  accessToken: string;
+  refreshToken: string;
+}
+
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
 
 export const tokenService = {
-  setTokens: (tokens: { accessToken: string; refreshToken: string }) => {
-    accessToken = tokens.accessToken;
-    refreshToken = tokens.refreshToken;
-    localStorage.setItem("accessToken", tokens.accessToken);
-    localStorage.setItem("refreshToken", tokens.refreshToken);
+  setTokens: (tokens: TokenData): void => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
   },
-  clearTokens: () => {
-    accessToken = null;
-    refreshToken = null;
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+
+  getAccessToken: (): string | null => {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
   },
-  getAccessToken: () => accessToken ?? localStorage.getItem("accessToken"),
-  getRefreshToken: () => refreshToken ?? localStorage.getItem("refreshToken"),
+
+  getRefreshToken: (): string | null => {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  },
+
+  clearTokens: (): void => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  },
+
+  hasTokens: (): boolean => {
+    return !!(tokenService.getAccessToken() && tokenService.getRefreshToken());
+  },
 };
