@@ -3,9 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import type {
   Medicine,
   CreateMedicineRequest,
+  UpdateMedicineRequest,
 } from "../models/Medicine";
 import StatusCodes from "../constants/StatusCodes";
-import { medicineApi } from "../services/MedicineApi";
+import { medicineApi } from "../services/medicineApi";
 
 export function useMedicine() {
   const [items, setItems] = useState<Medicine[]>([]);
@@ -52,6 +53,7 @@ export function useMedicine() {
     }
   }, []);
 
+
   const clearMessages = useCallback(() => {
     setError("");
     setSuccess("");
@@ -68,7 +70,7 @@ export function useMedicine() {
     success,
     fetchAll,
     create,
-    clearMessages,
+  clearMessages,
   };
 }
 

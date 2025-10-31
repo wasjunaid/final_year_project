@@ -11,6 +11,7 @@ interface CreateLabTestModalProps {
   loading?: boolean;
 }
 
+
 function CreateLabTestModal({
   isOpen,
   onClose,
@@ -20,21 +21,12 @@ function CreateLabTestModal({
   const [form, setForm] = useState<CreateLabTestRequest>({
     name: "",
     description: "",
-    category: "",
-    preparation: "",
-    // cost handled separately
+    cost: 0,
   });
-  const [cost, setCost] = useState<string>("");
 
   useEffect(() => {
     if (!isOpen) {
-      setForm({
-        name: "",
-        description: "",
-        category: "",
-        preparation: "",
-      });
-      setCost("");
+      setForm({ name: "", description: "", cost: 0 });
     }
   }, [isOpen]);
 
@@ -46,16 +38,13 @@ function CreateLabTestModal({
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "cost" ? Number(value) : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit({
-      ...form,
-      cost: cost ? Number(cost) : undefined,
-    });
+    await onSubmit(form);
   };
 
   return (
@@ -85,6 +74,7 @@ function CreateLabTestModal({
           </div>
 
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
+
             <LabeledInputField
               title="Name"
               name="name"
@@ -93,26 +83,17 @@ function CreateLabTestModal({
               onChange={handleChange}
               required
             />
-
-            <LabeledInputField
-              title="Category"
-              name="category"
-              placeholder="e.g. Hematology"
-              value={form.category ?? ""}
-              onChange={handleChange}
-            />
-
             <LabeledInputField
               title="Cost"
               name="cost"
-              placeholder="Enter cost (optional)"
+              placeholder="Enter cost"
               type="number"
               min="0"
               step="0.01"
-              value={cost}
-              onChange={(e) => setCost(e.target.value)}
+              value={form.cost}
+              onChange={handleChange}
+              required
             />
-
             <label className="block">
               <span className="text-sm font-medium text-gray-700">
                 Description
@@ -121,20 +102,6 @@ function CreateLabTestModal({
                 name="description"
                 placeholder="Describe the lab test"
                 value={form.description ?? ""}
-                onChange={handleChange}
-                rows={3}
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </label>
-
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">
-                Preparation / Instructions
-              </span>
-              <textarea
-                name="preparation"
-                placeholder="Describe any preparations required"
-                value={form.preparation ?? ""}
                 onChange={handleChange}
                 rows={3}
                 className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FaPlus, FaEdit } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import Button from "../../components/Button";
 import DataTable, {
   type IDataTableColumnProps,
@@ -7,17 +7,15 @@ import DataTable, {
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
 import useMedicine from "../../hooks/useMedicine";
-import UpdateMedicineModal from "./components/UpdateMedicineModal";
 import type { Medicine } from "../../models/Medicine";
 import CreateMedicineModal from "./components/CreateMedicineModal";
 
 function MedicinesListPage() {
   const role = useUserRole();
-  const { items, loading, error, success, create, update, clearMessages } =
+  const { items, loading, error, success, create, clearMessages } =
     useMedicine();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
 
   const canManage = role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN;
 
@@ -50,25 +48,6 @@ function MedicinesListPage() {
         label: "Updated",
         render: (row) =>
           row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "—",
-      },
-      {
-        key: "actions",
-        label: "Actions",
-        render: (row) =>
-          canManage ? (
-            <Button
-              label="Edit"
-              icon={<FaEdit />}
-              size="xs"
-              variant="secondary"
-              onClick={(event) => {
-                event.stopPropagation();
-                setEditingMedicine(row);
-              }}
-            />
-          ) : (
-            "—"
-          ),
       },
     ],
     [canManage]
@@ -137,19 +116,6 @@ function MedicinesListPage() {
           setIsCreateModalOpen(false);
         }}
       />
-
-      {editingMedicine && (
-        <UpdateMedicineModal
-          isOpen={!!editingMedicine}
-          medicine={editingMedicine}
-          loading={loading}
-          onClose={() => setEditingMedicine(null)}
-          onSubmit={async (payload) => {
-            await update(payload);
-            setEditingMedicine(null);
-          }}
-        />
-      )}
     </div>
   );
 }

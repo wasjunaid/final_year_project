@@ -2,8 +2,7 @@ import logo from "../../assets/icons/JAW-transparent.png";
 import LabeledInputField from "../../components/LabeledInputField";
 import AuthButton from "./components/AuthButton";
 import { useState } from "react";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+import { authApi } from "../../services/authApi";
 import AuthBg from "./components/AuthBg";
 import Card from "../../components/Card";
 
@@ -22,11 +21,11 @@ function ForgotPasswordPage() {
     }
     setLoading(true);
     try {
-      const res = await api.post(EndPoints.auth.forgotPassword, { email });
-      if (res.data.success) {
-        setSuccess(res.data.message || "Reset link sent to your email.");
+      const response = await authApi.sendOrResendEmailPasswordResetToken({ email });
+      if (response.success) {
+        setSuccess(response.message || "Reset link sent to your email.");
       } else {
-        setError(res.data.message || "Failed to send reset link.");
+        setError(response.message || "Failed to send reset link.");
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to send reset link.");

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
+import { useUserRole } from "../../hooks/useUserRole";
+import { ROLES } from "../../constants/roles";
 
 // Importing icons from react-icons
 import FrontDeskAppointmentTabLayout from "./FrontDeskAppointmentTabLayout";
@@ -9,8 +11,23 @@ import NotificationPage from "../notification/NotificaitonPage";
 import { FaCalendarAlt, FaFileAlt } from "react-icons/fa";
 
 function FrontDeskPortalLayout() {
+  const role = useUserRole();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedPage, setSelectedPage] = useState("appointments");
+
+  // Check if user has front desk access
+  const isFrontDesk = role === ROLES.HOSPITAL_FRONT_DESK;
+  
+  if (!isFrontDesk) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center text-red-500">
+          <p className="text-lg mb-2">Access Denied</p>
+          <p>Only hospital front desk staff can access this area</p>
+        </div>
+      </div>
+    );
+  }
 
   const sidebarItems: ISideBarItem[] = [
     // { label: "Profile", icon: <FaUser />, page: "profile" },

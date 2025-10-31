@@ -1,29 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import DataTable from "../../components/DataTable";
-import EndPoints from "../../constants/endpoints";
-import api from "../../services/api";
+import { useHospitalStaff } from "../../hooks/useHospitalStaff";
 
 function HospitalStaffPage() {
-  const [staff, setStaff] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { 
+    staff, 
+    loading, 
+    error, 
+    success,
+    getAllStaff, 
+    deleteStaff,
+    clearMessages 
+  } = useHospitalStaff();
 
   // Fetch all hospital staff on mount
   useEffect(() => {
     const fetchStaff = async () => {
-      setLoading(true);
-      setError("");
       try {
-        const res = await api.get(EndPoints.admin.allHospitals);
-        setStaff(res.data.data || []);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load staff");
-      } finally {
-        setLoading(false);
+        await getAllStaff();
+      } catch (err) {
+        // Error handled by hook
       }
     };
     fetchStaff();
-  }, []);
+  }, [getAllStaff]);
 
   const handleDelete = async (staffId: number) => {
     if (!window.confirm("Are you sure you want to remove this staff member?")) {
@@ -31,12 +31,23 @@ function HospitalStaffPage() {
     }
 
     try {
-      await api.delete(`${EndPoints.hospitalStaff.delete}/${staffId}`);
-      setStaff(staff.filter((s) => s.hospital_staff_id !== staffId));
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to delete staff member");
+      await deleteStaff(staffId);
+      // Refresh the list
+      await getAllStaff();
+    } catch (err) {
+      // Error handled by hook
     }
   };
+
+  // Clear messages after 3 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
   const columns = [
     { key: "hospital_staff_id", label: "ID" },
@@ -68,6 +79,7 @@ function HospitalStaffPage() {
       </div>
 
       {error && <div className="text-red-500 mb-4">{error}</div>}
+      {success && <div className="text-green-500 mb-4">{success}</div>}
 
       {loading ? (
         <div>Loading staff...</div>

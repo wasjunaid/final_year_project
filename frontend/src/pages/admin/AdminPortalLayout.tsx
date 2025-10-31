@@ -16,7 +16,7 @@ function AdminPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedPage, setSelectedPage] = useState("dataaccess");
 
-  const { user } = useAuth();
+  const { role: userRole } = useAuth();
 
   // Always show Data Access
   const sidebarItems: ISideBarItem[] = [
@@ -24,12 +24,12 @@ function AdminPortalLayout() {
   ];
 
   // Show medicines for both super admin and admin
-  if (user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.ADMIN) {
+  if (userRole === ROLES.SUPER_ADMIN || userRole === ROLES.ADMIN) {
     sidebarItems.push({label: "Medicines", icon: <FaPills />, page: "medicines"});
   }
 
   // Only show these if SUPER_ADMIN
-  if (user?.role === ROLES.SUPER_ADMIN) {
+  if (userRole === ROLES.SUPER_ADMIN) {
     sidebarItems.push(
       {label: "Admins", icon: <FaHospital />, page: "admins"},
       {label: "Insurance", icon: <FaHospital />, page: "insurance_companies"},

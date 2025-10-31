@@ -115,7 +115,7 @@ All endpoints defined in `EndPoints` constant have been implemented:
 ### Hospital Panel List Module (3 endpoints)
 - ✅ GET /hospital-panel-list
 - ✅ POST /hospital-panel-list
-- ✅ DELETE /hospital-panel-list/:hospital_pannel_list_id
+- ✅ DELETE /hospital-panel-list/:hospital_panel_list_id
 
 ### Hospital Staff Module (5 endpoints)
 - ✅ GET /hospital-staff/admin

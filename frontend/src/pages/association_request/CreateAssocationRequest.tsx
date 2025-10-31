@@ -2,119 +2,101 @@ import { useEffect, useState } from "react";
 import LabeledInputField from "../../components/LabeledInputField";
 import LabeledDropDownField from "../../components/LabeledDropDownField";
 import Button from "../../components/Button";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
-import {
-  HospitalAssociationRequestRole,
-  type HospitalAssociationRequestRoleType,
-} from "../../models/HospitalAssociationRequest";
+import { useHospitalAssociationRequest } from "../../hooks/useHospitalAssociationRequest";
+import { useHospitalStaff } from "../../hooks/useHospitalStaff";
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
 
 const roleOptions = [
-  { value: HospitalAssociationRequestRole.doctor, label: "Doctor" },
-  {
-    value: HospitalAssociationRequestRole.medicalCoder,
-    label: "Medical Coder",
-  },
+  { value: "doctor", label: "Doctor" },
+  { value: "medical coder", label: "Medical Coder" },
 ];
 
 function CreateAssociationRequestPage() {
   const role = useUserRole();
-
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [fetchingData, setFetchingData] = useState(true);
+  const { 
+    loading, 
+    error, 
+    success, 
+    createRequest, 
+    clearMessages 
+  } = useHospitalAssociationRequest();
+  
+  const { 
+    loading: staffLoading, 
+    getStaff 
+  } = useHospitalStaff();
 
   // Form state
-  const [selectedRole, setSelectedRole] =
-    useState<HospitalAssociationRequestRoleType>(
-      HospitalAssociationRequestRole.doctor
-    );
+  const [selectedRole, setSelectedRole] = useState("doctor");
   const [selectedPersonEmail, setSelectedPersonEmail] = useState("");
-
-  // Data lists
-  // const [persons, setPersons] = useState<IDropdownOption[]>([]);
-
-  // Hospital staff state
-  const [hospitalId, setHospitalId] = useState("");
-  const [hospitalName, setHospitalName] = useState("");
 
   const isHospitalAdmin =
     role === ROLES.HOSPITAL_ADMIN || role === ROLES.HOSPITAL_SUB_ADMIN;
 
   //TODO find a better way to fetch hospital id
-  // Fetch hospital ID for hospital admin/sub admin
+  // Fetch hospital staff data for hospital admin/sub admin
   useEffect(() => {
-    const fetchHospitalId = async () => {
+    const fetchData = async () => {
       if (isHospitalAdmin) {
-        setFetchingData(true);
         try {
-          const res = await api.get(EndPoints.hospitalStaff.get);
-          const staffData = res.data.data;
-
-          if (staffData.hospital_id) {
-            setHospitalId(staffData.hospital_id.toString());
-            setHospitalName(staffData.hospital_name || "");
-          } else {
-            setError("Could not retrieve hospital information");
-          }
+          await getStaff();
         } catch (err: any) {
-          setError(
-            err.response?.data?.message ||
-              "Failed to fetch hospital information"
-          );
-        } finally {
-          setFetchingData(false);
+          // Error is handled by the hook
         }
-      } else {
-        setError(
-          "Access Denied: Only Hospital Admin and Hospital Sub Admin can create association requests"
-        );
       }
     };
 
-    fetchHospitalId();
-  }, [isHospitalAdmin]);
+    if (role) {
+      fetchData();
+    }
+  }, [role, isHospitalAdmin, getStaff]);
+
+  // Check access control
+  useEffect(() => {
+    if (role && !isHospitalAdmin) {
+      // This should be handled by routing but adding as backup
+      console.warn("Access Denied: Only Hospital Admin and Hospital Sub Admin can create association requests");
+    }
+  }, [role, isHospitalAdmin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    clearMessages();
 
     // Validation
     if (!selectedPersonEmail) {
-      setError("Please Enter email address");
+      // You might want to show an error here or let the hook handle it
       return;
     }
 
-    setLoading(true);
-
     try {
       const requestData = {
-        hospital_id: parseInt(hospitalId),
         email: selectedPersonEmail,
         role: selectedRole,
       };
 
-      await api.post(EndPoints.hospitalAssociationRequest.create, requestData);
+      await createRequest(requestData);
 
-      setSuccess("Association request sent successfully!");
-
-      // Clear form
+      // Clear form on success
       setSelectedPersonEmail("");
-      setSelectedRole(HospitalAssociationRequestRole.doctor);
+      setSelectedRole("doctor");
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Failed to send association request"
-      );
-    } finally {
-      setLoading(false);
+      // Error is handled by the hook
     }
   };
 
-  if (fetchingData) {
+  // Clear messages after 3 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
+
+  if (loading || staffLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-gray-500">Loading...</div>
@@ -144,21 +126,20 @@ function CreateAssociationRequestPage() {
 
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-4">
-          {/* Display hospital info (read-only) */}
-          <LabeledInputField
-            title="Hospital"
-            value={hospitalName || `Hospital ID: ${hospitalId}`}
-            disabled
-          />
+          {/* Hospital info is automatically determined by the backend from the logged-in hospital staff */}
+          <div className="mb-4 p-4 bg-blue-50 rounded-md">
+            <p className="text-blue-800 text-sm">
+              💡 <strong>Note:</strong> This request will be sent from your hospital. 
+              The system automatically identifies your hospital from your login credentials.
+            </p>
+          </div>
 
           {/* Select Role */}
           <LabeledDropDownField
             label="Role"
             value={selectedRole}
             onChange={(e) => {
-              setSelectedRole(
-                e.target.value as HospitalAssociationRequestRoleType
-              );
+              setSelectedRole(e.target.value);
               setSelectedPersonEmail(""); // Reset person selection
             }}
             options={roleOptions}
@@ -169,7 +150,7 @@ function CreateAssociationRequestPage() {
           {selectedRole && (
             <LabeledInputField
               title={
-                selectedRole === HospitalAssociationRequestRole.doctor
+                selectedRole === "doctor"
                   ? "Enter Email address of Doctor"
                   : "Enter Email address of Medical Coder"
               }
@@ -185,7 +166,7 @@ function CreateAssociationRequestPage() {
             <Button
               label={loading ? "Sending..." : "Send Request"}
               type="submit"
-              disabled={loading || !selectedPersonEmail || !hospitalId}
+              disabled={loading || !selectedPersonEmail}
             />
           </div>
         </div>

@@ -13,9 +13,9 @@ import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
 import useMedicine from "../../hooks/useMedicine";
 import type { Prescription } from "../../models/Prescription";
-import usePrescriptions from "../../hooks/usePrescription";
+import { usePrescriptions } from "../../hooks/usePrescription";
 import CreatePrescriptionModal from "./Components/CreatePrescriptionModal";
-import UpdatePrescriptionModal from "./Components/UpdatePrescriptionModal";
+
 
 interface PrescriptionDetailsProps {
   prescription: Prescription;
@@ -125,15 +125,14 @@ function PrescriptionDetails({
 
 function PrescriptionsPage() {
   const role = useUserRole();
-  const { items, loading, error, success, create, update, clearMessages } =
+  const { items, loading, error, success, create, clearMessages } =
     usePrescriptions();
   const { items: medicines } = useMedicine();
 
   const [selectedPrescription, setSelectedPrescription] =
     useState<Prescription | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingPrescription, setEditingPrescription] =
-    useState<Prescription | null>(null);
+
 
   const canManage = role === ROLES.DOCTOR;
   const hasAccess = role === ROLES.PATIENT || role === ROLES.DOCTOR;
@@ -265,11 +264,7 @@ function PrescriptionsPage() {
           <PrescriptionDetails
             prescription={selectedPrescription}
             onBack={() => setSelectedPrescription(null)}
-            onEdit={() => {
-              setEditingPrescription(selectedPrescription);
-              setSelectedPrescription(null);
-            }}
-            canEdit={canManage}
+            canEdit={false}
             medicines={medicines}
           />
         ) : (
@@ -289,32 +284,16 @@ function PrescriptionsPage() {
       </div>
 
       {canManage && (
-        <>
-          <CreatePrescriptionModal
-            isOpen={isCreateModalOpen}
-            loading={loading}
-            medicines={medicines}
-            onClose={() => setIsCreateModalOpen(false)}
-            onSubmit={async (payload) => {
-              await create(payload);
-              setIsCreateModalOpen(false);
-            }}
-          />
-
-          {editingPrescription && (
-            <UpdatePrescriptionModal
-              isOpen={!!editingPrescription}
-              prescription={editingPrescription}
-              medicines={medicines}
-              loading={loading}
-              onClose={() => setEditingPrescription(null)}
-              onSubmit={async (payload) => {
-                await update(payload);
-                setEditingPrescription(null);
-              }}
-            />
-          )}
-        </>
+        <CreatePrescriptionModal
+          isOpen={isCreateModalOpen}
+          loading={loading}
+          medicines={medicines}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={async (payload) => {
+            await create(payload);
+            setIsCreateModalOpen(false);
+          }}
+        />
       )}
     </div>
   );

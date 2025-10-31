@@ -1,48 +1,27 @@
-import { useState } from "react";
+
 import { FaEdit, FaTimes, FaShieldAlt } from "react-icons/fa";
 import Button from "../../../components/Button";
 import LabeledInputField from "../../../components/LabeledInputField";
 import type { PatientInsurance } from "../../../models/PatientInsurance";
+// import { usePatientInsurance } from "../../../hooks/usePatientInsurance";
+
 
 interface EditPatientInsuranceModalProps {
   insurance: PatientInsurance;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => Promise<void>;
 }
 
-function EditPatientInsuranceModal({
-  insurance,
-  isOpen,
-  onClose,
-  onSuccess,
-}: EditPatientInsuranceModalProps) {
-  const [formData, setFormData] = useState<Partial<PatientInsurance>>({
-    is_primary: false,
-  });
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    const newValue =
-      type === "checkbox" ? checked : type === "number" ? Number(value) : value;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: newValue,
-    }));
-
-    // Clear error when user starts typing
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+function EditPatientInsuranceModal(props: EditPatientInsuranceModalProps) {
+  const { insurance, isOpen, onClose } = props;
+  // No update logic needed; modal is read-only
+  // If policy_number is editable, allow editing, otherwise keep as read-only
+  // For now, make it read-only (most insurance numbers are not editable)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onClose();
   };
-
-  // Handle close
   const handleClose = () => {
-    setFormData({});
-    setFormErrors({});
     onClose();
   };
 
@@ -80,7 +59,7 @@ function EditPatientInsuranceModal({
           </div>
 
           {/* Form */}
-          <form onSubmit={onSuccess} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {/* Insurance Info */}
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <div className="flex items-center gap-3">
@@ -96,62 +75,23 @@ function EditPatientInsuranceModal({
               </div>
             </div>
 
-            {/* Insurance Number (read-only) */}
+            {/* Policy Number (read-only) */}
             <LabeledInputField
-              title="Insurance Number"
-              value={insurance.insurance_number}
+              title="Policy Number"
+              value={insurance.policy_number}
               readOnly
             />
-
-            {/* Primary Insurance Checkbox */}
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="is_primary"
-                name="is_primary"
-                checked={formData.is_primary}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="is_primary"
-                className="text-sm font-medium text-gray-700"
-              >
-                Set as Primary Insurance
-              </label>
-            </div>
-            <p className="text-xs text-gray-500 ml-7">
-              Primary insurance will be used first for claims processing
-            </p>
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
               <Button
-                // label={updating ? "Updating..." : "Update Insurance"}
-                label={"Update Insurance"}
-                icon={<FaEdit />}
-                type="submit"
-                // disabled={updating}
-                className="flex-1"
-              />
-              <Button
-                label="Cancel"
-                variant="secondary"
+                label="Close"
+                icon={<FaTimes />}
+                type="button"
                 onClick={handleClose}
-                // disabled={updating}
                 className="flex-1"
               />
             </div>
-
-            {/* Warning */}
-            {formData.is_primary && (
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-yellow-800 text-sm">
-                  <strong>Note:</strong> Setting this as primary will make all
-                  other insurance policies secondary.
-                </p>
-              </div>
-            )}
           </form>
         </div>
       </div>

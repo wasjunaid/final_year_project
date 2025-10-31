@@ -12,7 +12,7 @@ export interface HospitalStaff {
 }
 
 export interface CreateHospitalStaffRequest {
-  person_id: number;
+  email: string;
   hospital_id: number;
   role: string;
 }

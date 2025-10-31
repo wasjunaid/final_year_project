@@ -4,6 +4,7 @@ import type { ApiResponse } from '../models/ApiResponse';
 import type { 
   Medicine, 
   CreateMedicineRequest, 
+  UpdateMedicineRequest,
 } from '../models/Medicine';
 
 export const medicineApi = {

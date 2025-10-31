@@ -1,83 +1,55 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import DataTable from "../../components/DataTable";
-import EndPoints from "../../constants/endpoints";
-import api from "../../services/api";
+import { useHospitalStaff } from "../../hooks/useHospitalStaff";
+import type { HospitalStaff } from "../../models/HospitalStaff";
 
 function HospitalAccountsPage() {
-  const [hospitalId, setHospitalId] = useState<number | null>(null);
-  const [staff, setStaff] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const {
+    staff,
+    loading,
+    error,
+    success,
+    getAllStaff,
+    deleteStaff,
+    clearMessages
+  } = useHospitalStaff();
 
-  // First, get the hospital ID for the logged-in staff
   useEffect(() => {
-    const fetchHospitalId = async () => {
-      try {
-        const res = await api.get(EndPoints.hospitalStaff.getAll);
-        setHospitalId(res.data.data.hospital_id);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to get hospital information");
-        setLoading(false);
-      }
-    };
-    fetchHospitalId();
-  }, []);
-
-  // Then, fetch staff for that hospital
-  useEffect(() => {
-    const fetchStaff = async () => {
-      console.log(`Hospital id: ${hospitalId}`);
-      if (!hospitalId) return;
-
-      setLoading(true);
-      setError("");
-      try {
-        const res = await api.get(`${EndPoints.hospitalStaff.getAll}/${hospitalId}`);
-        setStaff(res.data.data || []);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load staff");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (hospitalId) {
-      fetchStaff();
-    }
-  }, [hospitalId]);
+    getAllStaff();
+  }, [getAllStaff]);
 
   const handleDelete = async (staffId: number) => {
     if (!window.confirm("Are you sure you want to remove this staff member?")) {
       return;
     }
 
-    try {
-      await api.delete(`${EndPoints.hospitalStaff.delete}/${staffId}`);
-      setStaff(staff.filter((s) => s.hospital_staff_id !== staffId));
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to delete staff member");
-    }
+    await deleteStaff(staffId);
   };
 
   const columns = [
     { key: "hospital_staff_id", label: "ID" },
-    { key: "email", label: "Email" },
+    { 
+      key: "person_email", 
+      label: "Email",
+      render: (row: HospitalStaff) => row.person_email || "N/A"
+    },
     { key: "role", label: "Role" },
     {
       key: "created_at",
       label: "Joined",
-      render: (row: any) => new Date(row.created_at).toLocaleDateString(),
+      render: (row: HospitalStaff) => new Date(row.created_at).toLocaleDateString(),
     },
     {
       key: "actions",
       label: "Actions",
-      render: (row: any) => (
+      render: (row: HospitalStaff) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleDelete(row.hospital_staff_id);
           }}
           className="text-red-500 hover:text-red-700"
+          disabled={loading}
         >
           Delete
         </button>
@@ -91,7 +63,29 @@ function HospitalAccountsPage() {
         <h2 className="text-2xl font-bold">Hospital Staff</h2>
       </div>
 
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+      {error && (
+        <div className="text-red-500 mb-4">
+          {error}
+          <button 
+            onClick={clearMessages}
+            className="ml-2 text-sm underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+      
+      {success && (
+        <div className="text-green-600 mb-4">
+          {success}
+          <button 
+            onClick={clearMessages}
+            className="ml-2 text-sm underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div>Loading staff...</div>

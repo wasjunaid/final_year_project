@@ -24,7 +24,7 @@ function NotificationPage() {
     remove,
     removeAll,
     clearMessages,
-    getUnreadCount,
+  unreadCount,
   } = useNotifications();
 
   const [filter, setFilter] = useState<FilterType>("all");
@@ -41,7 +41,7 @@ function NotificationPage() {
     }
   }, [notifications, filter]);
 
-  const unreadCount = getUnreadCount();
+  // unreadCount is now provided directly from the hook
 
   const handleMarkAsRead = async (id: number) => {
     try {

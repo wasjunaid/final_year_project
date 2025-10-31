@@ -19,9 +19,9 @@ export const hospitalPannelListApi = {
     return response.data;
   },
 
-  // DELETE /hospital-panel-list/:hospital_pannel_list_id
-  delete: async (hospital_pannel_list_id: number): Promise<ApiResponse<null>> => {
-    const url = EndPoints.hospitalPannelList.delete.replace(':hospital_pannel_list_id', hospital_pannel_list_id.toString());
+  // DELETE /hospital-panel-list/:hospital_panel_list_id
+  delete: async (hospital_panel_list_id: number): Promise<ApiResponse<null>> => {
+    const url = EndPoints.hospitalPannelList.delete.replace(':hospital_panel_list_id', hospital_panel_list_id.toString());
     const response = await api.delete(url);
     return response.data;
   },

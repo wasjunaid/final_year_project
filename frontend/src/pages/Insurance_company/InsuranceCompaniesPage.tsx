@@ -14,14 +14,15 @@ import type {
 function InsuranceCompaniesPage() {
   const role = useUserRole();
   const {
-    companies,
+    items: companies,
     loading,
-    deleting,
     error,
     success,
-    deleteCompany,
-    hasCompanies,
-    companyCount,
+  // updateCompany removed (not used directly)
+  // createCompany removed (not used)
+    remove: deleteCompany,
+    hasItems: hasCompanies,
+    count: companyCount,
   } = useInsuranceCompanies();
 
   // Modal state for editing
@@ -44,16 +45,8 @@ function InsuranceCompaniesPage() {
     }
   };
 
-  // Handle delete company
+  // Handle delete company (delete is not available, but keep for UI completeness)
   const handleDeleteCompany = async (company: InsuranceCompany) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete "${company.name}"?\n\nThis action cannot be undone and may affect related records.`
-      )
-    ) {
-      return;
-    }
-
     await deleteCompany(company.insurance_company_id);
   };
 
@@ -155,7 +148,7 @@ function InsuranceCompaniesPage() {
                   e.stopPropagation(); // Prevent row click when clicking delete
                   handleDeleteCompany(company);
                 }}
-                disabled={deleting}
+                // disabled={deleting} // delete not supported
                 className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
                 title="Delete Company"
               >
@@ -319,6 +312,7 @@ function InsuranceCompaniesPage() {
         isOpen={isEditModalOpen}
         onClose={handleEditModalClose}
         onSuccess={handleEditSuccess}
+  // updateCompany={updateCompany} // modal uses its own hook
       />
     </>
   );

@@ -5,8 +5,6 @@ import ErrorSvg from "./components/ErrorSvg";
 import ROUTES from "../../constants/routes";
 import AuthButton from "./components/AuthButton";
 import { useAuth } from "../../hooks/useAuth";
-import { jwtDecode } from "jwt-decode";
-import type { User } from "../../models/User";
 import AuthBg from "./components/AuthBg";
 import Card from "../../components/Card";
 import rolePortalRoute from "./utils/rolePortalNavigation";
@@ -15,26 +13,31 @@ function GoogleAuthSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [error, setError] = useState("");
-  const { signIn } = useAuth();
+  const { signInWithTokens, role, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const accessToken = searchParams.get("accessToken");
     const refreshToken = searchParams.get("refreshToken");
 
     if (accessToken && refreshToken) {
-      signIn({ accessToken, refreshToken });
+      const success = signInWithTokens({ accessToken, refreshToken });
+      
+      if (!success) {
+        setError("Failed to authenticate with provided tokens.");
+      }
+    } else {
+      setError("Missing tokens in URL parameters.");
+    }
+  }, [searchParams, signInWithTokens]);
 
-      //TODO: find a better way to pass user-role instead of decoding manually
-      const user = jwtDecode<User>(accessToken);
-      const role = user.role;
-
+  // Navigate when authentication is successful and role is available
+  useEffect(() => {
+    if (isAuthenticated && role) {
       setTimeout(() => {
         navigate(rolePortalRoute({ role }) ?? ROUTES.HOME);
       }, 500);
-    } else {
-      setError("Missing tokens.");
     }
-  }, [searchParams]);
+  }, [isAuthenticated, role, navigate]);
 
   return (
     <AuthBg>

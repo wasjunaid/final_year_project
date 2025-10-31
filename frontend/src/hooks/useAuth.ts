@@ -154,6 +154,36 @@ export function useAuth() {
     }
   }, []);
 
+  // Sign in with tokens (for Google Auth)
+  const signInWithTokens = useCallback((tokens: { accessToken: string; refreshToken: string }) => {
+    try {
+      // Store tokens in localStorage
+      tokenService.setTokens({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      });
+
+      // Decode token to get role and person_id
+      const payload = JSON.parse(atob(tokens.accessToken.split('.')[1]));
+
+      // Update auth state
+      setAuthState({
+        isAuthenticated: true,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        role: payload.role as UserRole,
+        personId: payload.person_id,
+        user: null,
+      });
+
+      setSuccess("Successfully authenticated with Google");
+      return true;
+    } catch (err) {
+      setError("Failed to authenticate with Google tokens");
+      return false;
+    }
+  }, []);
+
   // Sign up function
   const signUp = useCallback(async (userData: SignUpRequest): Promise<boolean> => {
     try {
@@ -270,6 +300,7 @@ export function useAuth() {
       
       // Actions
       signIn,
+      signInWithTokens,
       signUp,
       signOut,
       refreshJWT,
@@ -286,6 +317,7 @@ export function useAuth() {
       error,
       success,
       signIn,
+      signInWithTokens,
       signUp,
       signOut,
       refreshJWT,

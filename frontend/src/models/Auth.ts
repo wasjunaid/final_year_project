@@ -28,7 +28,6 @@ export interface EmailVerificationRequest {
 
 export interface PasswordResetRequest {
   email: string;
-  role: string;
 }
 
 export interface VerifyEmailRequest {

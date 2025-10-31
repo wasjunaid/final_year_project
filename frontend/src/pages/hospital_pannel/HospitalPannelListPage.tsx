@@ -8,7 +8,7 @@ import DataTable, {
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
 // import { useAuth } from "../../hooks/useAuth";
-import { InsuranceCompanyApi } from "../../services/insuranceCompaniesApi";
+import { insuranceCompanyApi } from "../../services/insuranceCompanyApi";
 import type { InsuranceCompany } from "../../models/InsuranceCompany";
 import { useHospitalPannel } from "../../hooks/useHospitalPannel";
 import AddPanelCompanyModal from "./components/AddPanelCompanyModal";
@@ -36,7 +36,7 @@ function HospitalPannelListPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await InsuranceCompanyApi.getInsuranceCompanies();
+        const res = await insuranceCompanyApi.get();
         setCompanies(res.data || []);
       } catch {
         setCompanies([]);

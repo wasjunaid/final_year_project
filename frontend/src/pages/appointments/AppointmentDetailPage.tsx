@@ -1,113 +1,141 @@
-import { useState } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  type Appointment,
-  AppointmentStatus,
-  type AppointmentStatusType,
-} from "../../models/Appointment";
+import { type Appointment } from "../../models/Appointment";
 import LabeledInputField from "../../components/LabeledInputField";
 import NavBar from "../../components/NavBar";
 import { useUserRole } from "../../hooks/useUserRole";
+import { useAppointment } from "../../hooks/useAppointment";
 import { ROLES, type UserRole } from "../../constants/roles";
 import Button from "../../components/Button";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
 
-function AppointmentDetailsPage() {
+const AppointmentDetailsPage = React.memo(() => {
   const location = useLocation();
   const navigate = useNavigate();
   const role = useUserRole();
 
   const appointment: Appointment | null = location.state ?? null;
 
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [doctorNote, setDoctorNote] = useState("");
+  
+  const { 
+    loading, 
+    error, 
+    success, 
+    startByDoctor, 
+    completeByDoctor, 
+    cancelByPatient,
+    clearMessages 
+  } = useAppointment();
 
-  const getStatusColor = (status: AppointmentStatusType): string => {
+  // Memoized status color helper
+  const getStatusColor = useCallback((status: Appointment['status']): string => {
     switch (status) {
-      case AppointmentStatus.upcoming:
+      case 'APPROVED':
         return "text-blue-500";
-      case AppointmentStatus.inProgress:
+      case 'IN_PROGRESS':
         return "text-yellow-500";
-      case AppointmentStatus.completed:
+      case 'COMPLETED':
         return "text-green-500";
-      case AppointmentStatus.cancelled:
+      case 'CANCELLED':
+      case 'DENIED':
         return "text-red-500";
+      case 'PROCESSING':
+        return "text-orange-500";
+      case 'RESCHEDULED':
+        return "text-purple-500";
       default:
         return "text-gray-500";
     }
-  };
+  }, []);
 
-  const handleStatusUpdate = async (newStatus: AppointmentStatusType) => {
+  // Memoized doctor note change handler
+  const handleDoctorNoteChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setDoctorNote(e.target.value);
+  }, []);
+
+  // Memoized status update handler
+  const handleStatusUpdate = useCallback(async (newStatus: Appointment['status']) => {
     if (!appointment) return;
 
     try {
+      clearMessages();
+      
       // Validation based on role and status
       if (
         role === ROLES.DOCTOR &&
-        newStatus === AppointmentStatus.completed &&
+        newStatus === 'COMPLETED' &&
         !doctorNote
       ) {
-        setError("Please add a doctor's note before completing");
         return;
       }
 
-      await api.put(
-        `${EndPoints.appointments.update}${appointment.appointment_id}`,
-        {
-          status: newStatus,
-          doctor_note: doctorNote || undefined,
-        }
-      );
+      const appointmentId = appointment.appointment_id;
 
-      setSuccess(`Appointment ${newStatus} successfully!`);
+      switch (newStatus) {
+        case 'IN_PROGRESS':
+          await startByDoctor(appointmentId);
+          break;
+        case 'COMPLETED':
+          await completeByDoctor(appointmentId);
+          break;
+        case 'CANCELLED':
+          await cancelByPatient(appointmentId);
+          break;
+        default:
+          break;
+      }
+
+      // Navigate back after success
       setTimeout(() => navigate(-1), 1500);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update appointment");
+    } catch (err) {
+      // Error handled by hook
     }
-  };
+  }, [appointment, role, doctorNote, clearMessages, startByDoctor, completeByDoctor, cancelByPatient, navigate]);
 
-  const getRoleButtons = (role?: UserRole, status?: AppointmentStatusType) => {
+  // Memoized role-based buttons
+  const getRoleButtons = useCallback((userRole?: UserRole | null, status?: Appointment['status']) => {
     if (!status) return null;
 
-    switch (role) {
+    switch (userRole) {
       case ROLES.PATIENT:
-        // Patient can only cancel upcoming appointments
-        if (status === AppointmentStatus.upcoming) {
+        // Patient can only cancel approved appointments
+        if (status === 'APPROVED') {
           return (
             <Button
               label="Cancel"
-              onClick={() => handleStatusUpdate(AppointmentStatus.cancelled)}
+              onClick={() => handleStatusUpdate('CANCELLED')}
               variant="danger"
+              disabled={loading}
             />
           );
         }
         return null;
 
       case ROLES.DOCTOR:
-        // Doctor can start upcoming appointments and complete in-progress ones
-        if (status === AppointmentStatus.upcoming) {
+        // Doctor can start approved appointments and complete in-progress ones
+        if (status === 'APPROVED') {
           return (
             <>
               <Button
                 label="Start Appointment"
-                onClick={() => handleStatusUpdate(AppointmentStatus.inProgress)}
+                onClick={() => handleStatusUpdate('IN_PROGRESS')}
+                disabled={loading}
               />
               <Button
                 label="Cancel"
-                onClick={() => handleStatusUpdate(AppointmentStatus.cancelled)}
+                onClick={() => handleStatusUpdate('CANCELLED')}
                 variant="danger"
+                disabled={loading}
               />
             </>
           );
         }
-        if (status === AppointmentStatus.inProgress) {
+        if (status === 'IN_PROGRESS') {
           return (
             <Button
               label="Complete Appointment"
-              onClick={() => handleStatusUpdate(AppointmentStatus.completed)}
-              disabled={!doctorNote}
+              onClick={() => handleStatusUpdate('COMPLETED')}
+              disabled={loading || !doctorNote}
             />
           );
         }
@@ -116,13 +144,14 @@ function AppointmentDetailsPage() {
       case ROLES.HOSPITAL_ADMIN:
       case ROLES.HOSPITAL_SUB_ADMIN:
       case ROLES.HOSPITAL_FRONT_DESK:
-        // Hospital staff can cancel upcoming appointments
-        if (status === AppointmentStatus.upcoming) {
+        // Hospital staff can cancel approved appointments
+        if (status === 'APPROVED') {
           return (
             <Button
               label="Cancel"
-              onClick={() => handleStatusUpdate(AppointmentStatus.cancelled)}
+              onClick={() => handleStatusUpdate('CANCELLED')}
               variant="danger"
+              disabled={loading}
             />
           );
         }
@@ -131,7 +160,77 @@ function AppointmentDetailsPage() {
       default:
         return null;
     }
-  };
+  }, [handleStatusUpdate, loading, doctorNote]);
+
+  // Memoized patient information section
+  const patientInfoSection = useMemo(() => {
+    if (role === ROLES.PATIENT || !appointment) return null;
+    
+    return (
+      <div className="flex justify-between gap-10">
+        <LabeledInputField
+          title="Patient Name"
+          value={appointment.patient_name || `Patient #${appointment.patient_id}`}
+          disabled
+        />
+        <LabeledInputField
+          title="Patient ID"
+          value={appointment.patient_id.toString()}
+          disabled
+        />
+      </div>
+    );
+  }, [role, appointment]);
+
+  // Memoized doctor information section
+  const doctorInfoSection = useMemo(() => {
+    if (role === ROLES.DOCTOR || !appointment) return null;
+    
+    return (
+      <div className="flex justify-between gap-10">
+        <LabeledInputField
+          title="Doctor Name"
+          value={appointment.doctor_name || `Doctor #${appointment.doctor_id}`}
+          disabled
+        />
+        <LabeledInputField
+          title="Doctor ID"
+          value={appointment.doctor_id.toString()}
+          disabled
+        />
+      </div>
+    );
+  }, [role, appointment]);
+
+  // Memoized hospital information section
+  const hospitalInfoSection = useMemo(() => {
+    if (role !== ROLES.PATIENT || !appointment) return null;
+    
+    return (
+      <div className="flex justify-between gap-10">
+        <LabeledInputField
+          title="Hospital"
+          value={appointment.hospital_name || `Hospital #${appointment.hospital_id}`}
+          disabled
+        />
+        <LabeledInputField
+          title="Hospital ID"
+          value={appointment.hospital_id.toString()}
+          disabled
+        />
+      </div>
+    );
+  }, [role, appointment]);
+
+  // Clear messages after success
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
   if (!appointment)
     return (
@@ -159,60 +258,13 @@ function AppointmentDetailsPage() {
         {success && <div className="text-green-600">{success}</div>}
 
         {/* Patient Information */}
-        {role !== ROLES.PATIENT && (
-          <div className="flex justify-between gap-10">
-            <LabeledInputField
-              title="Patient Name"
-              value={
-                appointment.patient_first_name && appointment.patient_last_name
-                  ? `${appointment.patient_first_name} ${appointment.patient_last_name}`
-                  : appointment.patient_email
-              }
-              disabled
-            />
-            <LabeledInputField
-              title="Patient Email"
-              value={appointment.patient_email}
-              disabled
-            />
-          </div>
-        )}
+        {patientInfoSection}
 
         {/* Doctor Information */}
-        {role !== ROLES.DOCTOR && (
-          <div className="flex justify-between gap-10">
-            <LabeledInputField
-              title="Doctor Name"
-              value={
-                appointment.doctor_first_name && appointment.doctor_last_name
-                  ? `${appointment.doctor_first_name} ${appointment.doctor_last_name}`
-                  : appointment.doctor_email
-              }
-              disabled
-            />
-            <LabeledInputField
-              title="Doctor Email"
-              value={appointment.doctor_email}
-              disabled
-            />
-          </div>
-        )}
+        {doctorInfoSection}
 
         {/* Hospital Information */}
-        {role === ROLES.PATIENT && (
-          <div className="flex justify-between gap-10">
-            <LabeledInputField
-              title="Hospital"
-              value={appointment.hospital_name}
-              disabled
-            />
-            <LabeledInputField
-              title="Address"
-              value={appointment.hospital_address || "N/A"}
-              disabled
-            />
-          </div>
-        )}
+        {hospitalInfoSection}
 
         {/* Appointment Details */}
         <div className="flex justify-between gap-10">
@@ -236,8 +288,8 @@ function AppointmentDetailsPage() {
             disabled
           />
           <LabeledInputField
-            title="Cost"
-            value={`$${appointment.cost}`}
+            title="Total Cost"
+            value={`$${appointment.total_cost}`}
             disabled
           />
         </div>
@@ -253,12 +305,12 @@ function AppointmentDetailsPage() {
 
         {/* Doctor's Note Section - Only for doctors */}
         {role === ROLES.DOCTOR &&
-          appointment.status === AppointmentStatus.inProgress && (
+          appointment.status === 'IN_PROGRESS' && (
             <div className="mt-2">
               <LabeledInputField
                 title="Doctor's Note (Required to Complete)"
                 value={doctorNote}
-                onChange={(e) => setDoctorNote(e.target.value)}
+                onChange={handleDoctorNoteChange}
                 multiline
                 rows={4}
                 placeholder="Add medical notes and observations..."
@@ -268,7 +320,7 @@ function AppointmentDetailsPage() {
 
         {/* Display existing doctor's note for completed appointments */}
         {appointment.doctor_note &&
-          appointment.status === AppointmentStatus.completed && (
+          appointment.status === 'COMPLETED' && (
             <LabeledInputField
               title="Doctor's Note"
               value={appointment.doctor_note}
@@ -285,6 +337,8 @@ function AppointmentDetailsPage() {
       </div>
     </div>
   );
-}
+});
+
+AppointmentDetailsPage.displayName = 'AppointmentDetailsPage';
 
 export default AppointmentDetailsPage;

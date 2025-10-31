@@ -9,66 +9,41 @@ import {
 } from "react-icons/fa";
 import { usePatientInsurance } from "../../hooks/usePatientInsurance";
 import { useUserRole } from "../../hooks/useUserRole";
-import { ROLES } from "../../constants/roles";
 import DataTable from "../../components/DataTable";
+import type { IDataTableColumnProps, IDataTableButtonProps } from "../../components/DataTable";
 import EditPatientInsuranceModal from "./components/EditPatientInsuranceModal";
 import CreatePatientInsuranceModal from "./components/CreatePatientInsuranceModal";
 import type { PatientInsurance } from "../../models/PatientInsurance";
-import type {
-  IDataTableColumnProps,
-  IDataTableButtonProps,
-} from "../../components/DataTable";
-import { useAuth } from "../../hooks/useAuth";
+import { ROLES } from "../../constants/roles"; // <-- Make sure this path is correct
 
 function PatientInsurancePage() {
-  const { user } = useAuth();
   const role = useUserRole();
   const {
-    fetchInsurances,
-    insurances,
+    items,
     loading,
     error,
     success,
-    updateInsurance,
-    deleteInsurance,
-    deleting,
-    hasInsurances,
-    insuranceCount,
-    primaryInsuranceCount,
-    verifiedInsuranceCount,
+    remove,
+    hasItems,
   } = usePatientInsurance();
 
-  //   const { companies } = useInsuranceCompanies(); // To get company names
-
-  // Modal states
-  const [editingInsurance, setEditingInsurance] =
-    useState<PatientInsurance | null>(null);
+  const [editingInsurance, setEditingInsurance] = useState<PatientInsurance | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  // Check if user is patient or has admin access
   const isPatient = role === ROLES.PATIENT;
   const isAdmin = role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN;
   const hasAccess = isPatient || isAdmin;
 
-  // Handle delete insurance
   const handleDeleteInsurance = async (insurance: PatientInsurance) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete insurance #${insurance.insurance_number}?\n\nThis action cannot be undone.`
-      )
-    ) {
+    if (!window.confirm(`Are you sure you want to delete insurance #${insurance.policy_number}?\n\nThis action cannot be undone.`)) {
       return;
     }
-
-    await deleteInsurance(insurance.patient_insurance_id);
+    await remove(insurance.patient_insurance_id);
   };
 
-  // Handle edit insurance
   const handleEditInsurance = (insuranceId: number) => {
-    const insurance = insurances.find(
-      (i) => i.patient_insurance_id === insuranceId
-    );
+    const insurance = items.find((i: PatientInsurance) => i.patient_insurance_id === insuranceId);
     if (insurance) {
       setEditingInsurance(insurance);
       setIsEditModalOpen(true);
@@ -77,15 +52,9 @@ function PatientInsurancePage() {
 
   const handleEditSuccess = async () => {
     setIsEditModalOpen(false);
-    await updateInsurance(user!.person_id, {
-      is_primary: editingInsurance!.is_primary,
-    });
-    console.log("Updated insurance", editingInsurance);
-    // fetch again
-    await fetchInsurances();
+    setEditingInsurance(null);
   };
 
-  // Modal handlers
   const handleEditModalClose = () => {
     setIsEditModalOpen(false);
     setEditingInsurance(null);
@@ -95,57 +64,35 @@ function PatientInsurancePage() {
     setIsCreateModalOpen(false);
   };
 
-  // Get company name for insurance
-  const getCompanyName = (insuranceNumber: number): string => {
-    // In a real app, you'd need to join with insurance and company tables
-    // For now, return a placeholder
-    return "Insurance Company";
+  const getCompanyName = (insurance: PatientInsurance): string => {
+    return insurance.insurance_company_name || "Insurance Company";
   };
 
-  // DataTable columns configuration
   const columns: IDataTableColumnProps<PatientInsurance>[] = [
     {
-      key: "insurance_number",
-      label: "Insurance Number",
-      render: (insurance) => (
+      key: "policy_number",
+      label: "Policy Number",
+      render: (insurance: PatientInsurance) => (
         <span className="text-sm font-medium text-gray-900">
-          #{insurance.insurance_number}
+          #{insurance.policy_number}
         </span>
       ),
     },
     {
       key: "company",
       label: "Insurance Company",
-      render: (insurance) => (
+      render: (insurance: PatientInsurance) => (
         <div className="flex items-center">
           <div className="text-sm font-medium text-gray-900">
-            {getCompanyName(insurance.insurance_number)}
+            {getCompanyName(insurance)}
           </div>
-        </div>
-      ),
-    },
-    {
-      key: "is_primary",
-      label: "Type",
-      render: (insurance) => (
-        <div className="flex items-center gap-2">
-          {insurance.is_primary ? (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              <FaShieldAlt className="mr-1" />
-              Primary
-            </span>
-          ) : (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-              Secondary
-            </span>
-          )}
         </div>
       ),
     },
     {
       key: "is_verified",
       label: "Status",
-      render: (insurance) => (
+      render: (insurance: PatientInsurance) => (
         <div className="flex items-center gap-2">
           {insurance.is_verified ? (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -164,7 +111,7 @@ function PatientInsurancePage() {
     {
       key: "created_at",
       label: "Added Date",
-      render: (insurance) => (
+      render: (insurance: PatientInsurance) => (
         <div className="text-sm text-gray-500">
           <div>
             {new Date(insurance.created_at).toLocaleDateString("en-US", {
@@ -185,7 +132,7 @@ function PatientInsurancePage() {
     {
       key: "actions",
       label: "Actions",
-      render: (insurance) => (
+      render: (insurance: PatientInsurance) => (
         <div className="flex justify-end gap-2">
           {hasAccess && (
             <div className="flex gap-3">
@@ -204,8 +151,7 @@ function PatientInsurancePage() {
                   e.stopPropagation();
                   handleDeleteInsurance(insurance);
                 }}
-                disabled={deleting}
-                className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                 title="Delete Insurance"
               >
                 <FaTrash />
@@ -217,23 +163,19 @@ function PatientInsurancePage() {
     },
   ];
 
-  // DataTable filter buttons
   const filterButtons: IDataTableButtonProps[] = [
     { label: "All Insurances", value: "All", icon: <FaShieldAlt /> },
-    { label: "Primary", value: "Primary", icon: <FaShieldAlt /> },
     { label: "Verified", value: "Verified", icon: <FaCheckCircle /> },
     { label: "Pending", value: "Pending", icon: <FaExclamationTriangle /> },
   ];
 
-  // Transform data for filtering
-  const transformedInsurances = insurances.map((insurance) => ({
+  const transformedInsurances = items.map((insurance: PatientInsurance) => ({
     ...insurance,
-    status: insurance.is_primary
-      ? "Primary"
-      : insurance.is_verified
-      ? "Verified"
-      : "Pending",
+    status: insurance.is_verified ? "Verified" : "Pending",
   }));
+
+  const verifiedInsuranceCount = items.filter((i: PatientInsurance) => i.is_verified).length;
+  const insuranceCount = items.length;
 
   if (!hasAccess) {
     return (
@@ -267,7 +209,6 @@ function PatientInsurancePage() {
               Manage your insurance policies ({insuranceCount} total)
             </p>
           </div>
-
           {hasAccess && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -278,7 +219,6 @@ function PatientInsurancePage() {
             </button>
           )}
         </div>
-
         {/* Messages */}
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
@@ -290,22 +230,9 @@ function PatientInsurancePage() {
             {success}
           </div>
         )}
-
         {/* Statistics */}
-        {hasInsurances && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <FaShieldAlt className="text-blue-600 mr-3" />
-                <div>
-                  <div className="text-2xl font-bold text-blue-900">
-                    {primaryInsuranceCount}
-                  </div>
-                  <div className="text-sm text-blue-700">Primary Coverage</div>
-                </div>
-              </div>
-            </div>
-
+        {hasItems && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center">
                 <FaCheckCircle className="text-green-600 mr-3" />
@@ -319,7 +246,6 @@ function PatientInsurancePage() {
                 </div>
               </div>
             </div>
-
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
               <div className="flex items-center">
                 <FaShieldAlt className="text-purple-600 mr-3" />
@@ -333,9 +259,8 @@ function PatientInsurancePage() {
             </div>
           </div>
         )}
-
         {/* Empty State */}
-        {!loading && !hasInsurances && (
+        {!loading && !hasItems && (
           <div className="text-center text-gray-500 py-12">
             <FaShieldAlt className="mx-auto text-4xl mb-4 text-gray-300" />
             <p className="text-lg mb-2">No insurance coverage found</p>
@@ -355,9 +280,8 @@ function PatientInsurancePage() {
             )}
           </div>
         )}
-
         {/* DataTable */}
-        {hasInsurances && (
+        {hasItems && (
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
             <div className="p-4">
               <DataTable
@@ -373,16 +297,16 @@ function PatientInsurancePage() {
           </div>
         )}
       </div>
-
       {/* Edit Insurance Modal */}
-      <EditPatientInsuranceModal
-        isOpen={isEditModalOpen}
-        onClose={handleEditModalClose}
-        insurance={editingInsurance!}
-        onSuccess={handleEditSuccess}
-      />
-
-      {/* Create Insurance Modal */}
+        {editingInsurance && (
+          <EditPatientInsuranceModal
+            isOpen={isEditModalOpen}
+            onClose={handleEditModalClose}
+            insurance={editingInsurance}
+            // onSuccess={handleEditSuccess}
+          />
+        )}
+        {/* Create Insurance Modal */}
       <CreatePatientInsuranceModal
         isOpen={isCreateModalOpen}
         onClose={handleCreateModalClose}

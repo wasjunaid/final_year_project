@@ -2,8 +2,7 @@ export interface SystemAdmin {
   system_admin_id: number;
   person_id: number;
   created_at: string;
-  updated_at: string;
-  // Extended fields from person
+  // Extended fields from person table joins
   first_name?: string;
   last_name?: string;
   email?: string;
@@ -11,5 +10,5 @@ export interface SystemAdmin {
 }
 
 export interface CreateSystemAdminRequest {
-  person_id: number;
+  email: string;
 }

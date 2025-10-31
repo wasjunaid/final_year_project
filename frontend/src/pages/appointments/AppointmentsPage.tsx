@@ -1,203 +1,219 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable, {
   type IDataTableColumnProps,
 } from "../../components/DataTable";
-import EndPoints from "../../constants/endpoints";
 import { useUserRole } from "../../hooks/useUserRole";
-import { ROLES, type UserRole } from "../../constants/roles";
-import api from "../../services/api";
-import {
-  AppointmentStatus,
-  type Appointment,
-  type AppointmentStatusType,
-} from "../../models/Appointment";
-import StatusCodes from "../../constants/StatusCodes";
+import { useAppointment } from "../../hooks/useAppointment";
+import { ROLES } from "../../constants/roles";
+import { type Appointment } from "../../models/Appointment";
 import ROUTES from "../../constants/routes";
 
-const getEndpoint = (role?: UserRole): string | null => {
-  switch (role) {
-    case ROLES.PATIENT:
-      return EndPoints.appointments.patient;
-    case ROLES.DOCTOR:
-      return EndPoints.appointments.doctor;
-    case ROLES.HOSPITAL_ADMIN:
-    case ROLES.HOSPITAL_SUB_ADMIN:
-    case ROLES.HOSPITAL_FRONT_DESK:
-      return EndPoints.appointments.hospital;
-    default:
-      return null;
-  }
-};
-
-const getStatusColor = (status: AppointmentStatusType): string => {
+// Status color helper function (memoized)
+const getStatusColor = (status: Appointment['status']): string => {
   switch (status) {
-    case AppointmentStatus.upcoming:
+    case 'APPROVED':
       return "text-blue-500";
-    case AppointmentStatus.completed:
+    case 'COMPLETED':
       return "text-green-500";
-    case AppointmentStatus.cancelled:
+    case 'CANCELLED':
+    case 'DENIED':
       return "text-red-500";
-    case AppointmentStatus.inProgress:
+    case 'IN_PROGRESS':
       return "text-yellow-500";
+    case 'PROCESSING':
+      return "text-orange-500";
+    case 'RESCHEDULED':
+      return "text-purple-500";
     default:
       return "text-gray-500";
   }
 };
 
-// Patient columns (show doctor info)
-const patientColumns = [
+// Base columns used in all views
+const baseColumns = [
+  { key: "appointment_id", label: "ID" },
   {
-    key: "doctor",
-    label: "Doctor",
-    render: (row: Appointment) =>
-      `${row.doctor_first_name || ""} ${row.doctor_last_name || ""}`.trim() ||
-      row.doctor_email,
+    key: "date",
+    label: "Date",
+    render: (row: Appointment) => new Date(row.date).toLocaleDateString(),
   },
-  { key: "hospital_name", label: "hospital" },
-  { key: "date", label: "Date" },
-  { key: "time", label: "Time" },
+  {
+    key: "time",
+    label: "Time",
+    render: (row: Appointment) => row.time.substring(0, 5), // Show only HH:MM
+  },
   { key: "reason", label: "Reason" },
   {
     key: "status",
     label: "Status",
-    render: (row: Appointment) => {
-      return <span className={getStatusColor(row.status)}>{row.status}</span>;
-    },
+    maxWidth: "10rem",
+    render: (row: Appointment) => (
+      <span className={getStatusColor(row.status)}>{row.status}</span>
+    ),
+  },
+  { 
+    key: "total_cost", 
+    label: "Total Cost", 
+    render: (row: Appointment) => `$${row.total_cost}` 
   },
 ];
 
-// Doctor columns (show patient info)
-const doctorColumns = [
+// Patient columns (show doctor and hospital info)
+const patientColumns: IDataTableColumnProps<Appointment>[] = [
+  ...baseColumns,
   {
-    key: "patient",
-    label: "Patient",
-    render: (row: Appointment) =>
-      `${row.patient_first_name || ""} ${row.patient_last_name || ""}`.trim() ||
-      row.patient_email,
-  },
-  { key: "date", label: "Date" },
-  { key: "time", label: "Time" },
-  { key: "reason", label: "Reason" },
-  {
-    key: "status",
-    label: "Status",
-    render: (row: Appointment) => {
-      return <span className={getStatusColor(row.status)}>{row.status}</span>;
-    },
-  },
-];
-
-// Hospital/Front desk columns (show both patient and doctor, no hospital)
-const hospitalColumns = [
-  {
-    key: "patient",
-    label: "Patient",
-    render: (row: Appointment) =>
-      `${row.patient_first_name || ""} ${row.patient_last_name || ""}`.trim() ||
-      row.patient_email,
+    key: "hospital",
+    label: "Hospital",
+    render: (row: Appointment) => row.hospital_name || `Hospital #${row.hospital_id}`,
   },
   {
     key: "doctor",
     label: "Doctor",
-    render: (row: Appointment) =>
-      `${row.doctor_first_name || ""} ${row.doctor_last_name || ""}`.trim() ||
-      row.doctor_email,
-  },
-  { key: "date", label: "Date" },
-  { key: "time", label: "Time" },
-  { key: "reason", label: "Reason" },
-  {
-    key: "status",
-    label: "Status",
-    render: (row: Appointment) => {
-      return <span className={getStatusColor(row.status)}>{row.status}</span>;
-    },
+    render: (row: Appointment) => row.doctor_name || `Doctor #${row.doctor_id}`,
   },
 ];
 
-// Get columns based on user role
-const getColumns = (role?: UserRole): IDataTableColumnProps<Appointment>[] => {
-  switch (role) {
-    case ROLES.PATIENT:
-      return patientColumns;
-    case ROLES.DOCTOR:
-      return doctorColumns;
-    case ROLES.HOSPITAL_ADMIN:
-    case ROLES.HOSPITAL_SUB_ADMIN:
-    case ROLES.HOSPITAL_FRONT_DESK:
-      return hospitalColumns;
-    default:
-      return patientColumns;
-  }
-};
+// Doctor columns (show patient and hospital info)
+const doctorColumns: IDataTableColumnProps<Appointment>[] = [
+  ...baseColumns,
+  {
+    key: "patient",
+    label: "Patient",
+    render: (row: Appointment) => row.patient_name || `Patient #${row.patient_id}`,
+  },
+  {
+    key: "hospital",
+    label: "Hospital",
+    render: (row: Appointment) => row.hospital_name || `Hospital #${row.hospital_id}`,
+  },
+];
 
+// Hospital staff columns (show patient and doctor info)
+const hospitalColumns: IDataTableColumnProps<Appointment>[] = [
+  ...baseColumns,
+  {
+    key: "patient",
+    label: "Patient",
+    render: (row: Appointment) => row.patient_name || `Patient #${row.patient_id}`,
+  },
+  {
+    key: "doctor",
+    label: "Doctor", 
+    render: (row: Appointment) => row.doctor_name || `Doctor #${row.doctor_id}`,
+  },
+];
+
+// Filter buttons
 const buttons = [
   { label: "All", value: "All" },
-  { label: "Upcoming", value: "upcoming" },
-  { label: "In progress", value: "in progress" },
-  { label: "Completed", value: "completed" },
-  { label: "Cancelled", value: "cancelled" },
+  { label: "Processing", value: "PROCESSING" },
+  { label: "Approved", value: "APPROVED" },
+  { label: "In Progress", value: "IN_PROGRESS" },
+  { label: "Completed", value: "COMPLETED" },
+  { label: "Cancelled", value: "CANCELLED" },
+  { label: "Denied", value: "DENIED" },
+  { label: "Rescheduled", value: "RESCHEDULED" },
 ];
 
-function AppointmentsPage() {
+const AppointmentsPage = React.memo(() => {
   const role = useUserRole();
-  const [data, setData] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
+  
+  const { 
+    appointments, 
+    loading, 
+    error, 
+    getAllPatient, 
+    getAllDoctor, 
+    getAllHospital 
+  } = useAppointment();
 
+  // Memoized column selection based on user role
+  const columns = useMemo((): IDataTableColumnProps<Appointment>[] => {
+    switch (role) {
+      case ROLES.PATIENT:
+        return patientColumns;
+      case ROLES.DOCTOR:
+        return doctorColumns;
+      case ROLES.HOSPITAL_ADMIN:
+      case ROLES.HOSPITAL_SUB_ADMIN:
+      case ROLES.HOSPITAL_FRONT_DESK:
+        return hospitalColumns;
+      default:
+        return patientColumns;
+    }
+  }, [role]);
+
+  // Memoized row click handler
+  const handleRowClick = useCallback((row: Appointment) => {
+    navigate(ROUTES.APPOINTMENT_DETAIL, { state: row });
+  }, [navigate]);
+
+  // Fetch appointments based on user role
   useEffect(() => {
     const fetchAppointments = async () => {
-      setLoading(true);
-      setError("");
-
-      const endpoint = getEndpoint(role);
-      if (!endpoint) {
-        setError("Role not supported for appointments");
-        setLoading(false);
-        return;
-      }
-
       try {
-        const res = await api.get(endpoint);
-        setData(res.data.data || []);
-      } catch (err: any) {
-        if (err.response?.status == StatusCodes.NOT_FOUND) {
-          setData([]);
-        } else {
-          setError(
-            err.response?.data?.message || "Failed to load appointments"
-          );
+        switch (role) {
+          case ROLES.PATIENT:
+            await getAllPatient();
+            break;
+          case ROLES.DOCTOR:
+            await getAllDoctor();
+            break;
+          case ROLES.HOSPITAL_ADMIN:
+          case ROLES.HOSPITAL_SUB_ADMIN:
+          case ROLES.HOSPITAL_FRONT_DESK:
+            await getAllHospital();
+            break;
+          default:
+            console.warn("Role not supported for appointments");
+            break;
         }
-      } finally {
-        setLoading(false);
+      } catch (err) {
+        // Error handled by hook
       }
     };
 
-    fetchAppointments();
-  }, [role]);
+    if (role) {
+      fetchAppointments();
+    }
+  }, [role, getAllPatient, getAllDoctor, getAllHospital]);
+
+  // Memoized loading state
+  const loadingComponent = useMemo(() => (
+    <div className="flex justify-center items-center">Loading...</div>
+  ), []);
+
+  // Memoized error state
+  const errorComponent = useMemo(() => (
+    error ? <div className="text-red-500 mb-4">{error}</div> : null
+  ), [error]);
+
+  // Memoized data table
+  const dataTableComponent = useMemo(() => (
+    !loading && !error ? (
+      <DataTable
+        columns={columns}
+        data={appointments}
+        buttons={buttons}
+        defaultFilter="All"
+        filterKey="status"
+        searchable={true}
+        onRowClick={handleRowClick}
+      />
+    ) : null
+  ), [loading, error, columns, appointments, handleRowClick]);
 
   return (
     <div className="flex justify-center">
-      {loading && (
-        <div className="flex justify-center items-center">Loading...</div>
-      )}
-      {error && <div className="text-red-500">{error}</div>}
-
-      {!loading && !error && (
-        <DataTable
-          columns={getColumns(role)}
-          data={data}
-          buttons={buttons}
-          searchable={true}
-          onRowClick={(row) =>
-            navigate(ROUTES.APPOINTMENT_DETAIL, { state: row })
-          }
-        />
-      )}
+      {loading && loadingComponent}
+      {errorComponent}
+      {dataTableComponent}
     </div>
   );
-}
+});
+
+AppointmentsPage.displayName = 'AppointmentsPage';
 
 export default AppointmentsPage;

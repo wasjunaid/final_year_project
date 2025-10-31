@@ -1,20 +1,31 @@
 import { useEffect, useState } from "react";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+import { useHospitalAssociationRequest } from "../../hooks/useHospitalAssociationRequest";
+import { useHospitalStaff } from "../../hooks/useHospitalStaff";
 import { type HospitalAssociationRequest } from "../../models/HospitalAssociationRequest";
-import StatusCodes from "../../constants/StatusCodes";
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
 import AssociationRequestCard from "./components/AssociationRequestCard";
 
 function AssociationRequestsPage() {
   const role = useUserRole();
-
-  const [data, setData] = useState<HospitalAssociationRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [hospitalId, setHospitalId] = useState<number | null>(null);
+  const { 
+    requests, 
+    loading, 
+    error, 
+    success, 
+    getByPerson, 
+    getByHospital, 
+    approveRequest, 
+    deleteByStaff, 
+    deleteByPerson,
+    clearMessages 
+  } = useHospitalAssociationRequest();
+  
+  const { 
+    staff, 
+    loading: staffLoading, 
+    getStaff 
+  } = useHospitalStaff();
 
   const isHospitalStaff =
     role === ROLES.HOSPITAL_ADMIN ||
@@ -23,94 +34,53 @@ function AssociationRequestsPage() {
 
   const isPersonRole = role === ROLES.DOCTOR || role === ROLES.MEDICAL_CODER;
 
-  // Fetch hospital ID for hospital staff
+  // Fetch hospital staff data if needed
   useEffect(() => {
-    const fetchHospitalId = async () => {
+    const fetchData = async () => {
       if (isHospitalStaff) {
         try {
-          const res = await api.get(EndPoints.hospitalStaff.get);
-          const staffData = res.data.data;
-
-          if (staffData.hospital_id) {
-            setHospitalId(staffData.hospital_id);
-          } else {
-            setError("Could not retrieve hospital information");
-          }
+          await getStaff();
         } catch (err: any) {
-          setError(
-            err.response?.data?.message ||
-              "Failed to fetch hospital information"
-          );
+          // Error is handled by the hook
         }
       }
     };
 
     if (role) {
-      fetchHospitalId();
+      fetchData();
     }
-  }, [role, isHospitalStaff]);
+  }, [role, isHospitalStaff, getStaff]);
 
-  // Fetch association requests
-  const fetchRequests = async () => {
-    // Don't fetch if hospital staff and no hospital ID yet
-    if (isHospitalStaff && !hospitalId) {
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    try {
-      let endpoint = "";
-
-      if (isPersonRole) {
-        // Doctors and medical coders view requests sent to them
-        endpoint = EndPoints.hospitalAssociationRequest.person;
-      } else if (isHospitalStaff && hospitalId) {
-        // Hospital staff view requests they created
-        endpoint = `${EndPoints.hospitalAssociationRequest.hospital}${hospitalId}`;
-      }
-
-      if (!endpoint) {
-        setError("Invalid role for viewing association requests");
-        setLoading(false);
-        return;
-      }
-
-      const res = await api.get(endpoint);
-      setData(res.data.data || []);
-    } catch (err: any) {
-      if (err.response?.status === StatusCodes.NOT_FOUND) {
-        setData([]);
-      } else {
-        setError(
-          err.response?.data?.message || "Failed to load association requests"
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch requests after hospital ID is loaded (for hospital staff) or immediately (for persons)
+  // Fetch requests based on user role
   useEffect(() => {
-    if (role && (isPersonRole || (isHospitalStaff && hospitalId))) {
+    const fetchRequests = async () => {
+      try {
+        if (isPersonRole) {
+          await getByPerson();
+        } else if (isHospitalStaff) {
+          await getByHospital();
+        }
+      } catch (err) {
+        // Error is handled by the hook
+      }
+    };
+
+    if (role) {
       fetchRequests();
     }
-  }, [role, hospitalId, isPersonRole, isHospitalStaff]);
+  }, [role, isPersonRole, isHospitalStaff, getByPerson, getByHospital]);
 
   const handleApprove = async (requestId: number) => {
     try {
-      await api.put(
-        `${EndPoints.hospitalAssociationRequest.approve}${requestId}`
-      );
-      setSuccess("Association request approved successfully!");
-      setTimeout(() => setSuccess(""), 3000);
-
-      // Refetch data
-      fetchRequests();
+      await approveRequest(requestId);
+      // Refetch data after approval
+      if (isPersonRole) {
+        await getByPerson();
+      } else if (isHospitalStaff) {
+        await getByHospital();
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to approve request");
+      // Error is handled by the hook
     }
   };
 
@@ -120,17 +90,32 @@ function AssociationRequestsPage() {
     }
 
     try {
-      await api.delete(
-        `${EndPoints.hospitalAssociationRequest.delete}${requestId}`
-      );
-      setSuccess("Association request rejected successfully!");
-
-      // Refetch data
-      fetchRequests();
+      if (isHospitalStaff) {
+        await deleteByStaff(requestId);
+      } else {
+        await deleteByPerson(requestId);
+      }
+      
+      // Refetch data after deletion
+      if (isPersonRole) {
+        await getByPerson();
+      } else if (isHospitalStaff) {
+        await getByHospital();
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to reject request");
+      // Error is handled by the hook
     }
   };
+
+  // Clear messages after 3 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
   // Restrict access to only allowed roles
   if (role && !isHospitalStaff && !isPersonRole) {
@@ -146,7 +131,7 @@ function AssociationRequestsPage() {
     );
   }
 
-  if (!role || (isHospitalStaff && loading && !hospitalId)) {
+  if (!role || loading || staffLoading) {
     return (
       <div className="flex flex-col h-full p-6">
         <div className="flex justify-center items-center h-64">
@@ -172,7 +157,7 @@ function AssociationRequestsPage() {
       )}
 
       {/* Empty State */}
-      {!loading && data.length === 0 && (
+      {!loading && requests.length === 0 && (
         <div className="text-center text-gray-500 mt-8">
           <p className="text-lg mb-2">
             {isPersonRole
@@ -188,9 +173,9 @@ function AssociationRequestsPage() {
       )}
 
       {/* Cards Grid */}
-      {!loading && data.length > 0 && (
+      {!loading && requests.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.map((request) => (
+          {requests.map((request) => (
             <AssociationRequestCard
               key={request.hospital_association_request_id}
               request={request}

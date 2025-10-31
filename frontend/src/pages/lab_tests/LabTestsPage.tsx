@@ -26,9 +26,7 @@ function LabTestDetails({
           </div>
           <div>
             <h2 className="text-xl font-semibold">{test.name}</h2>
-            {test.category && (
-              <p className="text-sm text-gray-500">Category: {test.category}</p>
-            )}
+            {/* Category removed: not in backend model */}
           </div>
         </div>
         <Button
@@ -56,14 +54,7 @@ function LabTestDetails({
         </div>
       )}
 
-      {test.preparation && (
-        <div>
-          <h3 className="font-medium text-gray-700">Preparation</h3>
-          <p className="text-gray-600 whitespace-pre-line">
-            {test.preparation}
-          </p>
-        </div>
-      )}
+      {/* Preparation removed: not in backend model */}
     </div>
   );
 }
@@ -90,11 +81,7 @@ function LabTestsPage() {
           <span className="font-medium text-gray-900">{row.name}</span>
         ),
       },
-      {
-        key: "category",
-        label: "Category",
-        render: (row) => row.category ?? "—",
-      },
+      // Category column removed: not in backend model
       {
         key: "cost",
         label: "Cost",

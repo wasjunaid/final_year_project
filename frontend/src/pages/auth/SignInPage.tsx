@@ -6,28 +6,23 @@ import LabeledDropDownField from "../../components/LabeledDropDownField";
 import PasswordField from "./components/PasswordField";
 import AuthButton from "./components/AuthButton";
 import ROUTES from "../../constants/routes";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
 import { useAuth } from "../../hooks/useAuth";
+import { authApi } from "../../services/authApi";
 import WarningCard from "../../components/WarningCard";
-import type { User } from "../../models/User";
-import { jwtDecode } from "jwt-decode";
 import rolePortalRoute from "./utils/rolePortalNavigation";
 import AuthBg from "./components/AuthBg";
 import Card from "../../components/Card";
 import GoogleAuthButton from "./components/GoogleAuthButton";
+import type { UserRole } from "../../constants/roles";
 
 function SignInPage() {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, loading, error, success, clearMessages } = useAuth();
 
   // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   // Verification states
   const [verifyEmail, setVerifyEmail] = useState<boolean>(false);
@@ -36,55 +31,27 @@ function SignInPage() {
   const [resendSuccess, setResendSuccess] = useState("");
 
   const handleSignIn = async () => {
-    setError("");
-    setSuccess("");
+    clearMessages();
     setVerifyEmail(false);
-
-    setVerifyEmail(false);
-    setResendLoading(false);
     setResendError("");
     setResendSuccess("");
 
     if (!email || !password || !role) {
-      setError("All fields are required");
       return;
     }
 
     try {
-      setLoading(true);
-
-      const res = await api.post(EndPoints.auth.signIn, {
-        email,
-        password,
-        role,
-      });
-
-      if (res.data.success) {
-        // alert(res.data.message); // or use toast
-        const { accessToken, refreshToken } = res.data.data || {};
-        if (accessToken && refreshToken) {
-          signIn({ accessToken, refreshToken });
-        }
-
-        //TODO: find a better way to pass user-role instead of decoding manually
-        const tempUser = jwtDecode<User>(accessToken);
-        const role = tempUser?.role;
-
-        navigate(rolePortalRoute({ role }) ?? ROUTES.HOME);
-      } else {
-        setError(res.data.message || "Sign in failed");
+      const success = await signIn({ email, password, role });
+      
+      if (success) {
+        navigate(rolePortalRoute({ role: role as UserRole }) ?? ROUTES.HOME);
       }
     } catch (err: any) {
       const data = err.response?.data;
-
+      
       if (data?.emailVerificationNeeded) {
         setVerifyEmail(true);
-        setError(""); // clear generic error
-      } else {
-        setError(data?.message ?? "Sign in failed!");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -99,19 +66,14 @@ function SignInPage() {
     setResendLoading(true);
 
     try {
-      const res = await api.post(EndPoints.emailVerification.sendOrResend, {
+      await authApi.sendOrResendEmailVerificationToken({
         email: email,
+        role: role,
       });
 
-      if (res.data.success) {
-        setResendSuccess(
-          "Verification email sent! Please check your inbox or spam folder."
-        );
-      } else {
-        setResendError(
-          res.data.message ?? "Failed to send verification email."
-        );
-      }
+      setResendSuccess(
+        "Verification email sent! Please check your inbox or spam folder."
+      );
     } catch (err: any) {
       setResendError(
         err.response?.data?.message ?? "Something went wrong while resending."
@@ -125,11 +87,32 @@ function SignInPage() {
     <AuthBg>
       <Card className="w-full max-w-xl mx-8">
         <div className="flex justify-center">
-          <img src={logo} className="h-30 mb-2" />
+          <img src={logo} className="h-30 mb-2" alt="Logo" />
         </div>
 
-        {error && <p className="text-center text-red-500">{error}</p>}
-        {success && <p className="text-center text-green-500">{success}</p>}
+        {error && (
+          <div className="text-center text-red-500 mb-4">
+            <p>{error}</p>
+            <button 
+              onClick={clearMessages}
+              className="text-sm underline hover:no-underline mt-1"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+        
+        {success && (
+          <div className="text-center text-green-500 mb-4">
+            <p>{success}</p>
+            <button 
+              onClick={clearMessages}
+              className="text-sm underline hover:no-underline mt-1"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {verifyEmail && (
           <WarningCard>
@@ -167,11 +150,13 @@ function SignInPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+        
         <PasswordField
           title="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        
         <LabeledDropDownField
           label="Role"
           required

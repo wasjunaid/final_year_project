@@ -18,28 +18,26 @@ function EditInsuranceCompanyModal({
   onClose,
   onSuccess,
 }: EditInsuranceCompanyModalProps) {
-  const { updateCompany, updating, isCompanyNameExists, clearMessages } =
-    useInsuranceCompanies();
+  const { update, loading, items, clearMessages } = useInsuranceCompanies();
 
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // Update form data when company changes
   useEffect(() => {
     if (company) {
       setFormData({
         name: company.name,
+        email: company.email,
       });
       setFormErrors({});
     }
   }, [company]);
 
-  // Validation
   const validateForm = (): boolean => {
     const errors: { [key: string]: string } = {};
-
     if (!formData.name.trim()) {
       errors.name = "Company name is required";
     } else if (formData.name.trim().length < 2) {
@@ -48,50 +46,51 @@ function EditInsuranceCompanyModal({
       errors.name = "Company name must not exceed 255 characters";
     } else if (
       company &&
-      isCompanyNameExists(formData.name.trim(), company.insurance_company_id)
+      items.some(
+        (c) =>
+          c.name.trim().toLowerCase() === formData.name.trim().toLowerCase() &&
+          c.insurance_company_id !== company.insurance_company_id
+      )
     ) {
       errors.name = "A company with this name already exists";
     }
-
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email.trim())) {
+      errors.email = "Invalid email address";
+    }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!company) return;
-
     clearMessages();
-
     if (!validateForm()) {
       return;
     }
-
-    const success = await updateCompany(company.insurance_company_id, {
+    const success = await update(company.insurance_company_id, {
+      insurance_company_id: company.insurance_company_id,
       name: formData.name.trim(),
+      email: formData.email.trim(),
     });
-
     if (success) {
       onSuccess?.();
       onClose();
     }
   };
 
-  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  // Handle close
   const handleClose = () => {
-    setFormData({ name: "" });
+    setFormData({ name: "", email: "" });
     setFormErrors({});
     clearMessages();
     onClose();
@@ -148,6 +147,7 @@ function EditInsuranceCompanyModal({
             </div>
 
             {/* Company Name */}
+
             <LabeledInputField
               title="Company Name"
               name="name"
@@ -158,21 +158,32 @@ function EditInsuranceCompanyModal({
               hint="Company name must be unique and between 2-255 characters"
               error={formErrors.name}
             />
+            <LabeledInputField
+              title="Company Email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Enter company email"
+              required
+              hint="A valid email address is required"
+              error={formErrors.email}
+              type="email"
+            />
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
               <Button
-                label={updating ? "Updating..." : "Update Company"}
+                label={loading ? "Updating..." : "Update Company"}
                 icon={<FaEdit />}
                 type="submit"
-                disabled={updating || !formData.name.trim()}
+                disabled={loading || !formData.name.trim() || !formData.email.trim()}
                 className="flex-1"
               />
               <Button
                 label="Cancel"
                 variant="secondary"
                 onClick={handleClose}
-                disabled={updating}
+                disabled={loading}
                 className="flex-1"
               />
             </div>

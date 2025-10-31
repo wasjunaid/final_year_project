@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import ROUTES from "../../constants/routes";
-import EndPoints from "../../constants/endpoints";
+import { authApi } from "../../services/authApi";
 import AuthButton from "./components/AuthButton";
-import api from "../../services/api";
 import SuccessSvg from "./components/SuccessSvg";
 import ErrorSvg from "./components/ErrorSvg";
 import LoadingSvg from "./components/LoadingSvg";
@@ -29,9 +28,13 @@ function EmailVerification() {
 
   const verifyEmail = async (token: string) => {
     try {
-      await api.post(EndPoints.emailVerification.verify, { token: token });
+      const response = await authApi.verifyEmail({ token: token });
 
-      setVerified(true);
+      if (response.success) {
+        setVerified(true);
+      } else {
+        setError(response.message || "Verification failed");
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Verification failed");
     } finally {

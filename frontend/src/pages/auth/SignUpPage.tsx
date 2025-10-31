@@ -5,84 +5,108 @@ import ROUTES from "../../constants/routes";
 import { Link, useNavigate } from "react-router-dom";
 import AuthButton from "./components/AuthButton";
 import PasswordField from "./components/PasswordField";
-import api from "../../services/api";
 import { useState } from "react";
-import EndPoints from "../../constants/endpoints";
 import AuthBg from "./components/AuthBg";
 import Card from "../../components/Card";
+import { useAuth } from "../../hooks/useAuth";
 
 function SignUpPage() {
   const navigate = useNavigate();
+  const { signUp, loading, error, success, clearMessages } = useAuth();
+  
+  // Form state
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [role, setRole] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  
+  // Local validation state
+  const [validationError, setValidationError] = useState("");
 
   const handleSignUp = async () => {
-    setError("");
+    clearMessages();
+    setValidationError("");
 
+    // Client-side validation
     if (!email || !password || !confirmPassword || !role) {
-      setError("All fields are required");
+      setValidationError("All fields are required");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setValidationError("Passwords do not match");
       return;
     }
 
     try {
-      setLoading(true);
-
-      const res = await api.post(EndPoints.auth.signUp, {
-        email,
-        password,
-        role,
-      });
-
-      console.log(`response: ${res}`);
-
-      if (res.data.success) {
-        alert(res.data.message); // or show a toast
-        navigate(ROUTES.AUTH.SIGN_IN);
-      } else {
-        setError(res.data.message || "Sign up failed");
+      const success = await signUp({ email, password, role });
+      
+      if (success) {
+        // Navigate to sign in page after successful registration
+        setTimeout(() => {
+          navigate(ROUTES.AUTH.SIGN_IN);
+        }, 2000); // Give user time to see success message
       }
     } catch (err: any) {
-      console.log(`Error in signup: ${err.response?.data?.message}`);
-      setError(err.response?.data?.message ?? "SignUp failed!");
-    } finally {
-      setLoading(false);
+      // Error handling is managed by the hook
+      console.error("Sign up failed:", err);
     }
   };
+
+  const displayError = validationError || error;
 
   return (
     <AuthBg>
       <Card className="w-full max-w-xl mx-8">
         <div className="flex justify-center">
-          <img src={logo} className="h-30 mb-2" />
+          <img src={logo} className="h-30 mb-2" alt="Logo" />
         </div>
 
-        {error && <p className="text-center text-red-500"> {error}</p>}
+        {displayError && (
+          <div className="text-center text-red-500 mb-4">
+            <p>{displayError}</p>
+            <button 
+              onClick={() => {
+                clearMessages();
+                setValidationError("");
+              }}
+              className="text-sm underline hover:no-underline mt-1"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+        
+        {success && (
+          <div className="text-center text-green-500 mb-4">
+            <p>{success}</p>
+            <p className="text-sm mt-1">Redirecting to sign in...</p>
+          </div>
+        )}
 
         <LabeledInputField
           title="Email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          disabled={loading}
         />
+        
         <PasswordField
           title="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
         />
+        
         <PasswordField
           title="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
+          disabled={loading}
         />
+        
         <LabeledDropDownField
           label="Role"
           required
@@ -92,12 +116,13 @@ function SignUpPage() {
           ]}
           value={role}
           onChange={(e) => setRole(e.target.value)}
+          disabled={loading}
         />
 
         <AuthButton
           className="my-2"
           label={loading ? "Signing Up ..." : "Sign Up"}
-          disabled={loading}
+          disabled={loading || !!success}
           onClick={handleSignUp}
         />
 

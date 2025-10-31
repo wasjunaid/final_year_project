@@ -1,6 +1,8 @@
 import { useState } from "react";
 import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
+import { useUserRole } from "../../hooks/useUserRole";
+import { ROLES } from "../../constants/roles";
 
 // Importing icons from react-icons
 import {
@@ -22,8 +24,23 @@ import HospitalPannelListPage from "../hospital_pannel/HospitalPannelListPage";
 import LabTestsPage from "../lab_tests/LabTestsPage";
 
 function HospitalPortalLayout() {
+  const role = useUserRole();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedPage, setSelectedPage] = useState("hospital");
+
+  // Check if user has hospital admin access
+  const isHospitalAdmin = role === ROLES.HOSPITAL_ADMIN || role === ROLES.HOSPITAL_SUB_ADMIN;
+  
+  if (!isHospitalAdmin) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center text-red-500">
+          <p className="text-lg mb-2">Access Denied</p>
+          <p>Only hospital administrators can access this area</p>
+        </div>
+      </div>
+    );
+  }
 
   const sidebarItems: ISideBarItem[] = [
     { label: "Hospital", icon: <FaHospital />, page: "hospital" },

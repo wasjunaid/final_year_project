@@ -1,25 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import DataTable from "../../components/DataTable";
-import Button from "../../components/Button";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
-import { FaUserPlus, FaTrash } from "react-icons/fa";
+import { useSystemAdmin } from "../../hooks/useSystemAdmin";
+import { FaTrash } from "react-icons/fa";
 
 function AdminsPage() {
-  const [admins, setAdmins] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { 
+    systemAdmins, 
+    loading, 
+    error, 
+    success,
+    getAllSystemAdmins, 
+    deleteSystemAdmin,
+    clearMessages 
+  } = useSystemAdmin();
 
   const fetchAdmins = async () => {
-    setLoading(true);
-    setError("");
     try {
-      const res = await api.get(EndPoints.systemAdmin.getAll);
-      setAdmins(res.data.data || []);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to load admins");
-    } finally {
-      setLoading(false);
+      await getAllSystemAdmins();
+    } catch (err) {
+      // Error handled by hook
     }
   };
 
@@ -33,18 +32,23 @@ function AdminsPage() {
     }
 
     try {
-      await api.delete(`${EndPoints.systemAdmin.delete}/${adminId}`);
+      await deleteSystemAdmin(adminId);
       // Refresh the list
-      fetchAdmins();
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to delete admin");
+      await getAllSystemAdmins();
+    } catch (err) {
+      // Error handled by hook
     }
   };
 
-  const handleCreateAdmin = () => {
-    // TODO: Implement create admin functionality
-    // Either navigate to create page or show modal
-  };
+  // Clear messages after 3 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
   const columns = [
     { key: "system_admin_id", label: "ID" },
@@ -79,14 +83,15 @@ function AdminsPage() {
       </div>
 
       {error && <div className="text-red-500 mb-4">{error}</div>}
+      {success && <div className="text-green-500 mb-4">{success}</div>}
 
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <DataTable columns={columns} data={admins} searchable={true} />
+        <DataTable columns={columns} data={systemAdmins} searchable={true} />
       )}
 
-      {!loading && admins.length === 0 && (
+      {!loading && systemAdmins.length === 0 && (
         <div className="text-gray-500 text-center mt-4">
           No administrators found.
         </div>

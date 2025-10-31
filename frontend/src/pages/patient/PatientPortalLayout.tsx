@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
 
@@ -26,7 +26,8 @@ function PatientPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedPage, setSelectedPage] = useState("demographics");
 
-  const sidebarItems: ISideBarItem[] = [
+  // Memoize sidebar items to prevent re-creation on every render
+  const sidebarItems: ISideBarItem[] = useMemo(() => [
     // { label: "Home", icon: <FaHome />, page: "home" },
     { label: "Demographics", icon: <FaUser />, page: "demographics" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
@@ -36,9 +37,10 @@ function PatientPortalLayout() {
     { label: "Prescriptions", icon: <FaFileAlt />, page: "prescriptions" },
     { label: "EHR", icon: <FaShare />, page: "ehr" },
     // { label: "Billing", icon: <FaCreditCard />, page: "billing" },
-  ];
+  ], []);
 
-  const renderPage = () => {
+  // Memoize page rendering to prevent unnecessary re-renders
+  const renderPage = useCallback(() => {
     switch (selectedPage) {
       case "home":
         return <PatientDasboardTab />;
@@ -63,15 +65,25 @@ function PatientPortalLayout() {
       default:
         return <h2 className="p-4">Page Not Found</h2>;
     }
-  };
+  }, [selectedPage]);
+
+  // Memoize toggle function to prevent unnecessary re-renders
+  const handleToggleSidebar = useCallback(() => {
+    setCollapsed(!collapsed);
+  }, [collapsed]);
+
+  // Memoize notifications click handler
+  const handleNotificationsClick = useCallback(() => {
+    setSelectedPage("notifications");
+  }, []);
 
   return (
     <div className="flex flex-col h-screen">
       {/* Navbar */}
       <NavBar
-        onToggleSidebar={() => setCollapsed(!collapsed)}
+        onToggleSidebar={handleToggleSidebar}
         profileImage=""
-        onNotificationsClick={() => setSelectedPage("notifications")}
+        onNotificationsClick={handleNotificationsClick}
       />
 
       <div className="flex flex-row flex-1">

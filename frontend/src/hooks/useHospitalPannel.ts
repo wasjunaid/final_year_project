@@ -61,7 +61,7 @@ export function useHospitalPannel() {
       setError("");
       await hospitalPannelListApi.delete(hospital_panel_list_id);
       setPanels((prev) =>
-        prev.filter((p) => p.hospital_pannel_list_id !== hospital_panel_list_id)
+        prev.filter((p) => p.hospital_panel_list_id !== hospital_panel_list_id)
       );
       setSuccess("Panel item removed");
       return true;

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import LabeledInputField from "../../components/LabeledInputField";
 import LabeledDropDownField from "../../components/LabeledDropDownField";
 import Button from "../../components/Button";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+import { useHospitalStaff } from "../../hooks/useHospitalStaff";
+import { useHospital } from "../../hooks/useHospital";
 import { useAuth } from "../../hooks/useAuth";
 import { ROLES } from "../../constants/roles";
 
@@ -19,15 +19,24 @@ function CreateHospitalStaffPage() {
   const [hospitalId, setHospitalId] = useState("");
   const [role, setRole] = useState("");
   const [hospitals, setHospitals] = useState<Array<{ label: string; value: number }>>([]);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
 
-  const { user } = useAuth();
+  const { role: userRole } = useAuth();
+  const { 
+    loading, 
+    success, 
+    error, 
+    createStaff, 
+    clearMessages 
+  } = useHospitalStaff();
+  
+  const { 
+    hospitals: hospitalList, 
+    getHospitals 
+  } = useHospital();
 
   // filter staff roles based on user role
   const STAFF_ROLES =
-    user?.role === ROLES.SUPER_ADMIN
+    userRole === ROLES.SUPER_ADMIN
       ? ALL_STAFF_ROLES
       : ALL_STAFF_ROLES.filter((r) => r.value !== "hospital admin");
 
@@ -35,49 +44,57 @@ function CreateHospitalStaffPage() {
   useEffect(() => {
     const fetchHospitals = async () => {
       try {
-        const res = await api.get(EndPoints.hospital.get);
-        const hospitalOptions = res.data.data.map((h: any) => ({
-          label: h.name,
-          value: h.hospital_id,
-        }));
-        setHospitals(hospitalOptions);
+        await getHospitals();
       } catch {
-        setError("Failed to load hospitals");
+        // Error handled by hook
       }
     };
     fetchHospitals();
   }, []);
 
+  // Update hospitals options when hospital data changes
+  useEffect(() => {
+    if (hospitalList.length > 0) {
+      const hospitalOptions = hospitalList.map((h: any) => ({
+        label: h.name,
+        value: h.hospital_id,
+      }));
+      setHospitals(hospitalOptions);
+    }
+  }, [hospitalList]);
+
   const handleCreate = async () => {
-    setError("");
-    setSuccess("");
+    clearMessages();
     if (!email || !hospitalId || !role) {
-      setError("Please fill in all fields.");
+      // Let the hook handle validation
       return;
     }
 
-    setLoading(true);
     try {
-      const res = await api.post(EndPoints.hospitalStaff.insert, {
+      await createStaff({
         email,
-        hospital_id: hospitalId,
+        hospital_id: parseInt(hospitalId),
         role,
       });
 
-      if (res.data.success) {
-        setSuccess("Hospital staff created successfully!");
-        setEmail("");
-        setHospitalId("");
-        setRole("");
-      } else {
-        setError(res.data.message || "Failed to create hospital staff.");
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create hospital staff.");
-    } finally {
-      setLoading(false);
+      // Clear form on success
+      setEmail("");
+      setHospitalId("");
+      setRole("");
+    } catch (err) {
+      // Error handled by hook
     }
   };
+
+  // Clear messages after 3 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
   return (
     <div className="flex flex-col gap-2">

@@ -59,7 +59,7 @@ const EndPoints = {
   hospitalPannelList: {
     getAll: "/hospital-panel-list", // GET
     insert: "/hospital-panel-list", // POST
-    delete: "/hospital-panel-list/:hospital_pannel_list_id", // DELETE
+    delete: "/hospital-panel-list/:hospital_panel_list_id", // DELETE
   },
   hospitalStaff: {
     getAdminsForSuperAdmin: "/hospital-staff/admin",  // GET

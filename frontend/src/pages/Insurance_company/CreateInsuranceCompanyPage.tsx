@@ -9,16 +9,17 @@ import LabeledInputField from "../../components/LabeledInputField";
 function CreateInsuranceCompanyPage() {
   const role = useUserRole();
   const {
-    creating,
+    loading,
     error,
     success,
-    createCompany,
+    create,
     clearMessages,
-    companyCount,
+    count,
   } = useInsuranceCompanies();
 
   // Form states
   const [companyName, setCompanyName] = useState("");
+  const [companyEmail, setCompanyEmail] = useState("");
 
   // Check if user has admin privileges
   const isSystemAdmin = role === ROLES.SUPER_ADMIN;
@@ -29,10 +30,10 @@ function CreateInsuranceCompanyPage() {
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     clearMessages();
-
-    const success = await createCompany({ name: companyName.trim() });
+    const success = await create({ name: companyName.trim(), email: companyEmail.trim() });
     if (success) {
       setCompanyName("");
+      setCompanyEmail("");
     }
   };
 
@@ -55,8 +56,7 @@ function CreateInsuranceCompanyPage() {
           Insurance Company Management
         </h1>
         <p className="text-gray-600 text-sm">
-          Create and manage insurance companies in the system ({companyCount}{" "}
-          companies)
+          Create and manage insurance companies in the system ({count} companies)
         </p>
       </div>
 
@@ -89,20 +89,27 @@ function CreateInsuranceCompanyPage() {
             <LabeledInputField
               title="Company Name"
               value={companyName}
-              onChange={(e) => {
-                setCompanyName(e.target.value);
-              }}
+              onChange={(e) => setCompanyName(e.target.value)}
               placeholder="Enter insurance company name (e.g., Blue Cross Blue Shield)"
               required
               hint="Company name must be unique and between 2-255 characters"
             />
+            <LabeledInputField
+              title="Company Email"
+              value={companyEmail}
+              onChange={(e) => setCompanyEmail(e.target.value)}
+              placeholder="Enter company email (e.g., info@bluecross.com)"
+              required
+              hint="A valid email address is required"
+              type="email"
+            />
 
             <div className="flex gap-4">
               <Button
-                label={creating ? "Creating..." : "Create Company"}
+                label={loading ? "Creating..." : "Create Company"}
                 icon={<FaPlus />}
                 type="submit"
-                disabled={creating || !companyName.trim()}
+                disabled={loading || !companyName.trim() || !companyEmail.trim()}
               />
             </div>
           </form>

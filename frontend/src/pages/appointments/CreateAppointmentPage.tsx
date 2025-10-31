@@ -1,27 +1,12 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import LabeledInputField from "../../components/LabeledInputField";
 import LabeledDropDownField from "../../components/LabeledDropDownField";
 import Button from "../../components/Button";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
-// import type { Doctor } from "../../models/Doctor";
+import { useAppointment } from "../../hooks/useAppointment";
+import { useDoctor } from "../../hooks/useDoctor";
+import { useHospital } from "../../hooks/useHospital";
 
-interface Hospital {
-  hospital_id: number;
-  name: string;
-}
-
-interface Doctor {
-  doctor_id: number;
-  email: string;
-  hospital_id: number | null;
-  hospital_name: string | null;
-  specialization: string | null;
-  status: string;
-  // Add other fields as needed
-}
-
-function CreateAppointmentPage() {
+const CreateAppointmentPage = React.memo(() => {
   // Basic form state
   const [hospitalId, setHospitalId] = useState("");
   const [doctorId, setDoctorId] = useState("");
@@ -29,90 +14,139 @@ function CreateAppointmentPage() {
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
 
-  // Data loading state
-  const [hospitals, setHospitals] = useState<Hospital[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  // Hooks for API operations
+  const { 
+    loading: appointmentLoading, 
+    success, 
+    error, 
+    createAppointment, 
+    clearMessages 
+  } = useAppointment();
+  
+  const { 
+    doctors, 
+    getDoctorsForAppointmentBooking 
+  } = useDoctor();
+  
+  const { 
+    hospitals, 
+    getHospitals 
+  } = useHospital();
 
-  // Fetch hospitals on mount
-  useEffect(() => {
-    const fetchHospitals = async () => {
-      try {
-        const res = await api.get(EndPoints.hospital.get);
-        console.log("Hospital data:", res.data.data);
-        // Store the raw hospital data, not the mapped options
-        setHospitals(res.data.data || []);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load hospitals");
-      }
-    };
-    fetchHospitals();
-  }, []);
+  // Memoized hospital options
+  const hospitalOptions = useMemo(() => {
+    if (!hospitals || hospitals.length === 0) return [];
+    
+    return hospitals.map((h: any) => ({
+      label: h.name,
+      value: h.hospital_id,
+    }));
+  }, [hospitals]);
 
-  // Fetch all doctors on mount
-  useEffect(() => {
-    const fetchAllDoctors = async () => {
-      try {
-        const res = await api.get(EndPoints.doctor.getAll);
-        // Store the complete doctor objects
-        setDoctors(res.data.data || []);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load doctors");
-      }
-    };
-    fetchAllDoctors();
-  }, []);
-
-  // Filter doctors based on selected hospital
-  const filteredDoctors = doctors
-    .filter((doctor) => {
+  // Memoized doctor options based on selected hospital
+  const doctorOptions = useMemo(() => {
+    if (!doctors || doctors.length === 0) return [];
+    
+    const filteredDoctors = doctors.filter((doctor: any) => {
       if (!hospitalId) return true; // Show all doctors if no hospital selected
-      return doctor.hospital_id === parseInt(hospitalId); // Use parseInt for string comparison
-    })
-    .map((doctor) => ({
+      return doctor.hospital_id === parseInt(hospitalId);
+    });
+    
+    return filteredDoctors.map((doctor: any) => ({
       value: doctor.doctor_id,
       label: `${doctor.email} ${
         doctor.specialization ? `(${doctor.specialization})` : ""
       } - ${doctor.hospital_name || "No Hospital"}`,
     }));
+  }, [doctors, hospitalId]);
 
-  const handleSubmit = async () => {
-    setError("");
-    setSuccess("");
-    if (!hospitalId || !doctorId || !date || !time || !reason) {
-      setError("Please fill in all fields");
+  // Memoized form validation
+  const isFormValid = useMemo(() => {
+    return !!(hospitalId && doctorId && date && time && reason);
+  }, [hospitalId, doctorId, date, time, reason]);
+
+  // Memoized handlers
+  const handleHospitalChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setHospitalId(e.target.value);
+    setDoctorId(""); // Reset doctor when hospital changes
+  }, []);
+
+  const handleDoctorChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setDoctorId(e.target.value);
+  }, []);
+
+  const handleDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setDate(e.target.value);
+  }, []);
+
+  const handleTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setTime(e.target.value);
+  }, []);
+
+  const handleReasonChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setReason(e.target.value);
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    clearMessages();
+    
+    if (!isFormValid) {
       return;
     }
 
-    setLoading(true);
     try {
-      const res = await api.post(EndPoints.appointments.request.insert, {
-        hospital_id: hospitalId,
-        doctor_id: doctorId,
+      await createAppointment({
+        hospital_id: parseInt(hospitalId),
+        doctor_id: parseInt(doctorId),
         date,
         time,
         reason,
       });
 
-      if (res.data.success) {
-        setSuccess("Appointment request created successfully!");
-        // Reset form
-        setHospitalId("");
-        setDoctorId("");
-        setDate("");
-        setTime("");
-        setReason("");
-      }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Failed to create appointment request"
-      );
-    } finally {
-      setLoading(false);
+      // Reset form on success
+      setHospitalId("");
+      setDoctorId("");
+      setDate("");
+      setTime("");
+      setReason("");
+    } catch (err) {
+      // Error handled by hook
     }
-  };
+  }, [clearMessages, isFormValid, createAppointment, hospitalId, doctorId, date, time, reason]);
+
+  // Fetch hospitals on mount
+  useEffect(() => {
+    const fetchHospitals = async () => {
+      try {
+        await getHospitals();
+      } catch (err) {
+        // Error handled by hook
+      }
+    };
+    fetchHospitals();
+  }, [getHospitals]);
+
+  // Fetch all doctors on mount
+  useEffect(() => {
+    const fetchAllDoctors = async () => {
+      try {
+        await getDoctorsForAppointmentBooking();
+      } catch (err) {
+        // Error handled by hook
+      }
+    };
+    fetchAllDoctors();
+  }, [getDoctorsForAppointmentBooking]);
+
+  // Clear messages after success
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -122,15 +156,8 @@ function CreateAppointmentPage() {
         <LabeledDropDownField
           label="Select Hospital"
           value={hospitalId}
-          onChange={(e) => {
-            setHospitalId(e.target.value);
-            console.log("Selected hospital ID:", e.target.value);
-            setDoctorId(""); // Reset doctor when hospital changes
-          }}
-          options={hospitals.map((h) => ({
-            value: h.hospital_id.toString(), // Convert to string for consistency
-            label: h.name,
-          }))}
+          onChange={handleHospitalChange}
+          options={hospitalOptions}
           required
           placeholder="Choose a hospital"
         />
@@ -141,9 +168,9 @@ function CreateAppointmentPage() {
         <LabeledDropDownField
           label="Select Doctor"
           value={doctorId}
-          onChange={(e) => setDoctorId(e.target.value)}
-          options={filteredDoctors}
-          disabled={loading}
+          onChange={handleDoctorChange}
+          options={doctorOptions}
+          disabled={appointmentLoading}
           required
           placeholder={
             hospitalId
@@ -159,14 +186,14 @@ function CreateAppointmentPage() {
           title="Date"
           type="date"
           value={date}
-          onChange={(e) => setDate(e.target.value)}
+          onChange={handleDateChange}
           required
         />
         <LabeledInputField
           title="Time"
           type="time"
           value={time}
-          onChange={(e) => setTime(e.target.value)}
+          onChange={handleTimeChange}
           required
         />
       </div>
@@ -176,7 +203,7 @@ function CreateAppointmentPage() {
           title="Reason"
           multiline
           value={reason}
-          onChange={(e) => setReason(e.target.value)}
+          onChange={handleReasonChange}
           required
         />
       </div>
@@ -187,13 +214,15 @@ function CreateAppointmentPage() {
       <div>
         <Button
           className="max-w-xs mt-4"
-          label={loading ? "Creating..." : "Create Appointment"}
+          label={appointmentLoading ? "Creating..." : "Create Appointment"}
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={appointmentLoading || !isFormValid}
         />
       </div>
     </div>
   );
-}
+});
+
+CreateAppointmentPage.displayName = 'CreateAppointmentPage';
 
 export default CreateAppointmentPage;

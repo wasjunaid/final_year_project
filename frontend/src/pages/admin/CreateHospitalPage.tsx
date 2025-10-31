@@ -1,39 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LabeledInputField from "../../components/LabeledInputField";
 import Button from "../../components/Button";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+import { useHospital } from "../../hooks/useHospital";
 
 export function CreateHospitalPage() {
   const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  
+  const { 
+    loading, 
+    success, 
+    error, 
+    createHospital, 
+    clearMessages 
+  } = useHospital();
 
   const handleCreate = async () => {
-    setError("");
-    setSuccess("");
-    if (!name || !address) {
-      setError("Please fill in all fields.");
+    clearMessages();
+    if (!name) {
       return;
     }
-    setLoading(true);
+    
     try {
-      const res = await api.post(EndPoints.hospital.create, { name, address });
-      if (res.data.success) {
-        setSuccess("Hospital created successfully!");
-        setName("");
-        setAddress("");
-      } else {
-        setError(res.data.message || "Failed to create hospital.");
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create hospital.");
-    } finally {
-      setLoading(false);
+      await createHospital({ name });
+      // Clear form on success
+      setName("");
+    } catch (err) {
+      // Error handled by hook
     }
   };
+
+  // Clear messages after 3 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -44,16 +48,6 @@ export function CreateHospitalPage() {
           title="Hospital Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <div className="w-full"></div>
-      </div>
-
-      <div className="flex items-center justify-between gap-10">
-        <LabeledInputField
-          title="Address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
           required
         />
         <div className="w-full"></div>

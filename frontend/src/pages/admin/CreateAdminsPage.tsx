@@ -1,51 +1,43 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import LabeledInputField from '../../components/LabeledInputField'
-import LabeledDropDownField from '../../components/LabeledDropDownField'
 import Button from '../../components/Button'
-import api from '../../services/api'
-import EndPoints from '../../constants/endpoints'
-
-const ADMIN_ROLES = [
-  { label: 'Admin', value: 'admin' },
-//   { label: 'Super Admin', value: 'super admin' },
-]
+import { useSystemAdmin } from '../../hooks/useSystemAdmin'
 
 function CreateAdminsPage() {
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState('')
-  const [error, setError] = useState('')
+  
+  const { 
+    loading, 
+    success, 
+    error, 
+    createSystemAdmin, 
+    clearMessages 
+  } = useSystemAdmin();
 
   const handleCreate = async () => {
-    setError('')
-    setSuccess('')
-    if (!email || !role) {
-      setError('Please fill in all fields.')
+    clearMessages();
+    if (!email) {
       return
     }
 
-    setLoading(true)
     try {
-      const res = await api.post(EndPoints.systemAdmin.create, {
-        email,
-        role,
-      })
-
-      if (res.data.success) {
-        setSuccess('Administrator created successfully!')
-        // Reset form
-        setEmail('')
-        setRole('')
-      } else {
-        setError(res.data.message || 'Failed to create administrator.')
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create administrator.')
-    } finally {
-      setLoading(false)
+      await createSystemAdmin({ email });
+      // Reset form on success
+      setEmail('')
+    } catch (err) {
+      // Error handled by hook
     }
   }
+
+  // Clear messages after 3 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -57,17 +49,6 @@ function CreateAdminsPage() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <div className="w-full"></div>
-      </div>
-
-      <div className="flex items-center justify-between gap-10">
-        <LabeledDropDownField
-          label="Role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          options={ADMIN_ROLES}
           required
         />
         <div className="w-full"></div>

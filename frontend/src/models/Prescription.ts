@@ -1,11 +1,10 @@
+
 export interface Prescription {
   prescription_id: number;
   appointment_id: number;
   medicine_id: number;
   dosage: string;
-  frequency: string;
-  duration: string;
-  instructions?: string;
+  instruction: string;
   created_at: string;
   updated_at: string;
   // Extended fields
@@ -15,11 +14,17 @@ export interface Prescription {
   doctor_name?: string;
 }
 
+
 export interface CreatePrescriptionRequest {
   appointment_id: number;
   medicine_id: number;
   dosage: string;
-  frequency: string;
-  duration: string;
-  instructions?: string;
+  instruction: string;
+}
+
+export interface UpdatePrescriptionRequest {
+  prescription_id: number;
+  medicine_id: number;
+  dosage: string;
+  instruction: string;
 }

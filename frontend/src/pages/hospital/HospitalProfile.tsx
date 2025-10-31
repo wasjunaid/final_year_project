@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { 
   FaCalendarAlt, 
-  FaFileAlt, 
   FaUserMd, 
   FaUsers, 
   FaFlask,
@@ -31,11 +30,6 @@ interface HospitalStats {
     pending: number;
     completed: number;
     cancelled: number;
-  };
-  documents: {
-    total: number;
-    verified: number;
-    unverified: number;
   };
   staff: {
     total: number;
@@ -106,16 +100,14 @@ function HospitalProfile() {
         // Fetch all statistics in parallel
         const [
           appointmentsRes,
-          documentsRes,
           staffRes,
           labTestsRes,
           panelRes
         ] = await Promise.allSettled([
-          api.get(EndPoints.appointments.get),
-          api.get(EndPoints.documents.get),
+          api.get(EndPoints.appointment.getAllHospital),
           api.get(`${EndPoints.hospitalStaff.getAll}/${hospital.hospital_id}`),
-          api.get(EndPoints.labTest.getAll),
-          api.get(EndPoints.hospitalPannel.getAll)
+          api.get(EndPoints.labTest.get),
+          api.get(EndPoints.hospitalPannelList.getAll)
         ]);
 
         // Process appointments data
@@ -127,17 +119,6 @@ function HospitalProfile() {
             pending: appointments.filter((apt: any) => apt.status === 'pending').length,
             completed: appointments.filter((apt: any) => apt.status === 'completed').length,
             cancelled: appointments.filter((apt: any) => apt.status === 'cancelled').length,
-          };
-        }
-
-        // Process documents data
-        let documentStats = { total: 0, verified: 0, unverified: 0 };
-        if (documentsRes.status === 'fulfilled' && documentsRes.value.data?.data) {
-          const { verified_documents = [], unverified_documents = [] } = documentsRes.value.data.data;
-          documentStats = {
-            total: verified_documents.length + unverified_documents.length,
-            verified: verified_documents.length,
-            unverified: unverified_documents.length,
           };
         }
 
@@ -172,7 +153,6 @@ function HospitalProfile() {
 
         setStats({
           appointments: appointmentStats,
-          documents: documentStats,
           staff: staffStats,
           labTests: labTestStats,
           panelMembers: panelCount,
@@ -356,13 +336,6 @@ function HospitalProfile() {
                 subtitle="All time appointments"
               />
               <StatCard
-                title="Total Documents"
-                value={stats.documents.total}
-                icon={<FaFileAlt className="text-white" />}
-                color="bg-green-500"
-                subtitle="Verified & unverified"
-              />
-              <StatCard
                 title="Staff Members"
                 value={stats.staff.total}
                 icon={<FaUsers className="text-white" />}
@@ -407,30 +380,6 @@ function HospitalProfile() {
                       <span className="text-sm text-gray-600">Cancelled</span>
                     </div>
                     <span className="font-semibold text-red-600">{stats.appointments.cancelled}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Documents Breakdown */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <FaFileAlt className="text-green-500" />
-                  Documents Status
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <FaCheckCircle className="text-green-500 text-sm" />
-                      <span className="text-sm text-gray-600">Verified</span>
-                    </div>
-                    <span className="font-semibold text-green-600">{stats.documents.verified}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <FaClock className="text-yellow-500 text-sm" />
-                      <span className="text-sm text-gray-600">Unverified</span>
-                    </div>
-                    <span className="font-semibold text-yellow-600">{stats.documents.unverified}</span>
                   </div>
                 </div>
               </div>

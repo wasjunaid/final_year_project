@@ -1,25 +1,24 @@
-import { useEffect, useState } from "react";
-import { FaArrowLeft, FaPaperPlane } from "react-icons/fa";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+import { useEffect } from "react";
+import { useEHRAccess } from "../../hooks/useEHRAccess";
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
-import type { EHRAccessRequest } from "../../models/EHRAccessRequest";
-import { EHRAccessRequestCard } from "./components/EHRAccessRequestCard";
-import EHRPage from "./EHRPage"; // ← Import EHRPage
+import type { EHRAccess } from "../../models/EHRAccess";
 
 function EHRAccessRequestsPage() {
   const role = useUserRole();
-  const [requests, setRequests] = useState<EHRAccessRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
-  // ← Add state for EHR viewing
-  const [viewingEHR, setViewingEHR] = useState<{
-    patientId: number;
-    patientName: string;
-  } | null>(null);
+  
+  const { 
+    ehrAccessRequests, 
+    loading, 
+    error, 
+    success, 
+    getForPatient, 
+    getForDoctor, 
+    grantByPatient, 
+    denyByPatient, 
+    revokeByPatient,
+    clearMessages 
+  } = useEHRAccess();
 
   const isPatient = role === ROLES.PATIENT;
   const isDoctor = role === ROLES.DOCTOR;
@@ -29,185 +28,175 @@ function EHRAccessRequestsPage() {
   }, []);
 
   const fetchRequests = async () => {
-    setLoading(true);
-    setError("");
-
     try {
-      const endpoint = isPatient
-        ? EndPoints.ehrAccessRequest.patient
-        : EndPoints.ehrAccessRequest.doctor;
-
-      const response = await api.get(endpoint);
-      setRequests(response.data.data || []);
-    } catch (err: any) {
-      if (err.response?.status === 404) {
-        setRequests([]);
-        return;
+      if (isPatient) {
+        await getForPatient();
+      } else if (isDoctor) {
+        await getForDoctor();
       }
-      setError(
-        err.response?.data?.message || "Failed to load EHR access requests"
-      );
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      // Error handled by hook
     }
   };
 
   const handleApprove = async (requestId: number) => {
     try {
-      await api.put(`${EndPoints.ehrAccessRequest.approve}/${requestId}`);
-      setSuccess("EHR access request approved successfully");
-      fetchRequests();
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to approve request");
-      setTimeout(() => setError(""), 3000);
+      await grantByPatient(requestId);
+      await fetchRequests();
+    } catch (err) {
+      // Error handled by hook
     }
   };
 
   const handleDeny = async (requestId: number) => {
-    if (
-      !window.confirm("Are you sure you want to deny this EHR access request?")
-    ) {
+    if (!window.confirm("Are you sure you want to deny this EHR access request?")) {
       return;
     }
 
     try {
-      //TODO: change to deny endpoint when available
-      await api.put(`${EndPoints.ehrAccessRequest.revoke}/${requestId}`);
-      setSuccess("EHR access request denied successfully");
-      fetchRequests();
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to deny request");
-      setTimeout(() => setError(""), 3000);
+      await denyByPatient(requestId);
+      await fetchRequests();
+    } catch (err) {
+      // Error handled by hook
     }
   };
 
   const handleRevoke = async (requestId: number) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to revoke this approved EHR access? The doctor will lose access to your medical records."
-      )
-    ) {
+    if (!window.confirm("Are you sure you want to revoke this approved EHR access?")) {
       return;
     }
 
     try {
-      await api.put(`${EndPoints.ehrAccessRequest.revoke}/${requestId}`);
-      setSuccess("EHR access revoked successfully");
-      fetchRequests();
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to revoke access");
-      setTimeout(() => setError(""), 3000);
+      await revokeByPatient(requestId);
+      await fetchRequests();
+    } catch (err) {
+      // Error handled by hook
     }
   };
 
-  // handler for viewing EHR
-  const handleViewEHR = (patientId: number, patientName: string) => {
-    setViewingEHR({ patientId, patientName });
-  };
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearMessages]);
 
-  // handler to go back to requests list
-  const handleBackToRequests = () => {
-    setViewingEHR(null);
-  };
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, clearMessages]);
 
-  // Access control: only patients and doctors can access this page
   if (!isPatient && !isDoctor) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-center text-red-500">
           <p className="text-lg mb-2">Access Denied</p>
-          <p>Only patients and doctors can manage EHR access requests</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show EHR page when viewing patient EHR
-  if (viewingEHR) {
-    return (
-      <div className="flex flex-col h-full">
-        {/* Back button */}
-        <div className="p-4 border-b border-gray-200">
-          <button
-            onClick={handleBackToRequests}
-            className="flex items-center gap-2 text-gray-600 hover:text-primary-dark transition-colors"
-          >
-            <FaArrowLeft />
-            <span>Back to Access Requests</span>
-          </button>
-        </div>
-
-        {/* EHR Page */}
-        <div className="flex-1">
-          <EHRPage patientId={viewingEHR.patientId} />
+          <p>Only patients and doctors can access EHR requests</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full p-6">
-      {/* Header */}
+    <div className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           EHR Access Requests
         </h1>
-        <p className="text-gray-600 text-sm">
-          {isPatient
-            ? "Review and respond to EHR access requests from doctors"
-            : "View your sent EHR access requests and their status"}
+        <p className="text-gray-600">
+          {isPatient 
+            ? "Manage access requests from doctors"
+            : "View your EHR access requests to patients"
+          }
         </p>
       </div>
 
-      {/* Messages */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md mb-6">
           {success}
         </div>
       )}
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-500">Loading access requests...</div>
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="text-gray-500">Loading EHR requests...</div>
         </div>
-      )}
-
-      {/* Empty State */}
-      {!loading && requests.length === 0 && (
-        <div className="text-center text-gray-500 mt-8">
-          <FaPaperPlane className="mx-auto text-4xl mb-4 text-gray-300" />
-          <p className="text-lg mb-2">No EHR access requests found</p>
-          <p className="text-sm">
-            {isPatient
-              ? "No doctors have requested access to your EHR yet"
-              : "You haven't sent any EHR access requests yet"}
-          </p>
+      ) : ehrAccessRequests.length === 0 ? (
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <p className="text-gray-500 text-lg">No EHR access requests found</p>
         </div>
-      )}
+      ) : (
+        <div className="space-y-4">
+          {ehrAccessRequests.map((request: EHRAccess) => (
+            <div key={request.ehr_access_id} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {isPatient ? request.doctor_name : request.patient_name}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {isPatient ? "Doctor" : "Patient"}
+                  </p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  request.status === "GRANTED" 
+                    ? "bg-green-100 text-green-800"
+                    : request.status === "PENDING"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-red-100 text-red-800"
+                }`}>
+                  {request.status}
+                </span>
+              </div>
 
-      {/* Request Cards */}
-      {!loading && requests.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {requests.map((request) => (
-            <EHRAccessRequestCard
-              key={request.ehr_access_request_id}
-              request={request}
-              userRole={role}
-              onApprove={handleApprove}
-              onDeny={handleDeny}
-              onRevoke={handleRevoke}
-              onViewEHR={handleViewEHR}
-            />
+              <div className="text-sm text-gray-600 mb-4">
+                <p>Request Date: {new Date(request.created_at).toLocaleDateString()}</p>
+                {request.granted_at && (
+                  <p>Granted: {new Date(request.granted_at).toLocaleDateString()}</p>
+                )}
+              </div>
+
+              {isPatient && request.status === "PENDING" && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleApprove(request.ehr_access_id)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                    disabled={loading}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleDeny(request.ehr_access_id)}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    disabled={loading}
+                  >
+                    Deny
+                  </button>
+                </div>
+              )}
+
+              {isPatient && request.status === "GRANTED" && (
+                <button
+                  onClick={() => handleRevoke(request.ehr_access_id)}
+                  className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+                  disabled={loading}
+                >
+                  Revoke Access
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}

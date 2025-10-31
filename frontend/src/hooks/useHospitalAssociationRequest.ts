@@ -83,14 +83,12 @@ export function useHospitalAssociationRequest() {
     try {
       setLoading(true);
       setError('');
-      await hospitalAssociationRequestApi.approve(requestId);
-      setRequests(prev => prev.map(request => 
-        request.hospital_association_request_id === requestId 
-          ? { ...request, status: 'APPROVED' as const }
-          : request
+      const response = await hospitalAssociationRequestApi.approve(requestId);
+      setRequests(prev => prev.filter(request => 
+        request.hospital_association_request_id !== requestId
       ));
-      setSuccess('Association request approved');
-      return true;
+      setSuccess('Association request approved successfully');
+      return response.data;
     } catch (err: any) {
       const errorMsg = err?.response?.data?.message || 'Failed to approve association request';
       setError(errorMsg);

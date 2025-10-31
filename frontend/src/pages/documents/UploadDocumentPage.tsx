@@ -1,10 +1,10 @@
 import { useState } from "react";
+import { useDocumentUpload } from '../../hooks/useDocumentUpload';
 import { FaUpload, FaFileAlt, FaTimes } from "react-icons/fa";
 import LabeledInputField from "../../components/LabeledInputField";
 import LabeledDropDownField from "../../components/LabeledDropDownField";
 import Button from "../../components/Button";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+// api/EndPoints import removed, now using useDocumentUpload
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
 
@@ -23,9 +23,7 @@ function UploadDocumentPage() {
   const [uploadedFor, setUploadedFor] = useState(""); // For doctors uploading for patients
   const [appointmentId, setAppointmentId] = useState(""); // For appointment-related uploads
   const [labTestId, setLabTestId] = useState(""); // For lab test uploads
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { upload, loading, error, success, clearMessages } = useDocumentUpload();
 
   const canUploadForOthers =
     role === ROLES.DOCTOR ||
@@ -37,16 +35,18 @@ function UploadDocumentPage() {
     if (selectedFile) {
       // Validate file type (only PDF)
       if (selectedFile.type !== "application/pdf") {
-        setError("Only PDF files are allowed");
+        clearMessages();
+        alert("Only PDF files are allowed");
         return;
       }
       // Validate file size (100MB max)
       if (selectedFile.size > 100 * 1024 * 1024) {
-        setError("File size must be less than 100MB");
+        clearMessages();
+        alert("File size must be less than 100MB");
         return;
       }
       setFile(selectedFile);
-      setError("");
+      clearMessages();
     }
   };
 
@@ -56,62 +56,31 @@ function UploadDocumentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-
+    clearMessages();
     if (!file) {
-      setError("Please select a file");
       return;
     }
-
     if (!documentType) {
-      setError("Please select a document type");
       return;
     }
-
     if (!detail.trim()) {
-      setError("Please provide document details");
       return;
     }
-
-    setLoading(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("document_type", documentType);
-      formData.append("detail", detail);
-
-      // Add optional fields for doctors/hospital staff
-      if (uploadedFor && canUploadForOthers) {
-        formData.append("uploaded_for", uploadedFor);
-      }
-      if (appointmentId) {
-        formData.append("appointment_id", appointmentId);
-      }
-      if (labTestId) {
-        formData.append("lab_test_id", labTestId);
-      }
-
-      await api.post(EndPoints.documents.upload, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setSuccess("Document uploaded successfully!");
-
-      // Clear form
+    const success = await upload({
+      file,
+      document_type: documentType,
+      detail,
+      uploaded_for: uploadedFor && canUploadForOthers ? uploadedFor : undefined,
+      appointment_id: appointmentId || undefined,
+      lab_test_id: labTestId || undefined,
+    });
+    if (success) {
       setFile(null);
       setDocumentType("");
       setDetail("");
       setUploadedFor("");
       setAppointmentId("");
       setLabTestId("");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to upload document");
-    } finally {
-      setLoading(false);
     }
   };
 

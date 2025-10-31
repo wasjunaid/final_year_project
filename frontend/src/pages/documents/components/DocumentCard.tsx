@@ -1,45 +1,44 @@
 import { FaEye, FaFileAlt } from "react-icons/fa";
+import type { FC } from "react";
 import type { Document } from "../../../models/Document";
 
-interface DocumentCardProps {
+type DocumentCardProps = {
   document: Document;
   isVerified: boolean;
   onView: (doc: Document) => void;
+};
+
+function formatFileSize(size?: number): string {
+  if (typeof size !== "number") return "";
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function DocumentCard({
-  document,
-  isVerified,
-  onView,
-}: DocumentCardProps) {
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
+const DocumentCard: FC<DocumentCardProps> = ({ document, onView }) => {
+  const isVerified = !!document.is_verified;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex items-center gap-3">
+    <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all group relative overflow-hidden">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center gap-4">
           <div
-            className={`p-2 rounded-full ${
+            className={`p-3 rounded-full shadow ${
               isVerified ? "bg-green-100" : "bg-blue-100"
             }`}
           >
             <FaFileAlt
               className={isVerified ? "text-green-600" : "text-blue-600"}
+              size={28}
             />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 truncate max-w-xs">
+            <h3 className="font-bold text-lg text-gray-900 truncate max-w-xs group-hover:text-blue-700 transition-colors">
               {document.original_name}
             </h3>
-            <div className="flex gap-2 mt-1">
+            <div className="flex gap-2 mt-2">
               <span
-                className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
                   isVerified
                     ? "bg-green-100 text-green-800"
                     : "bg-blue-100 text-blue-800"
@@ -48,7 +47,7 @@ export function DocumentCard({
                 {isVerified ? "Verified" : "Unverified"}
               </span>
               {document.document_type && (
-                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full capitalize">
+                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded-full capitalize">
                   {document.document_type}
                 </span>
               )}
@@ -58,15 +57,15 @@ export function DocumentCard({
 
         <button
           onClick={() => onView(document)}
-          className="p-2 text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
+          className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors shadow group-hover:scale-110"
           title="View Details"
         >
-          <FaEye />
+          <FaEye size={18} />
         </button>
       </div>
 
-      <div className="space-y-2 text-sm text-gray-600">
-        <p className="truncate">{document.detail}</p>
+      <div className="space-y-2 text-sm text-gray-700">
+        <p className="truncate italic">{document.detail}</p>
 
         {isVerified && document.uploaded_by_first_name && (
           <p>
@@ -82,15 +81,22 @@ export function DocumentCard({
           </p>
         )}
 
-        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-          <span className="text-gray-500">
+        <div className="flex justify-between items-center pt-3 border-t border-blue-50 mt-3">
+          <span className="text-gray-400 font-mono text-xs">
             {formatFileSize(document.file_size)}
           </span>
-          <span className="text-gray-500">
-            {new Date(document.created_at).toLocaleDateString()}
+          <span className="text-gray-400 font-mono text-xs">
+            {document.created_at
+              ? new Date(document.created_at).toLocaleDateString()
+              : ""}
           </span>
         </div>
       </div>
+      <div className="absolute -bottom-2 -right-2 opacity-10 text-blue-200 text-7xl pointer-events-none select-none">
+        <FaFileAlt />
+      </div>
     </div>
   );
-}
+};
+
+export default DocumentCard;

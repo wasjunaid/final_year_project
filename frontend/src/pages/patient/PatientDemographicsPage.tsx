@@ -1,82 +1,187 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import gradient from "../../assets/images/gradient.png";
 import ProfileInfoCard from "../../components/ProfileInfoCard";
 import Button from "../../components/Button";
 import LabeledInputField from "../../components/LabeledInputField";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
 import LabeledDropDownField from "../../components/LabeledDropDownField";
-import type { Person } from "../../models/Person";
-import type { Patient } from "../../models/Patient";
+import { usePerson } from "../../hooks/usePerson";
+import { usePatient } from "../../hooks/usePatient";
 import profileAvatar from "../../assets/icons/profile.jpg";
 
+// Define the update request types inline
+interface UpdatePersonRequest {
+  first_name?: string;
+  last_name?: string;
+  cnic?: string;
+  date_of_birth?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  address?: string;
+  country_code?: string;
+  number?: string;
+}
+
+interface UpdatePatientRequest {
+  emergency_contact_country_code?: string;
+  emergency_contact_number?: string;
+  blood_group?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+}
+
+interface FormData extends UpdatePersonRequest, UpdatePatientRequest {}
+
 function PatientDemographicsPage() {
-  const [person, setPerson] = useState<Person | null>(null);
-  const [patient, setPatient] = useState<Patient | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { 
+    person, 
+    loading: personLoading, 
+    error: personError, 
+    success: personSuccess,
+    updatePerson,
+    getPerson,
+    clearMessages: clearPersonMessages
+  } = usePerson();
+  
+  const { 
+    loading: patientLoading, 
+    error: patientError,
+    success: patientSuccess,
+    patient,
+    getPatient,
+    updatePatient,
+    clearMessages: clearPatientMessages
+  } = usePatient();
+
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState<Person>({
+  const [form, setForm] = useState<FormData>({
     first_name: "",
     last_name: "",
-    email: "",
-    address_id: -1,
     cnic: "",
-    is_verified: false,
+    date_of_birth: "",
+    gender: "MALE",
+    address: "",
+    country_code: "",
+    number: "",
+    emergency_contact_country_code: "",
+    emergency_contact_number: "",
+    blood_group: undefined,
   });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
-  // Fetch person and patient data on mount
+  // Memoize loading, error, and success states
+  const loading = useMemo(() => personLoading || patientLoading, [personLoading, patientLoading]);
+  const error = useMemo(() => personError || patientError, [personError, patientError]);
+  const success = useMemo(() => personSuccess || patientSuccess, [personSuccess, patientSuccess]);
+
+  // Memoize data fetching function
+  const fetchData = useCallback(async () => {
+    await Promise.all([getPerson(), getPatient()]);
+  }, [getPerson, getPatient]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const [personRes, patientRes] = await Promise.all([
-          api.get(EndPoints.person.get),
-          api.get("/patient"), // or EndPoints.patient.profile if defined
-        ]);
-        setPerson(personRes.data.data);
-        setForm(personRes.data.data);
-        setPatient(patientRes.data.data);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load demographics");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
+  }, [fetchData]);
+
+  // Update form when person or patient data changes
+  useEffect(() => {
+    if (person || patient) {
+      setForm({
+        first_name: person?.first_name || "",
+        last_name: person?.last_name || "",
+        cnic: person?.cnic || "",
+        date_of_birth: person?.date_of_birth || "",
+        gender: person?.gender || "MALE",
+        address: person?.address || "",
+        country_code: person?.country_code || "",
+        number: person?.number || "",
+        emergency_contact_country_code: patient?.emergency_contact_country_code || "",
+        emergency_contact_number: patient?.emergency_contact_number || "",
+        blood_group: patient?.blood_group || undefined,
+      });
+    }
+  }, [person, patient]);
+
+  // Memoize handlers
+  const handleEdit = useCallback(() => {
+    setEditMode(true);
+    clearPersonMessages();
+    clearPatientMessages();
+  }, [clearPersonMessages, clearPatientMessages]);
+
+  const handleCancel = useCallback(() => {
+    setEditMode(false);
+    if (person || patient) {
+      setForm({
+        first_name: person?.first_name || "",
+        last_name: person?.last_name || "",
+        cnic: person?.cnic || "",
+        date_of_birth: person?.date_of_birth || "",
+        gender: person?.gender || "MALE",
+        address: person?.address || "",
+        country_code: person?.country_code || "",
+        number: person?.number || "",
+        emergency_contact_country_code: patient?.emergency_contact_country_code || "",
+        emergency_contact_number: patient?.emergency_contact_number || "",
+        blood_group: patient?.blood_group || undefined,
+      });
+    }
+    clearPersonMessages();
+    clearPatientMessages();
+  }, [person, patient, clearPersonMessages, clearPatientMessages]);
+
+  const handleChange = useCallback((field: keyof FormData, value: string) => {
+    setForm((prev: FormData) => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleEdit = () => {
-    setEditMode(true);
-    setSuccess("");
-    setError("");
-  };
+  const handleSave = useCallback(async () => {
+    clearPersonMessages();
+    clearPatientMessages();
+    
+    // Separate person and patient data
+    const personData: UpdatePersonRequest = {
+      first_name: form.first_name,
+      last_name: form.last_name,
+      cnic: form.cnic,
+      date_of_birth: form.date_of_birth,
+      gender: form.gender,
+      address: form.address,
+      country_code: form.country_code,
+      number: form.number,
+    };
 
-  const handleCancel = () => {
-    setEditMode(false);
-    setForm(person!);
-    setSuccess("");
-    setError("");
-  };
+    const patientData: UpdatePatientRequest = {
+      emergency_contact_country_code: form.emergency_contact_country_code,
+      emergency_contact_number: form.emergency_contact_number,
+      blood_group: form.blood_group,
+    };
 
-  const handleChange = (field: keyof Person, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSave = async () => {
-    setError("");
-    setSuccess("");
-    try {
-      const res = await api.put(EndPoints.person.update, form);
-      setPerson(res.data.data);
+    // Update both person and patient data
+    const [personSuccess, patientUpdateSuccess] = await Promise.all([
+      updatePerson(personData),
+      updatePatient(patientData)
+    ]);
+    
+    if (personSuccess && patientUpdateSuccess) {
       setEditMode(false);
-      setSuccess("Profile updated successfully!");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update profile");
+      // Refresh data
+      await fetchData();
     }
-  };
+  }, [form, clearPersonMessages, clearPatientMessages, updatePerson, updatePatient, fetchData]);
+
+  // Memoize dropdown options
+  const genderOptions = useMemo(() => [
+    { label: "Male", value: "MALE" },
+    { label: "Female", value: "FEMALE" },
+    { label: "Other", value: "OTHER" },
+  ], []);
+
+  const bloodGroupOptions = useMemo(() => [
+    { label: "Select Blood Group", value: "" },
+    { label: "A+", value: "A+" },
+    { label: "A-", value: "A-" },
+    { label: "B+", value: "B+" },
+    { label: "B-", value: "B-" },
+    { label: "AB+", value: "AB+" },
+    { label: "AB-", value: "AB-" },
+    { label: "O+", value: "O+" },
+    { label: "O-", value: "O-" },
+  ], []);
 
   if (loading) {
     return (
@@ -96,9 +201,9 @@ function PatientDemographicsPage() {
 
       <div className="flex items-center justify-between">
         <ProfileInfoCard
-          fullName={`${person.first_name} ${person.last_name}`}
+          fullName={`${person.first_name || ''} ${person.last_name || ''}`}
           email={person.email}
-          imageElement={<img className="h-20" src={profileAvatar} />}
+          imageElement={<img className="h-20" src={profileAvatar} alt="Profile" />}
         />
         {!editMode ? (
           <Button label="Edit" onClick={handleEdit} />
@@ -117,75 +222,90 @@ function PatientDemographicsPage() {
         <div className="flex items-center justify-between gap-10">
           <LabeledInputField
             title="First Name"
-            value={form.first_name}
+            value={form.first_name || ""}
             onChange={(e) => handleChange("first_name", e.target.value)}
             disabled={!editMode}
           />
           <LabeledInputField
             title="Last Name"
-            value={form.last_name}
+            value={form.last_name || ""}
             onChange={(e) => handleChange("last_name", e.target.value)}
             disabled={!editMode}
           />
         </div>
         <div className="flex items-center justify-between gap-10">
           <LabeledInputField
-            title="Email"
-            value={form.email}
-            onChange={(e) => handleChange("email", e.target.value)}
+            title="CNIC"
+            value={form.cnic || ""}
+            onChange={(e) => handleChange("cnic", e.target.value)}
             disabled={!editMode}
           />
+          <LabeledInputField
+            title="Date of Birth"
+            type="date"
+            value={form.date_of_birth || ""}
+            onChange={(e) => handleChange("date_of_birth", e.target.value)}
+            disabled={!editMode}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-10">
           <LabeledDropDownField
             label="Gender"
-            options={[
-              { label: "Male", value: "M" },
-              { label: "Female", value: "F" },
-              { label: "Other", value: "O" },
-            ]}
+            options={genderOptions}
             placeholder="Select your gender"
             value={form.gender || ""}
             onChange={(e) => handleChange("gender", e.target.value)}
             disabled={!editMode}
           />
+          <LabeledInputField
+            title="Address"
+            value={form.address || ""}
+            onChange={(e) => handleChange("address", e.target.value)}
+            disabled={!editMode}
+          />
         </div>
         <div className="flex items-center justify-between gap-10">
           <LabeledInputField
-            title="Date of Birth"
-            value={form.date_of_birth || ""}
-            onChange={(e) => handleChange("date_of_birth", e.target.value)}
+            title="Country Code"
+            value={form.country_code || ""}
+            onChange={(e) => handleChange("country_code", e.target.value)}
             disabled={!editMode}
-            type="date"
           />
-          <LabeledDropDownField
-            label="Blood Group"
-            options={[
-              { label: "A+", value: "A+" },
-              { label: "A-", value: "A-" },
-              { label: "B+", value: "B+" },
-              { label: "B-", value: "B-" },
-              { label: "AB+", value: "AB+" },
-              { label: "AB-", value: "AB-" },
-              { label: "O+", value: "O+" },
-              { label: "O-", value: "O-" },
-            ]}
-            value={form.blood_group || ""}
-            onChange={(e) => handleChange("blood_group", e.target.value)}
+          <LabeledInputField
+            title="Phone Number"
+            value={form.number || ""}
+            onChange={(e) => handleChange("number", e.target.value)}
             disabled={!editMode}
           />
         </div>
+        
         {/* Patient-specific fields */}
-        {patient && (
-          <div className="flex items-center justify-between gap-10">
-            <div className="w-1/2 pr-5">
-              <LabeledInputField
-                title="Patient ID"
-                value={patient.patient_id.toString()}
-                disabled
-              />
-            </div>
-            {/* Add more patient-specific fields here if needed */}
-          </div>
-        )}
+        <div className="flex items-center justify-between gap-10">
+          <LabeledDropDownField
+            label="Blood Group"
+            options={bloodGroupOptions}
+            placeholder="Select your blood group"
+            value={form.blood_group || ""}
+            onChange={(e) => handleChange("blood_group", e.target.value as any)}
+            disabled={!editMode}
+          />
+          <LabeledInputField
+            title="Emergency Contact Country Code"
+            value={form.emergency_contact_country_code || ""}
+            onChange={(e) => handleChange("emergency_contact_country_code", e.target.value)}
+            disabled={!editMode}
+          />
+        </div>
+        
+        <div className="flex items-center justify-between gap-10">
+          <LabeledInputField
+            title="Emergency Contact Number"
+            value={form.emergency_contact_number || ""}
+            onChange={(e) => handleChange("emergency_contact_number", e.target.value)}
+            disabled={!editMode}
+          />
+          <div></div> {/* Empty div for grid alignment */}
+        </div>
       </div>
     </div>
   );

@@ -2,8 +2,7 @@ import logo from "../../assets/icons/JAW-transparent.png";
 import AuthButton from "./components/AuthButton";
 import PasswordField from "./components/PasswordField";
 import { useState } from "react";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+import { authApi } from "../../services/authApi";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import ROUTES from "../../constants/routes";
 import AuthBg from "./components/AuthBg";
@@ -41,15 +40,15 @@ function ResetPasswordPage() {
     try {
       setLoading(true);
 
-      const res = await api.post(EndPoints.auth.resetPassword, {
+      const response = await authApi.passwordReset({
         token,
-        password,
+        newPassword: password,
       });
 
-      if (res.data.success) {
+      if (response.success) {
         setSuccess(true);
       } else {
-        setError(res.data.message || "Failed to reset password");
+        setError(response.message || "Failed to reset password");
       }
     } catch (err: any) {
       setError(err.response?.data?.message ?? "Error resetting password!");

@@ -1,42 +1,50 @@
 import { useEffect, useState } from "react";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+import { useHospital } from "../../hooks/useHospital";
 import DataTable from "../../components/DataTable";
 
 const columns = [
   { key: "hospital_id", label: "ID" },
   { key: "name", label: "Hospital Name" },
-  { key: "address", label: "Address" },
+  { 
+    key: "created_at", 
+    label: "Created", 
+    render: (row: any) => new Date(row.created_at).toLocaleDateString() 
+  },
 ];
 
 function HospitalsListPage() {
-  const [hospitals, setHospitals] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [displayHospitals, setDisplayHospitals] = useState<any[]>([]);
+  
+  const { 
+    hospitals, 
+    loading, 
+    error, 
+    getHospitals 
+  } = useHospital();
 
   useEffect(() => {
     const fetchHospitals = async () => {
-      setLoading(true);
-      setError("");
       try {
-        const res = await api.get(EndPoints.hospital.get);
-
-        console.log(`Response: ${res.data.data}`);
-        // Use only the fields you want to display
-        const data = (res.data.data || []).map((h: any) => ({
-          hospital_id: h.hospital_id,
-          name: h.name,
-          address: h.address,
-        }));
-        setHospitals(data);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load hospitals");
-      } finally {
-        setLoading(false);
+        await getHospitals();
+      } catch (err) {
+        // Error handled by hook
       }
     };
     fetchHospitals();
-  }, []);
+  }, [getHospitals]);
+
+  // Update display data when hospitals change
+  useEffect(() => {
+    if (hospitals.length > 0) {
+      // Use only the fields you want to display
+      const data = hospitals.map((h: any) => ({
+        hospital_id: h.hospital_id,
+        name: h.name,
+        created_at: h.created_at,
+      }));
+      setDisplayHospitals(data);
+    }
+  }, [hospitals]);
 
   return (
     <div className="">
@@ -44,7 +52,7 @@ function HospitalsListPage() {
       {error && <div className="text-red-500">{error}</div>}
 
       {!loading && !error && (
-        <DataTable columns={columns} data={hospitals} searchable={true} />
+        <DataTable columns={columns} data={displayHospitals} searchable={true} />
       )}
     </div>
   );

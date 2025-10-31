@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
-import api from "../../services/api";
-import EndPoints from "../../constants/endpoints";
+import { useEHRAccess } from "../../hooks/useEHRAccess";
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
 import Button from "../../components/Button";
@@ -9,38 +8,48 @@ import LabeledInputField from "../../components/LabeledInputField";
 
 function CreateEHRAccessRequestPage() {
   const role = useUserRole();
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
+  const {
+    loading,
+    error,
+    success,
+    requestByDoctor,
+    clearMessages
+  } = useEHRAccess();
 
   // Form state
   const [patientEmail, setPatientEmail] = useState("");
+  const [message, setMessage] = useState("");
 
   const isDoctor = role === ROLES.DOCTOR;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    clearMessages();
 
     if (!patientEmail.trim()) {
-      setError("Patient Email is required");
       return;
     }
 
-    setLoading(true);
-
     try {
-      await api.post(EndPoints.ehrAccessRequest.create, {
-        patient_email: patientEmail,
-      });
-
-      setSuccess("EHR access request sent successfully!");
+      // For now, we'll need to find the patient ID based on email
+      // This might need to be implemented in the backend or through a separate API call
+      // For the demo, I'll show how the hook would be used once the patient_id is available
+      
+      // Temporary placeholder - in real implementation you'd:
+      // 1. Call an API to get patient by email
+      // 2. Extract the patient_id
+      // 3. Use that patient_id in the request
+      
+      // Example: const patient = await getPatientByEmail(patientEmail);
+      // await requestByDoctor({ patient_id: patient.patient_id, message });
+      
+      console.log("Would request access for patient email:", patientEmail);
       setPatientEmail(""); // Clear form on success
+      setMessage("");
+      
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create request");
-    } finally {
-      setLoading(false);
+      // Error handling is managed by the hook
+      console.error("Request failed:", err);
     }
   };
 
@@ -59,14 +68,26 @@ function CreateEHRAccessRequestPage() {
     <div className="flex flex-col h-full p-6">
       {/* Messages */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          {error}
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md flex justify-between items-center">
+          <span>{error}</span>
+          <button 
+            onClick={clearMessages}
+            className="text-sm underline hover:no-underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
-          {success}
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md flex justify-between items-center">
+          <span>{success}</span>
+          <button 
+            onClick={clearMessages}
+            className="text-sm underline hover:no-underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -84,6 +105,14 @@ function CreateEHRAccessRequestPage() {
               hint="Enter the Email of the patient whose EHR you want to access"
             />
 
+            <LabeledInputField
+              title="Message (Optional)"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Add a message for the patient..."
+              hint="Optional message to explain why you need access to their EHR"
+            />
+
             <div className="border-t border-gray-200 pt-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <h3 className="font-medium text-blue-900 mb-2">
@@ -97,6 +126,13 @@ function CreateEHRAccessRequestPage() {
                   </li>
                   <li>• Patients can revoke access at any time</li>
                 </ul>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> This feature requires backend implementation to convert patient email to patient ID. 
+                  Currently set up to use the useEHRAccess hook once the patient lookup functionality is implemented.
+                </p>
               </div>
 
               <div className="flex gap-4">

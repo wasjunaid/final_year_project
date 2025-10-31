@@ -1,9 +1,12 @@
+
 import { useState } from "react";
 import { FaPlus, FaTimes } from "react-icons/fa";
 import { usePatientInsurance } from "../../../hooks/usePatientInsurance";
 import { useInsuranceCompanies } from "../../../hooks/useInsuranceCompanies";
+import type { InsuranceCompany } from "../../../models/InsuranceCompany";
 import Button from "../../../components/Button";
 import LabeledInputField from "../../../components/LabeledInputField";
+
 
 interface CreatePatientInsuranceModalProps {
   isOpen: boolean;
@@ -11,39 +14,44 @@ interface CreatePatientInsuranceModalProps {
   onSuccess?: () => void;
 }
 
+
 function CreatePatientInsuranceModal({
   isOpen,
   onClose,
   onSuccess,
 }: CreatePatientInsuranceModalProps) {
-  const { createInsurance, creating, isInsuranceNumberExists, clearMessages } =
-    usePatientInsurance();
+  const { create, loading, items: existingInsurances, error, clearMessages } = usePatientInsurance();
+  const { items: companies } = useInsuranceCompanies();
 
-  const { companies } = useInsuranceCompanies();
-
-  const [formData, setFormData] = useState({
-    insurance_number: "",
+  const [formData, setFormData] = useState<{ policy_number: string; insurance_company_id: string; coverage_amount: number | "" }>({
+    policy_number: "",
     insurance_company_id: "",
+    coverage_amount: "",
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
 
   // Validation
   const validateForm = (): boolean => {
     const errors: { [key: string]: string } = {};
 
-    if (!formData.insurance_number || Number(formData.insurance_number) <= 0) {
-      errors.insurance_number = "Valid insurance number is required";
-    } else if (isInsuranceNumberExists(Number(formData.insurance_number))) {
-      errors.insurance_number = "This insurance number already exists";
+    if (!formData.policy_number || Number(formData.policy_number) <= 0) {
+      errors.policy_number = "Valid policy number is required";
+    } else if (existingInsurances.some(i => String(i.policy_number) === formData.policy_number)) {
+      errors.policy_number = "This policy number already exists";
     }
 
     if (!formData.insurance_company_id) {
       errors.insurance_company_id = "Please select an insurance company";
     }
 
+    if (formData.coverage_amount === "" || Number(formData.coverage_amount) <= 0) {
+      errors.coverage_amount = "Coverage amount is required";
+    }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,23 +62,32 @@ function CreatePatientInsuranceModal({
       return;
     }
 
-    const success = await createInsurance({
-      insurance_number: Number(formData.insurance_number),
+    const success = await create({
+      policy_number: formData.policy_number,
       insurance_company_id: Number(formData.insurance_company_id),
+      coverage_amount: typeof formData.coverage_amount === "number" ? formData.coverage_amount : 0,
     });
 
     if (success) {
-      onSuccess?.();
+      if (onSuccess) onSuccess();
       onClose();
     }
   };
+
 
   // Handle input change
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "coverage_amount") {
+      // Only allow numbers or empty string
+      const numValue = value === "" ? "" : Number(value);
+      setFormData((prev) => ({ ...prev, [name]: numValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
 
     // Clear error when user starts typing
     if (formErrors[name]) {
@@ -78,13 +95,15 @@ function CreatePatientInsuranceModal({
     }
   };
 
+
   // Handle close
   const handleClose = () => {
-    setFormData({ insurance_number: "", insurance_company_id: "" });
+  setFormData({ policy_number: "", insurance_company_id: "", coverage_amount: "" });
     setFormErrors({});
     clearMessages();
     onClose();
   };
+
 
   if (!isOpen) return null;
 
@@ -121,17 +140,29 @@ function CreatePatientInsuranceModal({
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            {/* Insurance Number */}
+            {/* Policy Number */}
             <LabeledInputField
-              title="Insurance Number"
-              name="insurance_number"
+              title="Policy Number"
+              name="policy_number"
               type="number"
-              value={formData.insurance_number}
+              value={formData.policy_number}
               onChange={handleInputChange}
               placeholder="Enter your insurance policy number"
               required
               hint="Your unique insurance policy number"
-              error={formErrors.insurance_number}
+              error={formErrors.policy_number}
+            />
+            {/* Coverage Amount */}
+            <LabeledInputField
+              title="Coverage Amount"
+              name="coverage_amount"
+              type="number"
+              value={formData.coverage_amount}
+              onChange={handleInputChange}
+              placeholder="Enter coverage amount"
+              required
+              hint="The amount covered by this policy"
+              error={formErrors.coverage_amount}
             />
 
             {/* Insurance Company */}
@@ -151,7 +182,7 @@ function CreatePatientInsuranceModal({
                 required
               >
                 <option value="">Select an insurance company</option>
-                {companies.map((company) => (
+                {(companies as InsuranceCompany[]).map((company) => (
                   <option
                     key={company.insurance_company_id}
                     value={company.insurance_company_id}
@@ -175,21 +206,23 @@ function CreatePatientInsuranceModal({
             {/* Actions */}
             <div className="flex gap-3 pt-4">
               <Button
-                label={creating ? "Adding..." : "Add Insurance"}
+                label={loading ? "Adding..." : "Add Insurance"}
                 icon={<FaPlus />}
                 type="submit"
                 disabled={
-                  creating ||
-                  !formData.insurance_number ||
-                  !formData.insurance_company_id
+                  loading ||
+                  !formData.policy_number ||
+                  !formData.insurance_company_id ||
+                  !formData.coverage_amount
                 }
                 className="flex-1"
               />
+              {error && <div className="text-xs text-red-600 mt-2">{error}</div>}
               <Button
                 label="Cancel"
                 variant="secondary"
                 onClick={handleClose}
-                disabled={creating}
+                disabled={loading}
                 className="flex-1"
               />
             </div>

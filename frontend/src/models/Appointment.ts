@@ -6,7 +6,7 @@ export interface Appointment {
   date: string;
   time: string;
   reason: string;
-  status: 'PROCESSING' | 'APPROVED' | 'DENIED' | 'CANCELLED' | 'RESCHEDULED' | 'IN_PROGRESS' | 'COMPLETED';
+  status: StatusType;
   appointment_cost: number;
   lab_test_cost: number;
   total_cost: number;
@@ -29,6 +29,8 @@ export interface Appointment {
   doctor_name?: string;
   hospital_name?: string;
 }
+
+export type StatusType = 'PROCESSING' | 'APPROVED' | 'DENIED' | 'CANCELLED' | 'RESCHEDULED' | 'IN_PROGRESS' | 'COMPLETED';
 
 export interface CreateAppointmentRequest {
   doctor_id: number;
