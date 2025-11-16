@@ -80,40 +80,7 @@ export function useAuth() {
   const [success, setSuccess] = useState("");
   const [initialized, setInitialized] = useState(false);
 
-
   // Initialize auth state from localStorage on mount
-  // const initializeAuth = useCallback(() => {
-  //   const accessToken = tokenService.getAccessToken();
-  //   const refreshToken = tokenService.getRefreshToken();
-    
-  //   if (accessToken && refreshToken) {
-  //     // Decode token to get role and person_id (proper JWT payload decode)
-  //     try {
-  //       const payload = decodeJWTPayload(accessToken);
-  //       if (!payload) throw new Error("Invalid token payload");
-
-  //       setAuthState({
-  //         isAuthenticated: true,
-  //         accessToken,
-  //         refreshToken,
-  //         role: (payload.role as any) || null,
-  //         personId: (payload.person_id as any) || null,
-  //         user: null, // Will be fetched separately if needed
-  //       });
-  //     } catch (err) {
-  //       // Invalid token, clear it
-  //       tokenService.clearTokens();
-  //       setAuthState({
-  //         isAuthenticated: false,
-  //         accessToken: null,
-  //         refreshToken: null,
-  //         role: null,
-  //         personId: null,
-  //         user: null,
-  //       });
-  //     }
-  //   }
-  // }, []);
   const initializeAuth = useCallback(() => {
     const accessToken = tokenService.getAccessToken();
     const refreshToken = tokenService.getRefreshToken();
@@ -205,6 +172,17 @@ export function useAuth() {
       return true;
     } catch (err: any) {
       const message = err?.response?.data?.message ?? "Failed to sign in";
+      
+      // Check if email verification is needed
+      if (err.response?.data?.emailVerificationNeeded === true) {
+        console.log("Email verification needed");
+        // Throw the error with emailVerificationNeeded flag so SignInPage can handle it
+        throw {
+          emailVerificationNeeded: true,
+          message: message
+        };
+      }
+
       setError(message);
       return false;
     } finally {

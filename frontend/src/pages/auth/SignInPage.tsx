@@ -47,9 +47,8 @@ function SignInPage() {
         navigate(rolePortalRoute({ role: role as UserRole }) ?? ROUTES.HOME);
       }
     } catch (err: any) {
-      const data = err.response?.data;
-      
-      if (data?.emailVerificationNeeded) {
+      // Check if email verification is needed
+      if (err?.emailVerificationNeeded === true) {
         setVerifyEmail(true);
       }
     }
