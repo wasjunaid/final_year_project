@@ -1,6 +1,6 @@
 export interface Auth {
-  accessJWT: string;
-  refreshJWT: string;
+  accessToken: string;
+  refreshToken: string;
   role: string;
   person_id: number;
 }

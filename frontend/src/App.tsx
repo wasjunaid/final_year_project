@@ -32,16 +32,19 @@ interface ProtectedProps {
 
 // Protected route wrapper
 function Protected({ children, allowedRoles }: ProtectedProps) {
-  const { user } = useAuth();
+  const { role, initialized } = useAuth();
 
-  if (!user) return <Navigate to={ROUTES.AUTH.SIGN_IN} />;
+  if (!initialized) return null; // or a loader
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (!role) return <Navigate to={ROUTES.AUTH.SIGN_IN} />;
+
+  if (allowedRoles && !allowedRoles.includes(role)) {
     return <Navigate to={ROUTES.HOME} />;
   }
 
   return <>{children}</>;
 }
+
 
 function App() {
   return (

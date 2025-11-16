@@ -78,38 +78,93 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [initialized, setInitialized] = useState(false);
+
 
   // Initialize auth state from localStorage on mount
+  // const initializeAuth = useCallback(() => {
+  //   const accessToken = tokenService.getAccessToken();
+  //   const refreshToken = tokenService.getRefreshToken();
+    
+  //   if (accessToken && refreshToken) {
+  //     // Decode token to get role and person_id (proper JWT payload decode)
+  //     try {
+  //       const payload = decodeJWTPayload(accessToken);
+  //       if (!payload) throw new Error("Invalid token payload");
+
+  //       setAuthState({
+  //         isAuthenticated: true,
+  //         accessToken,
+  //         refreshToken,
+  //         role: (payload.role as any) || null,
+  //         personId: (payload.person_id as any) || null,
+  //         user: null, // Will be fetched separately if needed
+  //       });
+  //     } catch (err) {
+  //       // Invalid token, clear it
+  //       tokenService.clearTokens();
+  //       setAuthState({
+  //         isAuthenticated: false,
+  //         accessToken: null,
+  //         refreshToken: null,
+  //         role: null,
+  //         personId: null,
+  //         user: null,
+  //       });
+  //     }
+  //   }
+  // }, []);
   const initializeAuth = useCallback(() => {
     const accessToken = tokenService.getAccessToken();
     const refreshToken = tokenService.getRefreshToken();
-    
+
     if (accessToken && refreshToken) {
-      // Decode token to get role and person_id (basic JWT decode)
       try {
-        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const payload = decodeJWTPayload(accessToken);
         setAuthState({
           isAuthenticated: true,
           accessToken,
           refreshToken,
-          role: payload.role || null,
-          personId: payload.person_id || null,
-          user: null, // Will be fetched separately if needed
-        });
-      } catch (err) {
-        // Invalid token, clear it
-        tokenService.clearTokens();
-        setAuthState({
-          isAuthenticated: false,
-          accessToken: null,
-          refreshToken: null,
-          role: null,
-          personId: null,
+          role: payload?.role || null,
+          personId: payload?.person_id || null,
           user: null,
         });
+      } catch (err) {
+        tokenService.clearTokens();
       }
     }
+
+    setInitialized(true);
   }, []);
+
+
+  // Helper: decode JWT payload (handles base64url)
+  const base64UrlDecode = (str: string) => {
+    try {
+      let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+      // Pad with '='
+      while (base64.length % 4) {
+        base64 += "=";
+      }
+      return atob(base64);
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const decodeJWTPayload = (token: string): any | null => {
+    if (!token) return null;
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payloadPart = parts[1];
+    const decoded = base64UrlDecode(payloadPart);
+    if (!decoded) return null;
+    try {
+      return JSON.parse(decoded);
+    } catch (err) {
+      return null;
+    }
+  };
 
   // Sign in function
   const signIn = useCallback(async (credentials: SignInData): Promise<boolean> => {
@@ -126,20 +181,23 @@ export function useAuth() {
 
       const response = await authApi.signIn(signInRequest);
       const authData: Auth = response.data;
-
+      console.log("SignIn successful, received auth data:", authData);
       // Store tokens in localStorage
       tokenService.setTokens({
-        accessToken: authData.accessJWT,
-        refreshToken: authData.refreshJWT,
+        accessToken: authData.accessToken,
+        refreshToken: authData.refreshToken,
       });
+
+      const decodedPayload = decodeJWTPayload(authData.accessToken);
+      console.log("Decoded JWT payload: ", decodedPayload);
 
       // Update auth state
       setAuthState({
         isAuthenticated: true,
-        accessToken: authData.accessJWT,
-        refreshToken: authData.refreshJWT,
-        role: authData.role as UserRole,
-        personId: authData.person_id,
+        accessToken: authData.accessToken,
+        refreshToken: authData.refreshToken,
+        role: (decodedPayload?.role as UserRole) || null,
+        personId: decodedPayload?.person_id || null,
         user: null,
       });
 
@@ -164,15 +222,15 @@ export function useAuth() {
       });
 
       // Decode token to get role and person_id
-      const payload = JSON.parse(atob(tokens.accessToken.split('.')[1]));
+      const payload = decodeJWTPayload(tokens.accessToken);
 
       // Update auth state
       setAuthState({
         isAuthenticated: true,
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-        role: payload.role as UserRole,
-        personId: payload.person_id,
+        role: (payload?.role as UserRole) || null,
+        personId: payload?.person_id || null,
         user: null,
       });
 
@@ -235,17 +293,20 @@ export function useAuth() {
 
       // Update tokens
       tokenService.setTokens({
-        accessToken: authData.accessJWT,
-        refreshToken: authData.refreshJWT,
+        accessToken: authData.accessToken,
+        refreshToken: authData.refreshToken,
       });
+
+      // Decode new access token to extract role / person_id
+      const decoded = decodeJWTPayload(authData.accessToken);
 
       // Update auth state
       setAuthState(prev => ({
         ...prev,
-        accessToken: authData.accessJWT,
-        refreshToken: authData.refreshJWT,
-        role: authData.role as UserRole,
-        personId: authData.person_id,
+        accessToken: authData.accessToken,
+        refreshToken: authData.refreshToken,
+        role: (decoded?.role as UserRole) || null,
+        personId: decoded?.person_id || null,
       }));
 
       return true;
@@ -341,5 +402,8 @@ export function useAuth() {
     }
   }, [success, error, clearMessages]);
 
-  return memoizedValues;
+  return {
+    ...memoizedValues,
+    initialized,
+  };
 }
