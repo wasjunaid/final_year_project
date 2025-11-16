@@ -7,24 +7,8 @@ import LabeledDropDownField from "../../components/LabeledDropDownField";
 import { usePerson } from "../../hooks/usePerson";
 import { usePatient } from "../../hooks/usePatient";
 import profileAvatar from "../../assets/icons/profile.jpg";
-
-// Define the update request types inline
-interface UpdatePersonRequest {
-  first_name?: string;
-  last_name?: string;
-  cnic?: string;
-  date_of_birth?: string;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
-  address?: string;
-  country_code?: string;
-  number?: string;
-}
-
-interface UpdatePatientRequest {
-  emergency_contact_country_code?: string;
-  emergency_contact_number?: string;
-  blood_group?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
-}
+import type { UpdatePersonRequest } from "../../models/Person";
+import type { UpdatePatientRequest } from "../../models/Patient";
 
 interface FormData extends UpdatePersonRequest, UpdatePatientRequest {}
 
@@ -55,7 +39,7 @@ function PatientDemographicsPage() {
     last_name: "",
     cnic: "",
     date_of_birth: "",
-    gender: "MALE",
+    gender: "M",
     address: "",
     country_code: "",
     number: "",
@@ -86,7 +70,7 @@ function PatientDemographicsPage() {
         last_name: person?.last_name || "",
         cnic: person?.cnic || "",
         date_of_birth: person?.date_of_birth || "",
-        gender: person?.gender || "MALE",
+        gender: person?.gender || "M",
         address: person?.address || "",
         country_code: person?.country_code || "",
         number: person?.number || "",
@@ -112,7 +96,7 @@ function PatientDemographicsPage() {
         last_name: person?.last_name || "",
         cnic: person?.cnic || "",
         date_of_birth: person?.date_of_birth || "",
-        gender: person?.gender || "MALE",
+        gender: person?.gender || "M",
         address: person?.address || "",
         country_code: person?.country_code || "",
         number: person?.number || "",
@@ -166,9 +150,9 @@ function PatientDemographicsPage() {
 
   // Memoize dropdown options
   const genderOptions = useMemo(() => [
-    { label: "Male", value: "MALE" },
-    { label: "Female", value: "FEMALE" },
-    { label: "Other", value: "OTHER" },
+    { label: "Male", value: "M" },
+    { label: "Female", value: "F" },
+    { label: "Other", value: "O" },
   ], []);
 
   const bloodGroupOptions = useMemo(() => [
@@ -304,7 +288,7 @@ function PatientDemographicsPage() {
             onChange={(e) => handleChange("emergency_contact_number", e.target.value)}
             disabled={!editMode}
           />
-          <div></div> {/* Empty div for grid alignment */}
+          <div className="w-full"></div> {/* Empty div for grid alignment */}
         </div>
       </div>
     </div>

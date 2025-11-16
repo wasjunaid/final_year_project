@@ -5,7 +5,7 @@ export interface Person {
   last_name?: string;
   cnic?: string;
   date_of_birth?: string;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  gender?: 'M' | 'F' | 'O';
   address_id?: number;
   address?: string;
   contact_id?: number;
@@ -23,7 +23,7 @@ export interface UpdatePersonRequest {
   last_name?: string;
   cnic?: string;
   date_of_birth?: string;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  gender?: 'M' | 'F' | 'O';
   address?: string;
   country_code?: string;
   number?: string;

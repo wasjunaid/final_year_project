@@ -1,2 +1,3 @@
-backend/
-new-and-not-improved-backend/
+/backend
+/new-and-not-improved-backend
+/Errors.md

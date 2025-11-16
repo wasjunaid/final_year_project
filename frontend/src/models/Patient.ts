@@ -13,7 +13,7 @@ export interface Patient {
   email?: string;
   cnic?: string;
   date_of_birth?: string;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  gender?: 'M' | 'F' | 'O';
   address?: string;
   contact_number?: string;
 }
