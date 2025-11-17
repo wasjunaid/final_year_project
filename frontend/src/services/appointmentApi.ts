@@ -4,38 +4,64 @@ import type { ApiResponse } from '../models/ApiResponse';
 import type { 
   Appointment, 
   CreateAppointmentRequest, 
-  AppointmentRescheduleRequest
+  AppointmentRescheduleRequest,
+  ApproveAppointmentRequest
 } from '../models/Appointment';
+
+// Helper function to transform appointment status to uppercase
+const transformAppointment = (appointment: any): Appointment => {
+  return {
+    ...appointment,
+    status: appointment.status?.toUpperCase() || appointment.status,
+  };
+};
+
+// Helper function to transform array of appointments
+const transformAppointments = (appointments: any[]): Appointment[] => {
+  return appointments.map(transformAppointment);
+};
 
 export const appointmentApi = {
   // GET /appointment/patient
   getAllPatient: async (): Promise<ApiResponse<Appointment[]>> => {
     const response = await api.get(EndPoints.appointment.getAllPatient);
-    return response.data;
+    return {
+      ...response.data,
+      data: response.data.data ? transformAppointments(response.data.data) : response.data.data,
+    };
   },
 
   // GET /appointment/doctor
   getAllDoctor: async (): Promise<ApiResponse<Appointment[]>> => {
     const response = await api.get(EndPoints.appointment.getAllDoctor);
-    return response.data;
+    return {
+      ...response.data,
+      data: response.data.data ? transformAppointments(response.data.data) : response.data.data,
+    };
   },
 
   // GET /appointment/hospital
   getAllHospital: async (): Promise<ApiResponse<Appointment[]>> => {
     const response = await api.get(EndPoints.appointment.getAllHospital);
-    return response.data;
+    return {
+      ...response.data,
+      data: response.data.data ? transformAppointments(response.data.data) : response.data.data,
+    };
   },
 
   // POST /appointment
   insert: async (data: CreateAppointmentRequest): Promise<ApiResponse<Appointment>> => {
     const response = await api.post(EndPoints.appointment.insert, data);
-    return response.data;
+    return {
+      ...response.data,
+      data: response.data.data ? transformAppointment(response.data.data) : response.data.data,
+    };
   },
 
   // PUT /appointment/approve/:appointment_id
-  approve: async (appointment_id: number): Promise<ApiResponse<null>> => {
+  approve: async (appointment_id: number, data: ApproveAppointmentRequest): Promise<ApiResponse<null>> => {
     const url = EndPoints.appointment.approve.replace(':appointment_id', appointment_id.toString());
-    const response = await api.put(url);
+    const response = await api.put(url, data);
     return response.data;
   },
 
@@ -89,9 +115,9 @@ export const appointmentApi = {
   },
 
   // PUT /appointment/complete-doctor/:appointment_id
-  completeByDoctor: async (appointment_id: number): Promise<ApiResponse<null>> => {
+  completeByDoctor: async (appointment_id: number, doctor_note?: string): Promise<ApiResponse<null>> => {
     const url = EndPoints.appointment.completeByDoctor.replace(':appointment_id', appointment_id.toString());
-    const response = await api.put(url);
+    const response = await api.put(url, { doctor_note });
     return response.data;
   },
 

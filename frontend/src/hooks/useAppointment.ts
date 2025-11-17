@@ -3,7 +3,8 @@ import { appointmentApi } from '../services/appointmentApi';
 import type { 
   Appointment, 
   CreateAppointmentRequest, 
-  AppointmentRescheduleRequest 
+  AppointmentRescheduleRequest, 
+  ApproveAppointmentRequest
 } from '../models/Appointment';
 import StatusCodes from '../constants/StatusCodes';
 
@@ -101,11 +102,14 @@ export function useAppointment() {
   }, []);
 
   // Approve appointment
-  const approveAppointment = useCallback(async (appointmentId: number) => {
+  const approveAppointment = useCallback(async (
+    appointmentId: number,
+    data: ApproveAppointmentRequest
+  ): Promise<boolean> => {
     try {
       setLoading(true);
       setError('');
-      await appointmentApi.approve(appointmentId);
+      await appointmentApi.approve(appointmentId, data);
       setAppointments(prev => prev.map(apt => 
         apt.appointment_id === appointmentId 
           ? { ...apt, status: 'APPROVED' as const }
@@ -218,7 +222,7 @@ export function useAppointment() {
       await appointmentApi.startByDoctor(appointmentId);
       setAppointments(prev => prev.map(apt => 
         apt.appointment_id === appointmentId 
-          ? { ...apt, status: 'IN_PROGRESS' as const }
+          ? { ...apt, status: 'IN PROGRESS' as const }
           : apt
       ));
       setSuccess('Appointment started');
@@ -277,14 +281,14 @@ export function useAppointment() {
   }, []);
 
   // Complete by doctor
-  const completeByDoctor = useCallback(async (appointmentId: number) => {
+  const completeByDoctor = useCallback(async (appointmentId: number, doctorNote?: string) => {
     try {
       setLoading(true);
       setError('');
-      await appointmentApi.completeByDoctor(appointmentId);
+      await appointmentApi.completeByDoctor(appointmentId, doctorNote);
       setAppointments(prev => prev.map(apt => 
         apt.appointment_id === appointmentId 
-          ? { ...apt, doctor_completed: true }
+          ? { ...apt, doctor_completed: true, status: 'COMPLETED' as const }
           : apt
       ));
       setSuccess('Appointment completed by doctor');

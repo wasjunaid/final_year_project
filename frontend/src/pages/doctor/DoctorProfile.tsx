@@ -38,7 +38,7 @@ function DoctorProfile() {
     last_name: "",
     cnic: "",
     date_of_birth: "",
-    gender: "MALE",
+    gender: "M",
     address: "",
     country_code: "",
     number: "",
@@ -74,7 +74,7 @@ function DoctorProfile() {
         last_name: person.last_name || "",
         cnic: person.cnic || "",
         date_of_birth: person.date_of_birth || "",
-        gender: person.gender || "MALE",
+        gender: person.gender || "M",
         address: person.address || "",
         country_code: person.country_code || "",
         number: person.number || "",
@@ -110,7 +110,7 @@ function DoctorProfile() {
         last_name: person.last_name || "",
         cnic: person.cnic || "",
         date_of_birth: person.date_of_birth || "",
-        gender: person.gender || "MALE",
+        gender: person.gender || "M",
         address: person.address || "",
         country_code: person.country_code || "",
         number: person.number || "",
@@ -244,9 +244,9 @@ function DoctorProfile() {
           <LabeledDropDownField
             label="Gender"
             options={[
-              { label: "Male", value: "MALE" },
-              { label: "Female", value: "FEMALE" },
-              { label: "Other", value: "OTHER" },
+              { label: "Male", value: "M" },
+              { label: "Female", value: "F" },
+              { label: "Other", value: "O" },
             ]}
             placeholder="Select your gender"
             value={personForm.gender || ""}

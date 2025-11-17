@@ -31,8 +31,9 @@ const AppointmentDetailsPage = React.memo(() => {
   const getStatusColor = useCallback((status: Appointment['status']): string => {
     switch (status) {
       case 'APPROVED':
+      case 'UPCOMING':
         return "text-blue-500";
-      case 'IN_PROGRESS':
+      case 'IN PROGRESS': // Changed from 'IN_PROGRESS' to 'IN PROGRESS'
         return "text-yellow-500";
       case 'COMPLETED':
         return "text-green-500";
@@ -66,40 +67,59 @@ const AppointmentDetailsPage = React.memo(() => {
         newStatus === 'COMPLETED' &&
         !doctorNote
       ) {
+        alert("Please enter doctor's note before completing the appointment");
         return;
       }
 
       const appointmentId = appointment.appointment_id;
 
       switch (newStatus) {
-        case 'IN_PROGRESS':
+        case 'IN PROGRESS':
           await startByDoctor(appointmentId);
+          // Only navigate on success
+          setTimeout(() => navigate(-1), 1500);
           break;
         case 'COMPLETED':
-          await completeByDoctor(appointmentId);
+          // Pass doctor_note to completeByDoctor
+          await completeByDoctor(appointmentId, doctorNote);
+          // Only navigate on success
+          setTimeout(() => navigate(-1), 1500);
           break;
         case 'CANCELLED':
           await cancelByPatient(appointmentId);
+          // Only navigate on success
+          setTimeout(() => navigate(-1), 1500);
           break;
         default:
           break;
       }
-
-      // Navigate back after success
-      setTimeout(() => navigate(-1), 1500);
     } catch (err) {
-      // Error handled by hook
+      // Error handled by hook - DO NOT NAVIGATE
+      console.error('Error updating appointment:', err);
     }
   }, [appointment, role, doctorNote, clearMessages, startByDoctor, completeByDoctor, cancelByPatient, navigate]);
 
   // Memoized role-based buttons
   const getRoleButtons = useCallback((userRole?: UserRole | null, status?: Appointment['status']) => {
-    if (!status) return null;
+    if (!status || !appointment) return null;
+
+    // Helper function to check if appointment is upcoming (today or future)
+    const isUpcoming = (): boolean => {
+      const appointmentDate = new Date(appointment.date);
+      const today = new Date();
+      
+      // Set time to 00:00:00 for both dates to compare only the date part
+      appointmentDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      
+      // Return true if appointment is today or in the future
+      return appointmentDate >= today;
+    };
 
     switch (userRole) {
       case ROLES.PATIENT:
-        // Patient can only cancel approved appointments
-        if (status === 'APPROVED') {
+        // Patient can only cancel approved/upcoming appointments
+        if (status === 'APPROVED' || status === 'UPCOMING') {
           return (
             <Button
               label="Cancel"
@@ -112,13 +132,13 @@ const AppointmentDetailsPage = React.memo(() => {
         return null;
 
       case ROLES.DOCTOR:
-        // Doctor can start approved appointments and complete in-progress ones
-        if (status === 'APPROVED') {
+        // Doctor can start approved/upcoming appointments only if they are today or future
+        if ((status === 'APPROVED' || status === 'UPCOMING') && isUpcoming()) {
           return (
             <>
               <Button
                 label="Start Appointment"
-                onClick={() => handleStatusUpdate('IN_PROGRESS')}
+                onClick={() => handleStatusUpdate('IN PROGRESS')} // Changed from 'IN_PROGRESS' to 'IN PROGRESS'
                 disabled={loading}
               />
               <Button
@@ -130,7 +150,7 @@ const AppointmentDetailsPage = React.memo(() => {
             </>
           );
         }
-        if (status === 'IN_PROGRESS') {
+        if (status === 'IN PROGRESS') { // Changed from 'IN_PROGRESS' to 'IN PROGRESS'
           return (
             <Button
               label="Complete Appointment"
@@ -144,8 +164,8 @@ const AppointmentDetailsPage = React.memo(() => {
       case ROLES.HOSPITAL_ADMIN:
       case ROLES.HOSPITAL_SUB_ADMIN:
       case ROLES.HOSPITAL_FRONT_DESK:
-        // Hospital staff can cancel approved appointments
-        if (status === 'APPROVED') {
+        // Hospital staff can cancel approved/upcoming appointments
+        if (status === 'APPROVED' || status === 'UPCOMING') {
           return (
             <Button
               label="Cancel"
@@ -160,7 +180,7 @@ const AppointmentDetailsPage = React.memo(() => {
       default:
         return null;
     }
-  }, [handleStatusUpdate, loading, doctorNote]);
+  }, [handleStatusUpdate, loading, doctorNote, appointment]);
 
   // Memoized patient information section
   const patientInfoSection = useMemo(() => {
@@ -305,7 +325,7 @@ const AppointmentDetailsPage = React.memo(() => {
 
         {/* Doctor's Note Section - Only for doctors */}
         {role === ROLES.DOCTOR &&
-          appointment.status === 'IN_PROGRESS' && (
+          appointment.status === 'IN PROGRESS' && ( // Changed from 'IN_PROGRESS' to 'IN PROGRESS'
             <div className="mt-2">
               <LabeledInputField
                 title="Doctor's Note (Required to Complete)"

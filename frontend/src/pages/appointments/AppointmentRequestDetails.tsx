@@ -30,13 +30,13 @@ const AppointmentRequestDetails = React.memo(() => {
     denyAppointment,
     cancelByPatient,
     rescheduleByPatient,
-    rescheduleByHospital,
+    // rescheduleByHospital,
     clearMessages: clearAppointmentMessages
   } = useAppointment();
 
   const { 
     doctors, 
-    loading: doctorsLoading,
+    // loading: doctorsLoading,
     error: doctorsError,
     getHospitalAssociatedDoctors
   } = useDoctor();
@@ -75,6 +75,7 @@ const AppointmentRequestDetails = React.memo(() => {
     switch (status) {
       case "APPROVED":
         return "text-green-500";
+      case "PENDING":
       case "PROCESSING":
         return "text-yellow-500";
       case "CANCELLED":
@@ -82,7 +83,7 @@ const AppointmentRequestDetails = React.memo(() => {
         return "text-red-500";
       case "COMPLETED":
         return "text-blue-500";
-      case "IN_PROGRESS":
+      case "IN PROGRESS":
         return "text-purple-500";
       case "RESCHEDULED":
         return "text-orange-500";
@@ -103,25 +104,43 @@ const AppointmentRequestDetails = React.memo(() => {
           // Hospital staff actions
           if (newStatus === "APPROVED") {
             if (!cost || parseFloat(cost) <= 0) {
+              alert("Please enter a valid appointment cost");
               return;
             }
             if (!selectedDoctor) {
+              alert("Please select a doctor");
               return;
             }
             if (!date || !time) {
+              alert("Please select date and time");
               return;
             }
             
-            await approveAppointment(request.appointment_id);
+            await approveAppointment(request.appointment_id, {
+              doctor_id: parseInt(selectedDoctor),
+              date: date,
+              time: time,
+              appointment_cost: parseFloat(cost)
+            });
+            
+            // Only navigate on success
+            setTimeout(() => navigate(-1), 1500);
           } else if (newStatus === "DENIED") {
             await denyAppointment(request.appointment_id);
+            
+            // Only navigate on success
+            setTimeout(() => navigate(-1), 1500);
           }
         } else {
           // Patient actions
           if (newStatus === "CANCELLED") {
             await cancelByPatient(request.appointment_id);
+            
+            // Only navigate on success
+            setTimeout(() => navigate(-1), 1500);
           } else if (newStatus === "RESCHEDULED") {
             if (!date || !time) {
+              alert("Please select date and time");
               return;
             }
             
@@ -131,13 +150,14 @@ const AppointmentRequestDetails = React.memo(() => {
               time,
               reason: request.reason,
             });
+            
+            // Only navigate on success
+            setTimeout(() => navigate(-1), 1500);
           }
         }
-        
-        // Navigate back after success
-        setTimeout(() => navigate(-1), 1500);
       } catch (err) {
-        // Error handled by hook
+        // Error handled by hook - DO NOT NAVIGATE
+        console.error('Error updating appointment:', err);
       }
     };
 
@@ -221,7 +241,7 @@ const AppointmentRequestDetails = React.memo(() => {
   }, [appointmentSuccess, clearAppointmentMessages]);
 
   // Show loading if fetching doctors
-  const isLoading = appointmentLoading || doctorsLoading;
+  // const isLoading = appointmentLoading || doctorsLoading;
   const error = appointmentError || doctorsError;
   const success = appointmentSuccess;
 
@@ -265,7 +285,7 @@ const AppointmentRequestDetails = React.memo(() => {
         {/* Doctor Information */}
         <div className="flex justify-between gap-10">
           {isHospitalStaff() &&
-          request.status === "PROCESSING" ? (
+          (request.status === "PROCESSING" || request.status === "PENDING") ? (
             <LabeledDropDownField
               label="Select Doctor"
               value={selectedDoctor}
@@ -307,7 +327,7 @@ const AppointmentRequestDetails = React.memo(() => {
         {/* Appointment Details */}
         <div className="flex justify-between gap-10">
           {isHospitalStaff() &&
-          request.status === "PROCESSING" ? (
+          (request.status === "PROCESSING" || request.status === "PENDING") ? (
             <>
               <LabeledInputField
                 title="Date"
@@ -325,7 +345,7 @@ const AppointmentRequestDetails = React.memo(() => {
               />
             </>
           ) : !isHospitalStaff() &&
-            request.status === "PROCESSING" ? (
+            (request.status === "PROCESSING" || request.status === "PENDING") ? (
             <>
               <LabeledInputField
                 title="Date"
@@ -363,7 +383,7 @@ const AppointmentRequestDetails = React.memo(() => {
             className={getStatusColor(request.status)}
             disabled
           />
-          {isHospitalStaff() && request.status === "PROCESSING" ? (
+          {isHospitalStaff() && (request.status === "PROCESSING" || request.status === "PENDING") ? (
             <LabeledInputField
               title="Appointment Cost"
               type="number"
@@ -392,7 +412,7 @@ const AppointmentRequestDetails = React.memo(() => {
         />
 
         {/* Action Buttons */}
-        {request.status === "PROCESSING" && (
+        {(request.status === "PROCESSING" || request.status === "PENDING") && (
           <div className="flex justify-end mt-2 gap-2">
             {getActionButtons(role!)}
           </div>

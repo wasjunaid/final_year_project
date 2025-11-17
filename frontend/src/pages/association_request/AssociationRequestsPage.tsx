@@ -32,7 +32,7 @@ function AssociationRequestsPage() {
     role === ROLES.HOSPITAL_SUB_ADMIN ||
     role === ROLES.HOSPITAL_FRONT_DESK;
 
-  const isPersonRole = role === ROLES.DOCTOR || role === ROLES.MEDICAL_CODER;
+  const isDoctor = role === ROLES.DOCTOR;
 
   // Fetch hospital staff data if needed
   useEffect(() => {
@@ -55,7 +55,8 @@ function AssociationRequestsPage() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        if (isPersonRole) {
+        if (isDoctor) {
+          // For doctors, fetch their association requests
           await getByPerson();
         } else if (isHospitalStaff) {
           await getByHospital();
@@ -68,13 +69,13 @@ function AssociationRequestsPage() {
     if (role) {
       fetchRequests();
     }
-  }, [role, isPersonRole, isHospitalStaff, getByPerson, getByHospital]);
+  }, [role, isDoctor, isHospitalStaff, getByPerson, getByHospital]);
 
   const handleApprove = async (requestId: number) => {
     try {
       await approveRequest(requestId);
       // Refetch data after approval
-      if (isPersonRole) {
+      if (isDoctor) {
         await getByPerson();
       } else if (isHospitalStaff) {
         await getByHospital();
@@ -97,7 +98,7 @@ function AssociationRequestsPage() {
       }
       
       // Refetch data after deletion
-      if (isPersonRole) {
+      if (isDoctor) {
         await getByPerson();
       } else if (isHospitalStaff) {
         await getByHospital();
@@ -118,7 +119,7 @@ function AssociationRequestsPage() {
   }, [success, clearMessages]);
 
   // Restrict access to only allowed roles
-  if (role && !isHospitalStaff && !isPersonRole) {
+  if (role && !isHospitalStaff && !isDoctor) {
     return (
       <div className="flex flex-col h-full p-6">
         <div className="flex justify-center items-center h-64">
@@ -160,12 +161,12 @@ function AssociationRequestsPage() {
       {!loading && requests.length === 0 && (
         <div className="text-center text-gray-500 mt-8">
           <p className="text-lg mb-2">
-            {isPersonRole
+            {isDoctor
               ? "No association requests found"
               : "No pending association requests"}
           </p>
           <p className="text-sm mb-4">
-            {isPersonRole
+            {isDoctor
               ? "You haven't received any association requests from hospitals yet."
               : "You haven't sent any association requests yet."}
           </p>
@@ -179,7 +180,7 @@ function AssociationRequestsPage() {
             <AssociationRequestCard
               key={request.hospital_association_request_id}
               request={request}
-              showActions={isPersonRole} // Only show actions for doctors/medical coders
+              showActions={isDoctor} // Show actions for doctors to approve/reject
               onApprove={handleApprove}
               onReject={handleReject}
             />

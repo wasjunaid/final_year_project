@@ -30,7 +30,7 @@ export interface Appointment {
   hospital_name?: string;
 }
 
-export type StatusType = 'PROCESSING' | 'APPROVED' | 'DENIED' | 'CANCELLED' | 'RESCHEDULED' | 'IN_PROGRESS' | 'COMPLETED';
+export type StatusType = 'PROCESSING' | "PENDING" | "UPCOMING" | 'APPROVED' | 'DENIED' | 'CANCELLED' | 'RESCHEDULED' | 'IN PROGRESS' | 'COMPLETED';
 
 export interface CreateAppointmentRequest {
   doctor_id: number;
@@ -45,4 +45,11 @@ export interface AppointmentRescheduleRequest {
   date: string;
   time: string;
   reason?: string;
+}
+
+export interface ApproveAppointmentRequest {
+  doctor_id: number;
+  date: string;
+  time: string;
+  appointment_cost: number;
 }
