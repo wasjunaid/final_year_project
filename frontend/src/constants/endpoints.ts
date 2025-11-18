@@ -35,12 +35,17 @@ const EndPoints = {
     getHospitalassociatedDoctors: "/doctor/hospital", // GET
   },
   ehrAccess: {
-    getForPatient: "/ehr-access/patient", //GET
-    getForDoctor: "/ehr-access/doctor", //GET
-    requestByDoctor: "/ehr-access/request", //POST
-    denyByPatient: "/ehr-access/deny/:ehr_access_request_id", //PUT
-    grantByPatient: "/ehr-access/grant/:ehr_access_request_id", //PUT
-    revokeByPatient: "/ehr-access/revoke/:ehr_access_request_id", //PUT
+    requestByDoctor: '/ehr-access/request',
+    getForDoctor: '/ehr-access/doctor',
+    getForPatient: '/ehr-access/patient',
+    grantByPatient: '/ehr-access/grant/:ehr_access_id',
+    denyByPatient: '/ehr-access/deny/:ehr_access_id',
+    revoke: '/ehr-access/revoke/:ehr_access_id',
+  },
+  ehr: {
+    getPatientEHR: '/ehr/patient/:patient_id', // Get EHR by patient ID for doctor
+    getMyEHR: '/ehr/patient', // Get my EHR for patient
+    update: '/ehr', // Update EHR
   },
   hospital: {
     get: "/hospital", // GET

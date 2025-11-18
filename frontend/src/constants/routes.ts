@@ -28,7 +28,12 @@ const ROUTES = {
   UPLOAD_DOCUMENT: "/documents/upload",
   DOCUMENT_DETAILS: "/documents/details/:documentId",
 
+  // EHR Access Routes
+  EHR_ACCESS_REQUESTS: '/ehr-access-requests',
+  CREATE_EHR_ACCESS_REQUEST: '/create-ehr-access-request',
+  EHR_DETAILS: '/ehr-details',
+
   // NOT_FOUND: "/not-found",
-};
+} as const;
 
 export default ROUTES;

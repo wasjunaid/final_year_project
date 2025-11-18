@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaPaperPlane } from "react-icons/fa";
 import { useEHRAccess } from "../../hooks/useEHRAccess";
 import { useUserRole } from "../../hooks/useUserRole";
@@ -7,6 +8,7 @@ import Button from "../../components/Button";
 import LabeledInputField from "../../components/LabeledInputField";
 
 function CreateEHRAccessRequestPage() {
+  const navigate = useNavigate();
   const role = useUserRole();
   const {
     loading,
@@ -17,6 +19,7 @@ function CreateEHRAccessRequestPage() {
   } = useEHRAccess();
 
   // Form state
+  const [patientId, setPatientId] = useState("");
   const [patientEmail, setPatientEmail] = useState("");
   const [message, setMessage] = useState("");
 
@@ -26,27 +29,26 @@ function CreateEHRAccessRequestPage() {
     e.preventDefault();
     clearMessages();
 
-    if (!patientEmail.trim()) {
+    if (!patientId.trim()) {
       return;
     }
 
     try {
-      // For now, we'll need to find the patient ID based on email
-      // This might need to be implemented in the backend or through a separate API call
-      // For the demo, I'll show how the hook would be used once the patient_id is available
+      const requestSuccess = await requestByDoctor({ 
+        patient_id: parseInt(patientId),
+        // patient_email: patientEmail || undefined,
+        message: message || undefined 
+      });
       
-      // Temporary placeholder - in real implementation you'd:
-      // 1. Call an API to get patient by email
-      // 2. Extract the patient_id
-      // 3. Use that patient_id in the request
-      
-      // Example: const patient = await getPatientByEmail(patientEmail);
-      // await requestByDoctor({ patient_id: patient.patient_id, message });
-      
-      console.log("Would request access for patient email:", patientEmail);
-      setPatientEmail(""); // Clear form on success
-      setMessage("");
-      
+      if (requestSuccess) {
+        // Clear form and navigate back after success
+        setTimeout(() => {
+          setPatientId("");
+          setPatientEmail("");
+          setMessage("");
+          navigate(-1);
+        }, 1500);
+      }
     } catch (err: any) {
       // Error handling is managed by the hook
       console.error("Request failed:", err);
@@ -94,15 +96,26 @@ function CreateEHRAccessRequestPage() {
       {/* Form */}
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
         <div className="p-6">
+          <h2 className="text-2xl font-bold mb-6">Request EHR Access</h2>
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             <LabeledInputField
-              title="Patient Email"
+              title="Patient ID"
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              placeholder="Enter the patient's ID"
+              type="number"
+              required
+              hint="Enter the ID of the patient whose EHR you want to access"
+            />
+
+            <LabeledInputField
+              title="Patient Email (Optional)"
               value={patientEmail}
               onChange={(e) => setPatientEmail(e.target.value)}
               placeholder="Enter the patient's email address"
               type="email"
-              required
-              hint="Enter the Email of the patient whose EHR you want to access"
+              hint="Optional: Enter the patient's email for reference"
             />
 
             <LabeledInputField
@@ -110,6 +123,8 @@ function CreateEHRAccessRequestPage() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Add a message for the patient..."
+              multiline
+              rows={4}
               hint="Optional message to explain why you need access to their EHR"
             />
 
@@ -128,19 +143,18 @@ function CreateEHRAccessRequestPage() {
                 </ul>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> This feature requires backend implementation to convert patient email to patient ID. 
-                  Currently set up to use the useEHRAccess hook once the patient lookup functionality is implemented.
-                </p>
-              </div>
-
               <div className="flex gap-4">
                 <Button
                   label={loading ? "Sending Request..." : "Send Request"}
                   icon={<FaPaperPlane />}
                   type="submit"
-                  disabled={loading || !patientEmail.trim()}
+                  disabled={loading || !patientId.trim()}
+                />
+                <Button
+                  label="Cancel"
+                  variant="secondary"
+                  onClick={() => navigate(-1)}
+                  disabled={loading}
                 />
               </div>
             </div>

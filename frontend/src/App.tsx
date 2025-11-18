@@ -24,6 +24,9 @@ import AppointmentRequestDetails from "./pages/appointments/AppointmentRequestDe
 import AppointmentDetailsPage from "./pages/appointments/AppointmentDetailPage";
 import GoogleAuthSuccess from "./pages/auth/GoogleAuthSuccess";
 import DocumentDetailsPage from "./pages/documents/DocumentDetailsPage";
+import EHRAccessRequestsPage from "./pages/ehr/EHRAccessRequestsPage";
+import CreateEHRAccessRequestPage from "./pages/ehr/CreateEHRAccessRequestPage";
+import EHRDetailsPage from "./pages/ehr/EHRDetailsPage";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -44,7 +47,6 @@ function Protected({ children, allowedRoles }: ProtectedProps) {
 
   return <>{children}</>;
 }
-
 
 function App() {
   return (
@@ -132,7 +134,6 @@ function App() {
           <Route path={ROUTES.HOME} element={<LandingPage />} />
 
           {/* Other Routes */}
-
           <Route
             path={ROUTES.APPOINTMENT_REQUEST_DETAILS}
             element={
@@ -154,6 +155,32 @@ function App() {
             element={
               <Protected>
                 <DocumentDetailsPage />
+              </Protected>
+            }
+          />
+          
+          {/* EHR Routes */}
+          <Route
+            path={ROUTES.EHR_ACCESS_REQUESTS}
+            element={
+              <Protected allowedRoles={[ROLES.PATIENT, ROLES.DOCTOR]}>
+                <EHRAccessRequestsPage />
+              </Protected>
+            }
+          />
+          <Route
+            path={ROUTES.CREATE_EHR_ACCESS_REQUEST}
+            element={
+              <Protected allowedRoles={[ROLES.DOCTOR]}>
+                <CreateEHRAccessRequestPage />
+              </Protected>
+            }
+          />
+          <Route
+            path={ROUTES.EHR_DETAILS}
+            element={
+              <Protected allowedRoles={[ROLES.PATIENT, ROLES.DOCTOR]}>
+                <EHRDetailsPage />
               </Protected>
             }
           />
