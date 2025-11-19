@@ -1,236 +1,259 @@
 import { useState } from "react";
-import { useDocumentUpload } from '../../hooks/useDocumentUpload';
-import { FaUpload, FaFileAlt, FaTimes } from "react-icons/fa";
-import LabeledInputField from "../../components/LabeledInputField";
-import LabeledDropDownField from "../../components/LabeledDropDownField";
-import Button from "../../components/Button";
-// api/EndPoints import removed, now using useDocumentUpload
+import { useNavigate } from "react-router-dom";
+import { FaUpload, FaArrowLeft } from "react-icons/fa";
 import { useUserRole } from "../../hooks/useUserRole";
+import { useDocument } from "../../hooks/useDocument";
 import { ROLES } from "../../constants/roles";
+import Button from "../../components/Button";
+import LabeledInputField from "../../components/LabeledInputField";
+import ROUTES from "../../constants/routes";
 
-const documentTypes = [
-  { value: "personal", label: "Personal Document" },
-  { value: "lab test", label: "Lab Test" },
-  { value: "prescription", label: "Prescription" },
-];
+// Valid document types according to backend
+const DOCUMENT_TYPES = {
+  PERSONAL: 'personal',
+  LAB_TEST: 'lab test',
+  PRESCRIPTION: 'prescription',
+} as const;
 
 function UploadDocumentPage() {
+  const navigate = useNavigate();
   const role = useUserRole();
+  const { loading, error, success, uploadUnverified, clearMessages } = useDocument();
 
-  const [file, setFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] = useState("");
+  const [documentType, setDocumentType] = useState<string>(DOCUMENT_TYPES.PERSONAL);
   const [detail, setDetail] = useState("");
-  const [uploadedFor, setUploadedFor] = useState(""); // For doctors uploading for patients
-  const [appointmentId, setAppointmentId] = useState(""); // For appointment-related uploads
-  const [labTestId, setLabTestId] = useState(""); // For lab test uploads
-  const { upload, loading, error, success, clearMessages } = useDocumentUpload();
+  const [uploadedFor, setUploadedFor] = useState<'SELF' | 'APPOINTMENT' | 'LAB_TEST'>('SELF');
+  const [appointmentId, setAppointmentId] = useState("");
+  const [labTestId, setLabTestId] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
-  const canUploadForOthers =
-    role === ROLES.DOCTOR ||
-    role === ROLES.HOSPITAL_ADMIN ||
-    role === ROLES.HOSPITAL_SUB_ADMIN;
+  const canUpload = role === ROLES.PATIENT;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      // Validate file type (only PDF)
-      if (selectedFile.type !== "application/pdf") {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      
+      // Validate file size (10MB max)
+      if (selectedFile.size > 10 * 1024 * 1024) {
         clearMessages();
-        alert("Only PDF files are allowed");
+        alert("File size must be less than 10MB");
         return;
       }
-      // Validate file size (100MB max)
-      if (selectedFile.size > 100 * 1024 * 1024) {
-        clearMessages();
-        alert("File size must be less than 100MB");
-        return;
-      }
+      
       setFile(selectedFile);
-      clearMessages();
     }
-  };
-
-  const handleRemoveFile = () => {
-    setFile(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearMessages();
-    if (!file) {
-      return;
-    }
+
     if (!documentType) {
+      alert("Please select a document type");
       return;
     }
-    if (!detail.trim()) {
+
+    if (!file) {
+      alert("Please select a file to upload");
       return;
     }
-    const success = await upload({
+
+    const uploadData = {
       file,
       document_type: documentType,
-      detail,
-      uploaded_for: uploadedFor && canUploadForOthers ? uploadedFor : undefined,
-      appointment_id: appointmentId || undefined,
-      lab_test_id: labTestId || undefined,
-    });
+      detail: detail || '',
+      uploaded_for: uploadedFor,
+      appointment_id: appointmentId ? parseInt(appointmentId) : undefined,
+      lab_test_id: labTestId ? parseInt(labTestId) : undefined,
+    };
+
+    const success = await uploadUnverified(uploadData);
+    
     if (success) {
-      setFile(null);
-      setDocumentType("");
+      // Clear form
+      setDocumentType(DOCUMENT_TYPES.PERSONAL);
       setDetail("");
-      setUploadedFor("");
+      setUploadedFor('SELF');
       setAppointmentId("");
       setLabTestId("");
+      setFile(null);
+      
+      // Reset file input
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      
+      // // Navigate back after 1.5 seconds
+      // setTimeout(() => {
+      //   navigate(ROUTES.DOCUMENTS);
+      // }, 1500);
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
+  if (!canUpload) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center text-red-500">
+          <p className="text-lg mb-2">Access Denied</p>
+          <p>Only patients can upload documents</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full p-6">
-      <div className="mb-6">
-        <p className="text-gray-600 text-sm">
-          {role === ROLES.PATIENT
-            ? "Upload your personal documents and medical records"
-            : "Upload documents for patients or medical records"}
-        </p>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <FaArrowLeft className="text-xl" />
+        </button>
+        <h1 className="text-2xl font-bold">Upload Document</h1>
       </div>
 
       {/* Messages */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          {error}
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md flex justify-between items-center">
+          <span>{error}</span>
+          <button 
+            onClick={clearMessages}
+            className="text-sm underline hover:no-underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
-          {success}
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md flex justify-between items-center">
+          <span>{success}</span>
+          <button 
+            onClick={clearMessages}
+            className="text-sm underline hover:no-underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* File Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select File (PDF only, max 100MB)
-          </label>
-
-          {!file ? (
-            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-              <FaUpload className="mx-auto text-3xl text-gray-400 mb-4" />
-              <p className="text-gray-600 mb-2">
-                Click to select a file or drag and drop
+      {/* Form */}
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Document Type *
+              </label>
+              <select
+                value={documentType}
+                onChange={(e) => setDocumentType(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value={DOCUMENT_TYPES.PERSONAL}>Personal Document</option>
+                <option value={DOCUMENT_TYPES.LAB_TEST}>Lab Test</option>
+                <option value={DOCUMENT_TYPES.PRESCRIPTION}>Prescription</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Select the type of document you're uploading
               </p>
-              <p className="text-sm text-gray-500">
-                PDF files only, up to 100MB
-              </p>
+            </div>
 
+            <LabeledInputField
+              title="Details"
+              value={detail}
+              onChange={(e) => setDetail(e.target.value)}
+              placeholder="Add any additional details..."
+              multiline
+              rows={4}
+              hint="Provide details or notes about the document"
+            />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload For
+              </label>
+              <select
+                value={uploadedFor}
+                onChange={(e) => setUploadedFor(e.target.value as 'SELF' | 'APPOINTMENT' | 'LAB_TEST')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="SELF">Personal Use</option>
+                <option value="APPOINTMENT">Appointment Related</option>
+                <option value="LAB_TEST">Lab Test Related</option>
+              </select>
+            </div>
+
+            {uploadedFor === 'APPOINTMENT' && (
+              <LabeledInputField
+                title="Appointment ID (Optional)"
+                value={appointmentId}
+                onChange={(e) => setAppointmentId(e.target.value)}
+                placeholder="Enter appointment ID"
+                type="number"
+                hint="Link this document to a specific appointment"
+              />
+            )}
+
+            {uploadedFor === 'LAB_TEST' && (
+              <LabeledInputField
+                title="Lab Test ID (Optional)"
+                value={labTestId}
+                onChange={(e) => setLabTestId(e.target.value)}
+                placeholder="Enter lab test ID"
+                type="number"
+                hint="Link this document to a specific lab test"
+              />
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Document File *
+              </label>
               <input
                 type="file"
-                accept=".pdf,application/pdf"
                 onChange={handleFileChange}
-                className="absolute inset-0 opacity-0 cursor-pointer"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                className="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-md file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100
+                  cursor-pointer"
+                required
               />
+              <p className="mt-1 text-xs text-gray-500">
+                Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 10MB)
+              </p>
+              {file && (
+                <p className="mt-2 text-sm text-green-600">
+                  Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+              )}
             </div>
-          ) : (
-            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <FaFileAlt className="text-red-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">{file.name}</p>
-                    <p className="text-sm text-gray-500">
-                      {formatFileSize(file.size)}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                >
-                  <FaTimes />
-                </button>
+
+            <div className="border-t border-gray-200 pt-6">
+              <div className="flex gap-4">
+                <Button
+                  label={loading ? "Uploading..." : "Upload Document"}
+                  icon={<FaUpload />}
+                  type="submit"
+                  disabled={loading || !documentType || !file}
+                />
+                <Button
+                  label="Cancel"
+                  variant="secondary"
+                  onClick={() => navigate(-1)}
+                  disabled={loading}
+                />
               </div>
             </div>
-          )}
+          </form>
         </div>
-
-        {/* Document Type */}
-        <div className="flex gap-4">
-          <LabeledDropDownField
-            label="Document Type"
-            value={documentType}
-            onChange={(e) => setDocumentType(e.target.value)}
-            options={documentTypes}
-            placeholder="Select document type"
-            required
-          />
-          <div className="w-full"></div>
-        </div>
-
-        {/* Document Details */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Document Details
-          </label>
-          <textarea
-            value={detail}
-            onChange={(e) => setDetail(e.target.value)}
-            placeholder="Describe the document contents, purpose, or any relevant information..."
-            rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
-          />
-        </div>
-
-        {/* Advanced Options for Doctors/Hospital Staff */}
-        {canUploadForOthers && (
-          <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-medium text-blue-900">Advanced Options</h3>
-
-            <LabeledInputField
-              title="Upload for Patient ID (optional)"
-              value={uploadedFor}
-              onChange={(e) => setUploadedFor(e.target.value)}
-              placeholder="Enter patient ID if uploading for another person"
-              type="number"
-            />
-
-            <LabeledInputField
-              title="Appointment ID (optional)"
-              value={appointmentId}
-              onChange={(e) => setAppointmentId(e.target.value)}
-              placeholder="Link to specific appointment"
-              type="number"
-            />
-
-            <LabeledInputField
-              title="Lab Test ID (optional)"
-              value={labTestId}
-              onChange={(e) => setLabTestId(e.target.value)}
-              placeholder="Link to specific lab test"
-              type="number"
-            />
-          </div>
-        )}
-
-        {/* Submit Buttons */}
-        <div className="flex gap-4 pt-4">
-          <Button
-            label={loading ? "Uploading..." : "Upload Document"}
-            type="submit"
-            disabled={loading || !file || !documentType || !detail.trim()}
-          />
-        </div>
-      </form>
+      </div>
     </div>
   );
 }

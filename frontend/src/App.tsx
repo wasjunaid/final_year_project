@@ -27,6 +27,7 @@ import DocumentDetailsPage from "./pages/documents/DocumentDetailsPage";
 import EHRAccessRequestsPage from "./pages/ehr/EHRAccessRequestsPage";
 import CreateEHRAccessRequestPage from "./pages/ehr/CreateEHRAccessRequestPage";
 import EHRDetailsPage from "./pages/ehr/EHRDetailsPage";
+import UploadDocumentPage from "./pages/documents/UploadDocumentPage";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -181,6 +182,21 @@ function App() {
             element={
               <Protected allowedRoles={[ROLES.PATIENT, ROLES.DOCTOR]}>
                 <EHRDetailsPage />
+              </Protected>
+            }
+          />
+
+          {/* Document Routes */}
+          <Route
+            path={ROUTES.UPLOAD_DOCUMENT}
+            element={
+              <Protected allowedRoles={[
+                ROLES.PATIENT,
+                ROLES.HOSPITAL_ADMIN, 
+                ROLES.HOSPITAL_SUB_ADMIN, 
+                ROLES.HOSPITAL_LAB_TECHNICIAN
+              ]}>
+                <UploadDocumentPage />
               </Protected>
             }
           />

@@ -24,9 +24,10 @@ const ROUTES = {
   APPOINTMENT_DETAIL: "/appointment-detail",
   APPOINTMENT_REQUEST_DETAILS: "/appointment-request-details",
 
-  DOCUMENTS: "/documents",
-  UPLOAD_DOCUMENT: "/documents/upload",
-  DOCUMENT_DETAILS: "/documents/details/:documentId",
+  // Document Routes
+  DOCUMENTS: '/documents',
+  UPLOAD_DOCUMENT: '/upload-document',
+  DOCUMENT_DETAILS: '/document-details/:documentId',
 
   // EHR Access Routes
   EHR_ACCESS_REQUESTS: '/ehr-access-requests',

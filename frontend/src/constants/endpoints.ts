@@ -122,6 +122,18 @@ const EndPoints = {
     getAll: "/system-admin", // GET
     insert: "/system-admin", // POST
     delete: "/system-admin/:system_admin_id", // DELETE
+  },
+  document: {
+    get: '/document/:document_id',  // GET
+    getUnverified: '/document/unverified',  // GET
+    getVerified: '/document/verified',  // GET
+    getAll: '/document/all',  // GET
+    getAgainstAppointment: '/document/appointment',  // GET
+    uploadUnverified: '/document/upload/unverified',  // POST
+    uploadVerified: '/document/upload/verified',  // POST
+    download: '/document/download/:document_id',  // GET
+    // delete: '/document/:document_id',  // DELETE
+    // verify: '/document/verify/:document_id',  // POST
   }
 } as const;
 
