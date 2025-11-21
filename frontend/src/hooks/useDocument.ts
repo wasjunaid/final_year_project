@@ -1,113 +1,79 @@
 import { useState, useCallback } from 'react';
 import { documentApi } from '../services/documentApi';
-import type { 
-  Document, 
-  DocumentUploadRequest,
-  VerifiedDocumentUploadRequest,
-  DocumentsResponse,
-  AppointmentDocumentsParams
-} from '../models/Document';
+import type { Document, DocumentUploadRequest, VerifiedDocumentUploadRequest, DocumentsResponse } from '../models/Document';
 
-export function useDocument() {
+export const useDocument = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [documentsData, setDocumentsData] = useState<DocumentsResponse>({
-    verified_documents: [],
-    unverified_documents: [],
-  });
+  const [verifiedDocuments, setVerifiedDocuments] = useState<Document[]>([]);
+  const [unverifiedDocuments, setUnverifiedDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   // Clear messages
   const clearMessages = useCallback(() => {
-    setError('');
-    setSuccess('');
+    setError(null);
+    setSuccess(null);
   }, []);
 
-  // Get document by ID
-  const getById = useCallback(async (document_id: number): Promise<Document | null> => {
+  // Get all documents
+  const fetchAllDocuments = useCallback(async () => {
     try {
       setLoading(true);
-      setError('');
+      setError(null);
       
-      const response = await documentApi.getById(document_id);
-      return response.data || null;
-    } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || 'Failed to fetch document';
-      setError(errorMsg);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Get all unverified documents
-  const getUnverified = useCallback(async (): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError('');
+      const response = await documentApi.getAll();
       
-      const response = await documentApi.getUnverified();
-      setDocuments(response.data || []);
-      return true;
+      if (response.success && response.data) {
+        // Handle both response formats
+        const verified = response.data.verified_documents || response.data.verified || [];
+        const unverified = response.data.unverified_documents || response.data.unverified || [];
+        
+        setVerifiedDocuments(verified);
+        setUnverifiedDocuments(unverified);
+        setDocuments([...verified, ...unverified]);
+      }
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || 'Failed to fetch unverified documents';
-      setError(errorMsg);
-      return false;
+      setError(err.response?.data?.message || 'Failed to fetch documents');
+      console.error('Error fetching documents:', err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   // Get all verified documents
-  const getVerified = useCallback(async (): Promise<boolean> => {
+  const fetchVerifiedDocuments = useCallback(async () => {
     try {
       setLoading(true);
-      setError('');
+      setError(null);
       
       const response = await documentApi.getVerified();
-      setDocuments(response.data || []);
-      return true;
+      
+      if (response.success && response.data) {
+        setVerifiedDocuments(response.data);
+      }
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || 'Failed to fetch verified documents';
-      setError(errorMsg);
-      return false;
+      setError(err.response?.data?.message || 'Failed to fetch verified documents');
+      console.error('Error fetching verified documents:', err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Get all documents
-  const getAll = useCallback(async (): Promise<boolean> => {
+  // Get all unverified documents
+  const fetchUnverifiedDocuments = useCallback(async () => {
     try {
       setLoading(true);
-      setError('');
+      setError(null);
       
-      const response = await documentApi.getAll();
-      setDocumentsData(response.data || { verified_documents: [], unverified_documents: [] });
-      return true;
-    } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || 'Failed to fetch documents';
-      setError(errorMsg);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Get documents against appointment
-  const getAgainstAppointment = useCallback(async (params: AppointmentDocumentsParams): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError('');
+      const response = await documentApi.getUnverified();
       
-      const response = await documentApi.getAgainstAppointment(params);
-      setDocuments(response.data || []);
-      return true;
+      if (response.success && response.data) {
+        setUnverifiedDocuments(response.data);
+      }
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || 'Failed to fetch appointment documents';
-      setError(errorMsg);
-      return false;
+      setError(err.response?.data?.message || 'Failed to fetch unverified documents');
+      console.error('Error fetching unverified documents:', err);
     } finally {
       setLoading(false);
     }
@@ -117,61 +83,66 @@ export function useDocument() {
   const uploadUnverified = useCallback(async (data: DocumentUploadRequest): Promise<boolean> => {
     try {
       setLoading(true);
-      setError('');
-      setSuccess('');
+      setError(null);
+      setSuccess(null);
       
       const response = await documentApi.uploadUnverified(data);
-      setSuccess('Document uploaded successfully');
       
-      // Refresh documents list
-      await getAll();
-      
-      return true;
+      if (response.success) {
+        setSuccess('Document uploaded successfully');
+        // Refresh documents list
+        await fetchAllDocuments();
+        return true;
+      }
+      return false;
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || 'Failed to upload document';
-      setError(errorMsg);
+      const errorMessage = err.response?.data?.message || 'Failed to upload document';
+      setError(errorMessage);
+      console.error('Error uploading document:', err);
       return false;
     } finally {
       setLoading(false);
     }
-  }, [getAll]);
+  }, [fetchAllDocuments]);
 
   // Upload verified document (lab technician)
   const uploadVerified = useCallback(async (data: VerifiedDocumentUploadRequest): Promise<boolean> => {
     try {
       setLoading(true);
-      setError('');
-      setSuccess('');
+      setError(null);
+      setSuccess(null);
       
       const response = await documentApi.uploadVerified(data);
-      setSuccess('Verified document uploaded successfully');
       
-      // Refresh documents list
-      await getAll();
-      
-      return true;
+      if (response.success) {
+        setSuccess('Verified document uploaded successfully');
+        // Refresh documents list
+        await fetchAllDocuments();
+        return true;
+      }
+      return false;
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || 'Failed to upload verified document';
-      setError(errorMsg);
+      const errorMessage = err.response?.data?.message || 'Failed to upload verified document';
+      setError(errorMessage);
+      console.error('Error uploading verified document:', err);
       return false;
     } finally {
       setLoading(false);
     }
-  }, [getAll]);
+  }, [fetchAllDocuments]);
 
   // Download document
-  const downloadDocument = useCallback(async (document_id: number, filename: string): Promise<boolean> => {
+  const downloadDocument = useCallback(async (documentId: number, filename: string) => {
     try {
       setLoading(true);
-      setError('');
+      setError(null);
       
-      await documentApi.downloadAndSave(document_id, filename);
+      await documentApi.downloadAndSave(documentId, filename);
       setSuccess('Document downloaded successfully');
-      return true;
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || 'Failed to download document';
-      setError(errorMsg);
-      return false;
+      const errorMessage = err.response?.data?.message || 'Failed to download document';
+      setError(errorMessage);
+      console.error('Error downloading document:', err);
     } finally {
       setLoading(false);
     }
@@ -179,20 +150,19 @@ export function useDocument() {
 
   return {
     documents,
-    documentsData,
+    verifiedDocuments,
+    unverifiedDocuments,
     loading,
     error,
     success,
-    getById,
-    getUnverified,
-    getVerified,
-    getAll,
-    getAgainstAppointment,
+    fetchAllDocuments,
+    fetchVerifiedDocuments,
+    fetchUnverifiedDocuments,
     uploadUnverified,
     uploadVerified,
     downloadDocument,
     clearMessages,
   };
-}
+};
 
 export default useDocument;
