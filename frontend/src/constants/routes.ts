@@ -19,6 +19,7 @@ const ROUTES = {
   FRONT_DESK_PORTAL: "/front-desk",
   HOSPITAL_PORTAL: "/hospital",
   MEDICAL_CODER_PORTAL: "/medical-coder",
+  LAB_TECHNICIAN_PORTAL: "/lab-technician",
 
   // other routes
   APPOINTMENT_DETAIL: "/appointment-detail",

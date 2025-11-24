@@ -23,11 +23,7 @@ function DoctorPortalLayout() {
   const sidebarItems: ISideBarItem[] = [
     { label: "Profile", icon: <FaUser />, page: "profile" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
-    {
-      label: "Associations",
-      icon: <FaHospitalUser />,
-      page: "association-requests",
-    },
+    { label: "Associations", icon: <FaHospitalUser />, page: "association-requests" },
     { label: "Prescriptions", icon: <FaFileAlt />, page: "prescriptions" },
     { label: "EHR", icon: <FaShare />, page: "ehr" },
     { label: "Personal Docs", icon: <FaFileAlt />, page: "personal-docs" },

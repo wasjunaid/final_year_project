@@ -24,6 +24,9 @@ const rolePortalRoute = ({ role }: IRolePortalNavigationProps) => {
     case ROLES.HOSPITAL_FRONT_DESK:
       return ROUTES.FRONT_DESK_PORTAL;
 
+    case ROLES.HOSPITAL_LAB_TECHNICIAN:
+      return ROUTES.LAB_TECHNICIAN_PORTAL;
+        
     case ROLES.MEDICAL_CODER:
       return ROUTES.MEDICAL_CODER_PORTAL;
 

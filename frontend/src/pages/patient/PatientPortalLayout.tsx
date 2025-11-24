@@ -34,7 +34,7 @@ function PatientPortalLayout() {
     // { label: "Data Sharing", icon: <FaShareAlt />, page: "datasharing" },
     { label: "Insurance", icon: <FaShieldAlt />, page: "insurance" },
     { label: "Documents", icon: <FaFileAlt />, page: "documents" },
-    { label: "Prescriptions", icon: <FaFileAlt />, page: "prescriptions" },
+    // { label: "Prescriptions", icon: <FaFileAlt />, page: "prescriptions" },
     { label: "EHR", icon: <FaShare />, page: "ehr" },
     // { label: "Billing", icon: <FaCreditCard />, page: "billing" },
   ], []);

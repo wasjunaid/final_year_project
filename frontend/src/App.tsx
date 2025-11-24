@@ -28,6 +28,7 @@ import EHRAccessRequestsPage from "./pages/ehr/EHRAccessRequestsPage";
 import CreateEHRAccessRequestPage from "./pages/ehr/CreateEHRAccessRequestPage";
 import EHRDetailsPage from "./pages/ehr/EHRDetailsPage";
 import UploadDocumentPage from "./pages/documents/UploadDocumentPage";
+import LabTechnicianPortalLayout from "./pages/lab_technician/LabTechnicianPortalLayout";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -118,6 +119,15 @@ function App() {
             element={
               <Protected allowedRoles={[ROLES.HOSPITAL_FRONT_DESK]}>
                 <FrontDeskPortalLayout />
+              </Protected>
+            }
+          />
+
+          <Route
+            path={ROUTES.LAB_TECHNICIAN_PORTAL}
+            element={
+              <Protected allowedRoles={[ROLES.HOSPITAL_LAB_TECHNICIAN]}>
+                <LabTechnicianPortalLayout />
               </Protected>
             }
           />
