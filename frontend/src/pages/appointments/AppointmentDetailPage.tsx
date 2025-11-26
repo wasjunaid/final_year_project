@@ -8,6 +8,22 @@ import { useAppointment } from "../../hooks/useAppointment";
 import { ROLES, type UserRole } from "../../constants/roles";
 import Button from "../../components/Button";
 
+// Medical details interface for appointment
+interface MedicalDetails {
+  appointmentDuration: string;
+  historyOfPresentIllness: string;
+  allergies: string;
+  currentMedications: string;
+  socialHistory: string;
+  medicalHistory: string;
+  surgicalHistory: string;
+  familyHistory: string;
+  reviewOfSystems: string;
+  physicalExam: string;
+  diagnoses: string;
+  plan: string;
+}
+
 const AppointmentDetailsPage = React.memo(() => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,6 +32,20 @@ const AppointmentDetailsPage = React.memo(() => {
   const appointment: Appointment | null = location.state ?? null;
 
   const [doctorNote, setDoctorNote] = useState("");
+  const [medicalDetails, setMedicalDetails] = useState<MedicalDetails>({
+    appointmentDuration: "",
+    historyOfPresentIllness: "",
+    allergies: "",
+    currentMedications: "",
+    socialHistory: "",
+    medicalHistory: "",
+    surgicalHistory: "",
+    familyHistory: "",
+    reviewOfSystems: "",
+    physicalExam: "",
+    diagnoses: "",
+    plan: "",
+  });
   
   const { 
     loading, 
@@ -33,7 +63,7 @@ const AppointmentDetailsPage = React.memo(() => {
       case 'APPROVED':
       case 'UPCOMING':
         return "text-blue-500";
-      case 'IN PROGRESS': // Changed from 'IN_PROGRESS' to 'IN PROGRESS'
+      case 'IN PROGRESS':
         return "text-yellow-500";
       case 'COMPLETED':
         return "text-green-500";
@@ -53,6 +83,16 @@ const AppointmentDetailsPage = React.memo(() => {
   const handleDoctorNoteChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setDoctorNote(e.target.value);
   }, []);
+
+  // Medical details change handler
+  const handleMedicalDetailChange = useCallback((field: keyof MedicalDetails) => 
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setMedicalDetails(prev => ({
+        ...prev,
+        [field]: e.target.value
+      }));
+    }, []
+  );
 
   // Memoized status update handler
   const handleStatusUpdate = useCallback(async (newStatus: Appointment['status']) => {
@@ -80,7 +120,7 @@ const AppointmentDetailsPage = React.memo(() => {
           setTimeout(() => navigate(-1), 1500);
           break;
         case 'COMPLETED':
-          // Pass doctor_note to completeByDoctor
+          // TODO: Pass medicalDetails along with doctor_note to completeByDoctor
           await completeByDoctor(appointmentId, doctorNote);
           // Only navigate on success
           setTimeout(() => navigate(-1), 1500);
@@ -97,7 +137,7 @@ const AppointmentDetailsPage = React.memo(() => {
       // Error handled by hook - DO NOT NAVIGATE
       console.error('Error updating appointment:', err);
     }
-  }, [appointment, role, doctorNote, clearMessages, startByDoctor, completeByDoctor, cancelByPatient, navigate]);
+  }, [appointment, role, doctorNote, medicalDetails, clearMessages, startByDoctor, completeByDoctor, cancelByPatient, navigate]);
 
   // Memoized role-based buttons
   const getRoleButtons = useCallback((userRole?: UserRole | null, status?: Appointment['status']) => {
@@ -108,17 +148,14 @@ const AppointmentDetailsPage = React.memo(() => {
       const appointmentDate = new Date(appointment.date);
       const today = new Date();
       
-      // Set time to 00:00:00 for both dates to compare only the date part
       appointmentDate.setHours(0, 0, 0, 0);
       today.setHours(0, 0, 0, 0);
       
-      // Return true if appointment is today or in the future
       return appointmentDate >= today;
     };
 
     switch (userRole) {
       case ROLES.PATIENT:
-        // Patient can only cancel approved/upcoming appointments
         if (status === 'APPROVED' || status === 'UPCOMING') {
           return (
             <Button
@@ -132,13 +169,12 @@ const AppointmentDetailsPage = React.memo(() => {
         return null;
 
       case ROLES.DOCTOR:
-        // Doctor can start approved/upcoming appointments only if they are today or future
         if ((status === 'APPROVED' || status === 'UPCOMING') && isUpcoming()) {
           return (
             <>
               <Button
                 label="Start Appointment"
-                onClick={() => handleStatusUpdate('IN PROGRESS')} // Changed from 'IN_PROGRESS' to 'IN PROGRESS'
+                onClick={() => handleStatusUpdate('IN PROGRESS')}
                 disabled={loading}
               />
               <Button
@@ -150,7 +186,7 @@ const AppointmentDetailsPage = React.memo(() => {
             </>
           );
         }
-        if (status === 'IN PROGRESS') { // Changed from 'IN_PROGRESS' to 'IN PROGRESS'
+        if (status === 'IN PROGRESS') {
           return (
             <Button
               label="Complete Appointment"
@@ -164,7 +200,6 @@ const AppointmentDetailsPage = React.memo(() => {
       case ROLES.HOSPITAL_ADMIN:
       case ROLES.HOSPITAL_SUB_ADMIN:
       case ROLES.HOSPITAL_FRONT_DESK:
-        // Hospital staff can cancel approved/upcoming appointments
         if (status === 'APPROVED' || status === 'UPCOMING') {
           return (
             <Button
@@ -242,6 +277,185 @@ const AppointmentDetailsPage = React.memo(() => {
     );
   }, [role, appointment]);
 
+  // Medical Details Section - Shown during IN PROGRESS (editable) or COMPLETED (read-only)
+  const medicalDetailsSection = useMemo(() => {
+    if (!appointment) return null;
+
+    const isInProgress = appointment.status === 'IN PROGRESS' && role === ROLES.DOCTOR;
+    const isCompleted = appointment.status === 'COMPLETED';
+    const canView = isInProgress || isCompleted;
+
+    if (!canView) return null;
+
+    return (
+      <div className="mt-6 border-t pt-6">
+        <h2 className="text-lg font-bold mb-4 text-blue-600">Medical Documentation</h2>
+        
+        {/* Appointment Duration */}
+        <div className="mb-4">
+          <LabeledInputField
+            title="Appointment Duration"
+            value={medicalDetails.appointmentDuration}
+            onChange={handleMedicalDetailChange('appointmentDuration')}
+            placeholder="e.g., 30 minutes"
+            disabled={!isInProgress}
+          />
+        </div>
+
+        {/* History of Present Illness */}
+        <div className="mb-4">
+          <LabeledInputField
+            title="History of Present Illness (HPI)"
+            value={medicalDetails.historyOfPresentIllness}
+            onChange={handleMedicalDetailChange('historyOfPresentIllness')}
+            placeholder="Summary of patient's current condition, symptoms onset, duration, severity, and progression..."
+            multiline
+            rows={4}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        {/* Patient History Section */}
+        <h3 className="text-md font-semibold mb-3 mt-6 text-gray-700">Patient History</h3>
+        
+        <div className="mb-4">
+          <LabeledInputField
+            title="Allergies"
+            value={medicalDetails.allergies}
+            onChange={handleMedicalDetailChange('allergies')}
+            placeholder="List all known allergies (medications, foods, environmental). Use 'NKDA' if none."
+            multiline
+            rows={2}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Current Medications"
+            value={medicalDetails.currentMedications}
+            onChange={handleMedicalDetailChange('currentMedications')}
+            placeholder="List all current medications with dosages and frequency..."
+            multiline
+            rows={3}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Social History"
+            value={medicalDetails.socialHistory}
+            onChange={handleMedicalDetailChange('socialHistory')}
+            placeholder="Smoking status, alcohol use, drug use, occupation, living situation..."
+            multiline
+            rows={3}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Medical History"
+            value={medicalDetails.medicalHistory}
+            onChange={handleMedicalDetailChange('medicalHistory')}
+            placeholder="Past medical conditions, chronic illnesses, significant past diagnoses..."
+            multiline
+            rows={3}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Surgical History"
+            value={medicalDetails.surgicalHistory}
+            onChange={handleMedicalDetailChange('surgicalHistory')}
+            placeholder="Previous surgical procedures with dates and outcomes..."
+            multiline
+            rows={2}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Family History"
+            value={medicalDetails.familyHistory}
+            onChange={handleMedicalDetailChange('familyHistory')}
+            placeholder="Hereditary conditions, family medical history (parents, siblings, grandparents)..."
+            multiline
+            rows={2}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        {/* Clinical Assessment Section */}
+        <h3 className="text-md font-semibold mb-3 mt-6 text-gray-700">Clinical Assessment</h3>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Review of Systems (ROS)"
+            value={medicalDetails.reviewOfSystems}
+            onChange={handleMedicalDetailChange('reviewOfSystems')}
+            placeholder="Systematic review: Constitutional, Eyes, ENT, Cardiovascular, Respiratory, GI, GU, MSK, Skin, Neuro, Psychiatric, Endocrine, Heme/Lymph, Allergic/Immunologic..."
+            multiline
+            rows={5}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Physical Exam"
+            value={medicalDetails.physicalExam}
+            onChange={handleMedicalDetailChange('physicalExam')}
+            placeholder="Vital signs, general appearance, HEENT, cardiovascular, respiratory, abdominal, extremities, neurological findings..."
+            multiline
+            rows={5}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        {/* Diagnoses and Plan Section */}
+        <h3 className="text-md font-semibold mb-3 mt-6 text-gray-700">Assessment & Plan</h3>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Diagnoses"
+            value={medicalDetails.diagnoses}
+            onChange={handleMedicalDetailChange('diagnoses')}
+            placeholder="List all diagnoses identified during this encounter with ICD codes if available..."
+            multiline
+            rows={3}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        <div className="mb-4">
+          <LabeledInputField
+            title="Treatment Plan"
+            value={medicalDetails.plan}
+            onChange={handleMedicalDetailChange('plan')}
+            placeholder="Treatment approach: medications prescribed, follow-up appointments, referrals, lab orders, patient education, lifestyle modifications..."
+            multiline
+            rows={5}
+            disabled={!isInProgress}
+          />
+        </div>
+
+        {isInProgress && (
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> All medical documentation fields will be saved when you complete the appointment. 
+              Please ensure all relevant information is documented before completing.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }, [appointment, role, medicalDetails, handleMedicalDetailChange]);
+
   // Clear messages after success
   useEffect(() => {
     if (success) {
@@ -269,13 +483,21 @@ const AppointmentDetailsPage = React.memo(() => {
         onNotificationsClick={() => {}}
       />
 
-      <div className="flex flex-col px-8 mt-4 gap-3">
+      <div className="flex flex-col px-8 mt-4 gap-3 pb-8">
         <h1 className="text-xl font-bold">
           Appointment # {appointment.appointment_id}
         </h1>
 
-        {error && <div className="text-red-500">{error}</div>}
-        {success && <div className="text-green-600">{success}</div>}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            {success}
+          </div>
+        )}
 
         {/* Patient Information */}
         {patientInfoSection}
@@ -323,35 +545,36 @@ const AppointmentDetailsPage = React.memo(() => {
           disabled
         />
 
-        {/* Doctor's Note Section - Only for doctors */}
-        {role === ROLES.DOCTOR &&
-          appointment.status === 'IN PROGRESS' && ( // Changed from 'IN_PROGRESS' to 'IN PROGRESS'
-            <div className="mt-2">
-              <LabeledInputField
-                title="Doctor's Note (Required to Complete)"
-                value={doctorNote}
-                onChange={handleDoctorNoteChange}
-                multiline
-                rows={4}
-                placeholder="Add medical notes and observations..."
-              />
-            </div>
-          )}
-
-        {/* Display existing doctor's note for completed appointments */}
-        {appointment.doctor_note &&
-          appointment.status === 'COMPLETED' && (
+        {/* Doctor's Note Section - Only for doctors during IN PROGRESS */}
+        {role === ROLES.DOCTOR && appointment.status === 'IN PROGRESS' && (
+          <div className="mt-2">
             <LabeledInputField
-              title="Doctor's Note"
-              value={appointment.doctor_note}
+              title="Doctor's Note (Required to Complete)"
+              value={doctorNote}
+              onChange={handleDoctorNoteChange}
               multiline
               rows={4}
-              disabled
+              placeholder="Brief summary and key observations..."
             />
-          )}
+          </div>
+        )}
+
+        {/* Display existing doctor's note for completed appointments */}
+        {appointment.doctor_note && appointment.status === 'COMPLETED' && (
+          <LabeledInputField
+            title="Doctor's Note"
+            value={appointment.doctor_note}
+            multiline
+            rows={4}
+            disabled
+          />
+        )}
+
+        {/* Medical Details Section */}
+        {medicalDetailsSection}
 
         {/* Action Buttons */}
-        <div className="flex justify-end mt-2 gap-2">
+        <div className="flex justify-end mt-6 gap-2">
           {getRoleButtons(role, appointment.status)}
         </div>
       </div>
