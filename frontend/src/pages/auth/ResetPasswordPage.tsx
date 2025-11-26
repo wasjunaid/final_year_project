@@ -42,7 +42,7 @@ function ResetPasswordPage() {
 
       const response = await authApi.passwordReset({
         token,
-        newPassword: password,
+        password: password,
       });
 
       if (response.success) {
