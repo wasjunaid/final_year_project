@@ -36,7 +36,7 @@ function PatientInsurancePage() {
   const hasAccess = isPatient || isAdmin;
 
   const handleDeleteInsurance = async (insurance: PatientInsurance) => {
-    if (!window.confirm(`Are you sure you want to delete insurance #${insurance.policy_number}?\n\nThis action cannot be undone.`)) {
+    if (!window.confirm(`Are you sure you want to delete insurance #${insurance.insurance_number}?\n\nThis action cannot be undone.`)) {
       return;
     }
     await remove(insurance.patient_insurance_id);
@@ -70,11 +70,11 @@ function PatientInsurancePage() {
 
   const columns: IDataTableColumnProps<PatientInsurance>[] = [
     {
-      key: "policy_number",
+      key: "insurance_number",
       label: "Policy Number",
       render: (insurance: PatientInsurance) => (
         <span className="text-sm font-medium text-gray-900">
-          #{insurance.policy_number}
+          #{insurance.insurance_number}
         </span>
       ),
     },
@@ -108,27 +108,27 @@ function PatientInsurancePage() {
         </div>
       ),
     },
-    {
-      key: "created_at",
-      label: "Added Date",
-      render: (insurance: PatientInsurance) => (
-        <div className="text-sm text-gray-500">
-          <div>
-            {new Date(insurance.created_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
-          </div>
-          <div className="text-xs text-gray-400">
-            {new Date(insurance.created_at).toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </div>
-        </div>
-      ),
-    },
+    // {
+    //   key: "created_at",
+    //   label: "Added Date",
+    //   render: (insurance: PatientInsurance) => (
+    //     <div className="text-sm text-gray-500">
+    //       <div>
+    //         {new Date(insurance.created_at).toLocaleDateString("en-US", {
+    //           year: "numeric",
+    //           month: "short",
+    //           day: "numeric",
+    //         })}
+    //       </div>
+    //       <div className="text-xs text-gray-400">
+    //         {new Date(insurance.created_at).toLocaleTimeString("en-US", {
+    //           hour: "2-digit",
+    //           minute: "2-digit",
+    //         })}
+    //       </div>
+    //     </div>
+    //   ),
+    // },
     {
       key: "actions",
       label: "Actions",

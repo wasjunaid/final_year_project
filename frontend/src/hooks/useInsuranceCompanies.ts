@@ -14,6 +14,7 @@ export function useInsuranceCompanies() {
   const [success, setSuccess] = useState("");
 
   const fetchAll = useCallback(async () => {
+    console.log('Fetching insurance companies...');
     try {
       setLoading(true);
       setError("");
