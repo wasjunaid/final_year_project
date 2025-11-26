@@ -45,7 +45,7 @@ function HospitalPortalLayout() {
   const sidebarItems: ISideBarItem[] = [
     { label: "Hospital", icon: <FaHospital />, page: "hospital" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
-    { label: "Documents", icon: <FaFileAlt />, page: "documents" },
+    // { label: "Documents", icon: <FaFileAlt />, page: "documents" },
     { label: "Pannel", icon: <FaFileMedical />, page: "pannel" },
     { label: "Lab Tests", icon: <FaFlask />, page: "lab_tests" },
     { label: "Doctors", icon: <FaUserMd />, page: "doctors_association" },

@@ -9,6 +9,7 @@ import { useState } from "react";
 import AuthBg from "./components/AuthBg";
 import Card from "../../components/Card";
 import { useAuth } from "../../hooks/useAuth";
+import { ROLES } from "../../constants/roles";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -111,8 +112,9 @@ function SignUpPage() {
           label="Role"
           required
           options={[
-            { label: "Patient", value: "patient" },
-            { label: "Doctor", value: "doctor" },
+            { label: "Patient", value: ROLES.PATIENT },
+            { label: "Doctor", value: ROLES.DOCTOR },
+            { label: "Medical Coder", value: ROLES.MEDICAL_CODER }, // TODO: remove this option and move the medical coder signup to a admin flow
           ]}
           value={role}
           onChange={(e) => setRole(e.target.value)}

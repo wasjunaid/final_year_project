@@ -4,6 +4,7 @@ import SideBar, { type ISideBarItem } from "../../components/Sidebar";
 import { FaFileAlt } from "react-icons/fa";
 import NotificationPage from "../notification/NotificaitonPage";
 import UploadVerifiedDocumentPage from "../documents/UploadVerifiedDocumentPage";
+import LabTestsPage from "../lab_tests/LabTestsPage";
 
 function LabTechnicianPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -11,12 +12,15 @@ function LabTechnicianPortalLayout() {
 
   const sidebarItems: ISideBarItem[] = [
     { label: "Upload Docs", icon: <FaFileAlt />, page: "docs" },
+    { label: "Lab Tests", icon: <FaFileAlt />, page: "lab_tests" },
   ];
 
   const renderPage = () => {
     switch (selectedPage) {
       case "docs":
         return <UploadVerifiedDocumentPage />;
+      case "lab_tests":
+        return <LabTestsPage />;
       case "notifications":
         return <NotificationPage />;
       default:

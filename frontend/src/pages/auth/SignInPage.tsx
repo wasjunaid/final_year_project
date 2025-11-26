@@ -13,7 +13,7 @@ import rolePortalRoute from "./utils/rolePortalNavigation";
 import AuthBg from "./components/AuthBg";
 import Card from "../../components/Card";
 import GoogleAuthButton from "./components/GoogleAuthButton";
-import type { UserRole } from "../../constants/roles";
+import { ROLES, type UserRole } from "../../constants/roles";
 
 function SignInPage() {
   const navigate = useNavigate();
@@ -161,19 +161,12 @@ function SignInPage() {
           required
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          options={[
-            { label: "Patient", value: "patient" },
-            { label: "Doctor", value: "doctor" },
-            { label: "super admin", value: "super admin" },
-            { label: "admin", value: "admin" },
-            { label: "hospital admin", value: "hospital admin" },
-            { label: "hospital sub admin", value: "hospital sub admin" },
-            { label: "hospital front desk", value: "hospital front desk" },
-            {
-              label: "hospital lab technician",
-              value: "hospital lab technician",
-            },
-          ]}
+          options={
+            Object.values(ROLES).map((role) => ({
+              label: role.charAt(0).toUpperCase() + role.slice(1),
+              value: role,
+            }))
+          }
         />
 
         <AuthButton

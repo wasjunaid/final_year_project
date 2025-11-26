@@ -2,7 +2,7 @@ export const ROLES = {
   ADMIN: "admin",
   PATIENT: "patient",
   DOCTOR: "doctor",
-  MEDICAL_CODER: "medical-coder",
+  MEDICAL_CODER: "medical coder",
   SUPER_ADMIN: "super admin",
   HOSPITAL_ADMIN: "hospital admin",
   HOSPITAL_SUB_ADMIN: "hospital sub admin",

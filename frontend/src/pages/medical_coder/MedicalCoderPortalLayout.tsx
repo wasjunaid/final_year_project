@@ -1,17 +1,20 @@
 import { useState } from "react";
 import NavBar from "../../components/NavBar";
 import SideBar, { type ISideBarItem } from "../../components/Sidebar";
-import { FaUser, FaFileAlt } from "react-icons/fa";
+// import { FaUser, FaFileAlt } from "react-icons/fa";
 import { TbTerminal2 } from "react-icons/tb";
+import { MedicalCodingPortal } from "./MedicalCodingPortal";
+import NotificationPage from "../notification/NotificaitonPage";
 
 function MedicalCoderPortalLayout() {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedPage, setSelectedPage] = useState("profile");
+  const [selectedPage, setSelectedPage] = useState("coding");
 
   const sidebarItems: ISideBarItem[] = [
-    { label: "Profile", icon: <FaUser />, page: "profile" },
+    // { label: "Profile", icon: <FaUser />, page: "profile" },
     { label: "Coding", icon: <TbTerminal2 />, page: "coding" },
-    { label: "Personal Docs", icon: <FaFileAlt />, page: "personal-docs" },
+    // { label: "Assocation", icon: <TbTerminal2 />, page: "association" },
+    // { label: "Personal Docs", icon: <FaFileAlt />, page: "personal-docs" },
   ];
 
   const renderPage = () => {
@@ -19,11 +22,11 @@ function MedicalCoderPortalLayout() {
       case "profile":
         return <h2 className="p-4">👤 Profile Page</h2>;
       case "coding":
-        return <h2 className="p-4">📅 Medical Coding Page</h2>;
+        return <MedicalCodingPortal />;
       case "personal-docs":
         return <h2 className="p-4">📄 Personal Docs Page</h2>;
       case "notifications":
-        return <h2 className="p-4">💳 Notifications</h2>;
+        return <NotificationPage />;
       default:
         return <h2 className="p-4">Page Not Found</h2>;
     }
