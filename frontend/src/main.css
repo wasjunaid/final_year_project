@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+/* Custom Theme Colors - Tailwind v4 */
+@theme {
+  --color-primary: #24355d;
+  --color-primary-dark: #1a2744;
+  --color-primary-light: #2e4575;
+  
+  --animate-slide-in: slideIn 0.3s ease-out forwards;
+  --animate-slide-in-right: slideInFromRight 0.3s ease-out forwards;
+  --animate-pulse-slow: pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    width: 0;
+  }
+  to {
+    opacity: 1;
+    width: 280px;
+  }
+}
+
+@keyframes slideInTab {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseSlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Global Styles */
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full w-full;
+  }
+
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+/* Custom animations */
+@layer utilities {
+  .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .nav-item:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* Dropdown styles */
+  .dropdown-content {
+    display: none;
+  }
+
+  .dropdown-content.active {
+    display: block;
+  }
+}
+
+/* Additional custom styles */
+input[type='checkbox'] {
+  @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
