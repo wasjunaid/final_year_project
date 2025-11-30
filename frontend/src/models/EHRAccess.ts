@@ -17,7 +17,7 @@ export interface EHRAccess {
 export type EHRAccessStatusType = 'PENDING' | 'APPROVED' | 'DENIED' | 'REQUESTED' | 'GRANTED';
 
 export interface CreateEHRAccessRequest {
-  patient_id: number;
+  patient_email: string;
   message?: string;
 }
 

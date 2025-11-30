@@ -30,7 +30,7 @@ const EXAMPLE_NOTES = [
   {
     id: 'annual_physical',
     title: 'Annual Physical Examination',
-    content: 'Patient here for annual physical examination. 45-year-old female, generally healthy. Vital signs: BP 122/78, HR 72, RR 16, Temp 98.6°F. Physical exam unremarkable. Last mammogram 18 months ago - normal. Pap smear due. Discussed age-appropriate cancer screening. Ordered CBC, CMP, lipid panel, TSH. Administered flu vaccine. Patient counseled on healthy diet and exercise.',
+    content: 'Patient here for annual physical examination. 45-year-old female, generally healthy. Physical exam unremarkable. Last mammogram 18 months ago - normal. Pap smear due. Discussed age-appropriate cancer screening. Ordered CBC, CMP, lipid panel, TSH. Administered flu vaccine. Patient counseled on healthy diet and exercise.',
   },
   {
     id: 'uti',
@@ -150,13 +150,13 @@ export function MedicalCodingPortal() {
             AI-powered ICD-10 & CPT Code Analyzer
           </p>
         </div>
-        <Button
+        {/* <Button
           label="Health Check"
           icon={<FaHeartbeat />}
           variant="secondary"
           onClick={handleHealthCheck}
           disabled={loading}
-        />
+        /> */}
       </div>
 
       {/* Messages */}

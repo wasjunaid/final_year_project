@@ -9,7 +9,9 @@ import type {
 export const hospitalAssociationRequestApi = {
   // GET hospital association requests for person
   getByPerson: async (): Promise<ApiResponse<HospitalAssociationRequest[]>> => {
+    console.log("Fetching hospital association requests for person");
     const response = await api.get(EndPoints.hospitalAssociationRequest.getByPerson);
+    console.log("Received response:", response);
     return response.data;
   },
 

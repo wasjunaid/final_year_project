@@ -1,120 +1,122 @@
-import {
-  FaCheck,
-  FaTimes,
-  FaUser,
-  FaHospital,
-  FaCalendar,
-  FaUserMd,
-} from "react-icons/fa";
-import { type HospitalAssociationRequest } from "../../../models/HospitalAssociationRequest";
+import { FaHospital, FaUserMd, FaCheck, FaTimes, FaClock } from "react-icons/fa";
+// import { HospitalAssociationRequest } from "../../../models/HospitalAssociationRequest";
+// import Doctor  from "../../../models/Doctor";
+import Button from "../../../components/Button";
 
 interface AssociationRequestCardProps {
-  request: HospitalAssociationRequest;
-  showActions?: boolean;
-  onApprove?: (requestId: number) => void;
-  onReject?: (requestId: number) => void;
+  request: any; //HospitalAssociationRequest;
+  doctors?: any[];
+  showActions: boolean;
+  onApprove: (id: number) => void;
+  onReject: (id: number) => void;
 }
 
 function AssociationRequestCard({
   request,
-  showActions = false,
+  doctors,
+  showActions,
   onApprove,
   onReject,
 }: AssociationRequestCardProps) {
-  const handleApprove = () => {
-    if (onApprove) {
-      onApprove(request.hospital_association_request_id);
-    }
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
-  const handleReject = () => {
-    if (onReject) {
-      onReject(request.hospital_association_request_id);
+  // Get doctor name from doctors list
+  const getDoctorName = () => {
+    if (!doctors || doctors.length === 0) {
+      return "Unknown Doctor";
     }
+
+    const doctor = doctors.find((d) => d.person_id === request.person_id);
+    if (doctor) {
+      return `Dr. ${doctor.first_name} ${doctor.last_name}`;
+    }
+
+    return "Unknown Doctor";
+  };
+
+  // Get hospital name
+  const getHospitalName = () => {
+    return request.hospital_name || "Unknown Hospital";
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
       {/* Header */}
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-blue-100 rounded-full">
-            {request.role === "doctor" ? (
-              <FaUserMd className="text-blue-600" />
-            ) : (
-              <FaUser className="text-blue-600" />
-            )}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <FaHospital className="text-blue-600 text-xl" />
           </div>
           <div>
             <h3 className="font-semibold text-gray-900">
-              Request #{request.hospital_association_request_id}
+              {getHospitalName()}
             </h3>
-            <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full capitalize">
-              {request.role}
-            </span>
+            <p className="text-sm text-gray-600 flex items-center gap-1">
+              <FaUserMd className="text-gray-400" />
+              {getDoctorName()}
+            </p>
           </div>
         </div>
-
-        {showActions && (
-          <div className="flex gap-2">
-            <button
-              onClick={handleApprove}
-              className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
-              title="Approve"
-            >
-              <FaCheck />
-            </button>
-            <button
-              onClick={handleReject}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-              title="Reject"
-            >
-              <FaTimes />
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Content */}
-      <div className="space-y-2">
-        {/* Person Info (for hospital staff view) */}
-        {request.person_email && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <FaUser className="text-gray-400" />
-            <span>
-              {request.person_first_name && request.person_last_name
-                ? `${request.person_first_name} ${request.person_last_name}`
-                : "N/A"}
-            </span>
-            <span className="text-gray-400">•</span>
-            <span>{request.person_email}</span>
-          </div>
-        )}
+      {/* Status Badge */}
+      <div className="mb-4">
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <FaClock />
+          Pending
+        </span>
+      </div>
 
-        {/* Hospital Info (for person view) */}
-        {request.hospital_name && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <FaHospital className="text-gray-400" />
-            <span>{request.hospital_name}</span>
-            {request.hospital_address && (
-              <>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-500">
-                  {request.hospital_address}
-                </span>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Date */}
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <FaCalendar className="text-gray-400" />
-          <span>
-            Requested on {new Date(request.created_at).toLocaleDateString()}
-          </span>
+      {/* Request Details */}
+      <div className="space-y-2 mb-4">
+        <div className="text-sm text-gray-600">
+          <span className="font-medium">Request ID:</span>{" "}
+          {request.hospital_association_request_id}
+        </div>
+        <div className="text-sm text-gray-600">
+          <span className="font-medium">Requested on:</span>{" "}
+          {formatDate(request.created_at)}
         </div>
       </div>
+
+      {/* Actions */}
+      {showActions && (
+        <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200">
+          <Button
+            label="Approve"
+            icon={<FaCheck />}
+            onClick={() =>
+              onApprove(request.hospital_association_request_id)
+            }
+            className="flex-1"
+          />
+          <Button
+            label="Reject"
+            icon={<FaTimes />}
+            variant="secondary"
+            onClick={() =>
+              onReject(request.hospital_association_request_id)
+            }
+            className="flex-1"
+          />
+        </div>
+      )}
+
+      {/* Hospital Staff View - No Actions */}
+      {!showActions && (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-500 text-center">
+            Waiting for doctor's response
+          </p>
+        </div>
+      )}
     </div>
   );
 }

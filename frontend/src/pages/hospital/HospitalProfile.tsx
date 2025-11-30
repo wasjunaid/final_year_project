@@ -58,46 +58,48 @@ function HospitalProfile() {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
 
+  // ----------------------------
+  // Fetch Hospital Data Function
+  // ----------------------------
+  const fetchHospitalData = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const staffRes = await api.get(EndPoints.hospitalStaff.get);
+      const hospitalData = staffRes.data.data;
+
+      setHospital({
+        hospital_id: hospitalData.hospital_id,
+        name: hospitalData.hospital_name,
+        address: hospitalData.hospital_address,
+        address_id: hospitalData.address_id,
+        created_at: hospitalData.created_at,
+        updated_at: hospitalData.updated_at,
+      });
+
+      setName(hospitalData.hospital_name);
+      setAddress(hospitalData.hospital_address);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load hospital details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load hospital data on first render
   useEffect(() => {
-    const fetchHospitalData = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        // Get staff + hospital details in one call
-        const staffRes = await api.get(EndPoints.hospitalStaff.get);
-        const hospitalData = staffRes.data.data;
-
-        // Directly set
-        setHospital({
-          hospital_id: hospitalData.hospital_id,
-          name: hospitalData.hospital_name,
-          address: hospitalData.hospital_address,
-          address_id: hospitalData.address_id,
-          created_at: hospitalData.created_at,
-          updated_at: hospitalData.updated_at,
-        });
-
-        setName(hospitalData.hospital_name);
-        setAddress(hospitalData.hospital_address);
-      } catch (err: any) {
-        setError(
-          err.response?.data?.message || "Failed to load hospital details"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchHospitalData();
   }, []);
 
+  // ----------------------------
+  // Fetch Statistics
+  // ----------------------------
   useEffect(() => {
     const fetchStats = async () => {
       if (!hospital?.hospital_id) return;
-      
+
       setStatsLoading(true);
       try {
-        // Fetch all statistics in parallel
         const [
           appointmentsRes,
           staffRes,
@@ -110,44 +112,44 @@ function HospitalProfile() {
           api.get(EndPoints.hospitalPannelList.getAll)
         ]);
 
-        // Process appointments data
+        // Appointments
         let appointmentStats = { total: 0, pending: 0, completed: 0, cancelled: 0 };
-        if (appointmentsRes.status === 'fulfilled' && appointmentsRes.value.data?.data) {
+        if (appointmentsRes.status === "fulfilled" && appointmentsRes.value.data?.data) {
           const appointments = appointmentsRes.value.data.data;
           appointmentStats = {
             total: appointments.length,
-            pending: appointments.filter((apt: any) => apt.status === 'pending').length,
-            completed: appointments.filter((apt: any) => apt.status === 'completed').length,
-            cancelled: appointments.filter((apt: any) => apt.status === 'cancelled').length,
+            pending: appointments.filter((a: any) => a.status === "pending").length,
+            completed: appointments.filter((a: any) => a.status === "completed").length,
+            cancelled: appointments.filter((a: any) => a.status === "cancelled").length
           };
         }
 
-        // Process staff data
+        // Staff
         let staffStats = { total: 0, doctors: 0, admins: 0, frontDesk: 0 };
-        if (staffRes.status === 'fulfilled' && staffRes.value.data?.data) {
+        if (staffRes.status === "fulfilled" && staffRes.value.data?.data) {
           const staff = staffRes.value.data.data;
           staffStats = {
             total: staff.length,
-            doctors: staff.filter((s: any) => s.role === 'doctor').length,
-            admins: staff.filter((s: any) => s.role === 'hospital admin' || s.role === 'hospital sub admin').length,
-            frontDesk: staff.filter((s: any) => s.role === 'hospital front desk').length,
+            doctors: staff.filter((s: any) => s.role === "doctor").length,
+            admins: staff.filter((s: any) => s.role === "hospital admin" || s.role === "hospital sub admin").length,
+            frontDesk: staff.filter((s: any) => s.role === "hospital front desk").length
           };
         }
 
-        // Process lab tests data
+        // Lab Tests
         let labTestStats = { total: 0, pending: 0, completed: 0 };
-        if (labTestsRes.status === 'fulfilled' && labTestsRes.value.data?.data) {
+        if (labTestsRes.status === "fulfilled" && labTestsRes.value.data?.data) {
           const labTests = labTestsRes.value.data.data;
           labTestStats = {
             total: labTests.length,
-            pending: labTests.filter((test: any) => test.status === 'pending').length,
-            completed: labTests.filter((test: any) => test.status === 'completed').length,
+            pending: labTests.filter((t: any) => t.status === "pending").length,
+            completed: labTests.filter((t: any) => t.status === "completed").length
           };
         }
 
-        // Process panel data
+        // Panel
         let panelCount = 0;
-        if (panelRes.status === 'fulfilled' && panelRes.value.data?.data) {
+        if (panelRes.status === "fulfilled" && panelRes.value.data?.data) {
           panelCount = panelRes.value.data.data.length;
         }
 
@@ -155,10 +157,11 @@ function HospitalProfile() {
           appointments: appointmentStats,
           staff: staffStats,
           labTests: labTestStats,
-          panelMembers: panelCount,
+          panelMembers: panelCount
         });
-      } catch (err: any) {
-        console.error('Error fetching stats:', err);
+
+      } catch (err) {
+        console.error("Stats error:", err);
       } finally {
         setStatsLoading(false);
       }
@@ -167,10 +170,45 @@ function HospitalProfile() {
     fetchStats();
   }, [hospital?.hospital_id]);
 
+  // ----------------------------
+  // Handle Save Changes
+  // ----------------------------
+  const handleSave = async () => {
+    if (!hospital || !name.trim()) {
+      setError("Please fill in hospital name");
+      return;
+    }
+
+    try {
+      setError("");
+      setSuccess("");
+
+      const res = await api.put(
+        EndPoints.hospital.update.replace(":hospital_id", hospital.hospital_id.toString()),
+        {
+          name: name.trim()
+        }
+      );
+
+      if (res.data.success) {
+        // Refresh hospital data from backend to get latest values
+        await fetchHospitalData();
+        setEditMode(false);
+        setSuccess("Hospital details updated successfully!");
+        
+        // Auto-dismiss success message after 3 seconds
+        setTimeout(() => setSuccess(""), 3000);
+      }
+
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to update hospital");
+    }
+  };
+
   const handleEdit = () => {
     setEditMode(true);
-    setError("");
     setSuccess("");
+    setError("");
   };
 
   const handleCancel = () => {
@@ -181,34 +219,6 @@ function HospitalProfile() {
     }
     setError("");
     setSuccess("");
-  };
-
-  const handleSave = async () => {
-    if (!hospital || !name.trim() || !address.trim()) {
-      setError("Please fill in all required fields");
-      return;
-    }
-
-    try {
-      setError("");
-      const res = await api.put(
-        `${EndPoints.hospital.update}${hospital.hospital_id}`,
-        {
-          name: name.trim(),
-          address: address.trim(),
-        }
-      );
-
-      if (res.data.success) {
-        setHospital({ ...hospital, name: name.trim(), address: address.trim() });
-        setEditMode(false);
-        setSuccess("Hospital details updated successfully!");
-      }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Failed to update hospital details"
-      );
-    }
   };
 
   const StatCard = ({ 
@@ -301,8 +311,8 @@ function HospitalProfile() {
             title="Address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            disabled={!editMode}
-            required
+            disabled={true}
+            helperText="Contact system administrator to update address"
           />
         </div>
         

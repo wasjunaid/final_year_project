@@ -32,7 +32,7 @@ function FrontDeskPortalLayout() {
   const sidebarItems: ISideBarItem[] = [
     // { label: "Profile", icon: <FaUser />, page: "profile" },
     { label: "Appointments", icon: <FaCalendarAlt />, page: "appointments" },
-    { label: "Documents", icon: <FaFileAlt />, page: "documents" },
+    // { label: "Documents", icon: <FaFileAlt />, page: "documents" },
   ];
 
   const renderPage = () => {

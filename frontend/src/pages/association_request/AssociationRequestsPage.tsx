@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useHospitalAssociationRequest } from "../../hooks/useHospitalAssociationRequest";
 import { useHospitalStaff } from "../../hooks/useHospitalStaff";
+import { useDoctor } from "../../hooks/useDoctor";
 import { type HospitalAssociationRequest } from "../../models/HospitalAssociationRequest";
 import { useUserRole } from "../../hooks/useUserRole";
 import { ROLES } from "../../constants/roles";
@@ -27,12 +28,35 @@ function AssociationRequestsPage() {
     getStaff 
   } = useHospitalStaff();
 
+  const {
+    doctors,
+    loading: doctorsLoading,
+    getDoctors
+  } = useDoctor();
+
   const isHospitalStaff =
     role === ROLES.HOSPITAL_ADMIN ||
     role === ROLES.HOSPITAL_SUB_ADMIN ||
     role === ROLES.HOSPITAL_FRONT_DESK;
 
   const isDoctor = role === ROLES.DOCTOR;
+
+  // Fetch doctors list for hospital staff to show doctor names
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      if (isHospitalStaff) {
+        try {
+          await getDoctors();
+        } catch (err: any) {
+          console.error("Error fetching doctors:", err);
+        }
+      }
+    };
+
+    if (role && isHospitalStaff) {
+      fetchDoctors();
+    }
+  }, [role, isHospitalStaff, getDoctors]);
 
   // Fetch hospital staff data if needed
   useEffect(() => {
@@ -132,7 +156,7 @@ function AssociationRequestsPage() {
     );
   }
 
-  if (!role || loading || staffLoading) {
+  if (!role || loading || staffLoading || (isHospitalStaff && doctorsLoading)) {
     return (
       <div className="flex flex-col h-full p-6">
         <div className="flex justify-center items-center h-64">
@@ -144,10 +168,30 @@ function AssociationRequestsPage() {
 
   return (
     <div className="flex flex-col h-full p-6">
-      {error && <div className="mb-4 text-red-700 rounded-md">{error}</div>}
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">
+          {isDoctor ? "Hospital Association Requests" : "Sent Association Requests"}
+        </h1>
+        <p className="text-sm text-gray-600 mt-1">
+          {isDoctor 
+            ? "Review and manage requests from hospitals to join their network"
+            : "View requests sent to doctors to join your hospital"
+          }
+        </p>
+      </div>
+
+      {/* Messages */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
 
       {success && (
-        <div className="mb-4 text-green-700 rounded-md">{success}</div>
+        <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-md">
+          {success}
+        </div>
       )}
 
       {/* Loading */}
@@ -180,6 +224,7 @@ function AssociationRequestsPage() {
             <AssociationRequestCard
               key={request.hospital_association_request_id}
               request={request}
+              doctors={doctors}
               showActions={isDoctor} // Show actions for doctors to approve/reject
               onApprove={handleApprove}
               onReject={handleReject}

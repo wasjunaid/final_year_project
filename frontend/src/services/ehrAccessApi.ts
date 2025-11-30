@@ -4,7 +4,6 @@ import type { ApiResponse } from '../models/ApiResponse';
 import type { 
   EHRAccess, 
   CreateEHRAccessRequest,
-  RespondToEHRAccessRequest
 } from '../models/EHRAccess';
 
 // Helper function to transform EHR access status to uppercase
