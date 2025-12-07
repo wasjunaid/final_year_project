@@ -1,7 +1,7 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost' | 'success';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost' | 'success' | 'link';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -25,22 +25,26 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-primary text-white hover:bg-primary-dark focus:ring-primary shadow-md hover:shadow-lg',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
-    outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-md hover:shadow-lg',
-    ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-400',
-    success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-md hover:shadow-lg',
+    primary: 'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg',
+    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600',
+    outline: 'border border-gray-300 dark:border-[#404040] text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-50 dark:hover:bg-[#3a3a3a]',
+    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg',
+    ghost: 'text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-100 dark:hover:bg-[#3a3a3a]',
+    success: 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg',
+    link: 'text-primary hover:text-primary-dark dark:hover:text-primary-light hover:underline shadow-none',
   };
   
   const sizeStyles: Record<ButtonSize, string> = {
     sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    md: 'px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold',
+    lg: 'px-8 py-3 md:py-3.5 text-base md:text-lg font-semibold',
   };
+  
+  // Link variant should have no padding
+  const finalSizeStyles = variant === 'link' ? '' : sizeStyles[size];
   
   const iconSizes: Record<ButtonSize, number> = {
     sm: 16,
@@ -52,7 +56,7 @@ const Button: React.FC<ButtonProps> = ({
   
   return (
     <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${className}`}
+      className={`${baseStyles} ${variantStyles[variant]} ${finalSizeStyles} ${widthStyle} ${className}`}
       disabled={disabled || loading}
       {...props}
     >
@@ -92,6 +96,10 @@ export const GhostButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
 
 export const SuccessButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
   <Button variant="success" {...props} />
+);
+
+export const LinkButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
+  <Button variant="link" {...props} />
 );
 
 export default Button;

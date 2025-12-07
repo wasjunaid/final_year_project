@@ -2,6 +2,7 @@
 
 /* Custom Theme Colors - Tailwind v4 */
 @theme {
+  /* Light mode colors */
   --color-primary: #24355d;
   --color-primary-dark: #1a2744;
   --color-primary-light: #2e4575;
@@ -10,6 +11,20 @@
   --animate-slide-in-right: slideInFromRight 0.3s ease-out forwards;
   --animate-pulse-slow: pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Dark mode colors as CSS variables */
+:root {
+  --dark-bg: #1a1a1a;
+  --dark-bg-secondary: #2d2d2d;
+  --dark-bg-tertiary: #3a3a3a;
+  --dark-text: #e5e5e5;
+  --dark-text-secondary: #a0a0a0;
+  --dark-border: #404040;
+}
+
+/* Enable dark mode variant */
+@custom-variant dark (&:is(.dark *));
+
 
 @keyframes slideIn {
   from {
@@ -60,6 +75,12 @@
   body {
     @apply font-sans antialiased;
   }
+  
+  /* Dark mode base styles */
+  .dark body {
+    background-color: #1a1a1a;
+    color: #e5e5e5;
+  }
 }
 
 /* Custom animations */
@@ -91,11 +112,6 @@ input[type='checkbox'] {
   @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -106,10 +122,23 @@ html {
   @apply bg-gray-100 rounded;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background-color: #3a3a3a;
+  border-radius: 0.25rem;
+}
+
 ::-webkit-scrollbar-thumb {
   @apply bg-gray-400 rounded;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded;
+}
+
 ::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-500;
 }

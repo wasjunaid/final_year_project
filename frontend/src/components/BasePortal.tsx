@@ -1,43 +1,30 @@
-import React, { type ReactNode, useEffect, useState } from 'react';
-import { useNavigationStore } from '../stores/navigation/navigationStore';
+import React, { type ReactNode, useState } from 'react';
+import { useSidebarController } from '../hooks/ui/sidebar';
+import { useNavbarController } from '../hooks/ui/navbar';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
-import type { SidebarConfig, PortalType } from '../models/navigation/model';
+import type { SidebarConfig } from '../models/sidebar/model';
 
 interface BasePortalProps {
-  portalType: PortalType;
   sidebarConfig: SidebarConfig;
   children: ReactNode;
 }
 
 const BasePortal: React.FC<BasePortalProps> = ({ 
-  portalType, 
   sidebarConfig, 
   children 
 }) => {
-  const { 
-    activePortal, 
-    sidebarCollapsed, 
-    navbarConfig,
-    setActivePortal 
-  } = useNavigationStore();
+  const { collapsed: sidebarCollapsed } = useSidebarController();
+  const { config: navbarConfig } = useNavbarController();
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-
-  // Set active portal on mount
-  useEffect(() => {
-    if (activePortal !== portalType) {
-      setActivePortal(portalType);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [portalType]);
 
   const handleMobileToggle = () => {
     setIsMobileOpen(!isMobileOpen);
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
       {/* Floating Sidebar */}
       <Sidebar 
         config={sidebarConfig} 

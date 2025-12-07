@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export type ColumnAlignment = 'left' | 'center' | 'right';
 
@@ -17,12 +18,17 @@ export interface TableProps<T = any> {
   data: T[];
   onRowClick?: (row: T, index: number) => void;
   emptyMessage?: string;
-  pagination?: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-    onPageChange: (page: number) => void;
+  emptyIcon?: React.ReactNode;
+  emptyComponent?: React.ReactNode;
+  loading?: boolean;
+  // Simple pagination - just specify items per page
+  itemsPerPage?: number;
+  // Progressive loading pagination - for API-driven data that accumulates
+  progressivePagination?: {
+    totalItems: number; // Total items available on server
+    loadedItems: number; // How many items have been loaded so far
+    pagesPerLoad?: number; // How many pages to load at once (default: 1)
+    onLoadMore: (page: number) => void | Promise<void>; // Called when next page needs loading
   };
 }
 
@@ -31,8 +37,25 @@ const Table = <T extends Record<string, any>>({
   data,
   onRowClick,
   emptyMessage = 'No data available',
-  pagination,
+  emptyIcon,
+  emptyComponent,
+  loading = false,
+  itemsPerPage,
+  progressivePagination,
 }: TableProps<T>) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Reset to page 1 when data changes significantly (like search/filter)
+  useEffect(() => {
+    if (!progressivePagination && data.length > 0) {
+      const maxPage = Math.ceil(data.length / (itemsPerPage || 10));
+      if (currentPage > maxPage) {
+        setCurrentPage(maxPage || 1);
+      }
+    }
+  }, [data.length, itemsPerPage, progressivePagination, currentPage]);
+
   const getAlignmentClass = (align?: ColumnAlignment) => {
     switch (align) {
       case 'center':
@@ -59,16 +82,133 @@ const Table = <T extends Record<string, any>>({
     return row[column.key];
   };
 
+  // Calculate pagination values
+  const getPaginationData = () => {
+    if (progressivePagination) {
+      // Progressive loading pagination
+      const perPage = itemsPerPage || 10;
+      const pagesPerLoad = progressivePagination.pagesPerLoad || 1;
+      const totalPages = Math.ceil(progressivePagination.totalItems / perPage);
+      const loadedPages = Math.ceil(progressivePagination.loadedItems / perPage);
+      const startIndex = (currentPage - 1) * perPage;
+      const endIndex = startIndex + perPage;
+      const displayData = data.slice(startIndex, endIndex);
+      const hasMore = progressivePagination.loadedItems < progressivePagination.totalItems;
+      
+      return {
+        currentPage,
+        totalPages,
+        loadedPages,
+        pagesPerLoad,
+        totalItems: progressivePagination.totalItems,
+        itemsPerPage: perPage,
+        displayData,
+        hasMore,
+        onPageChange: async (page: number) => {
+          // If navigating to unloaded page, show loading shimmer
+          if (page > loadedPages && hasMore) {
+            setCurrentPage(page); // Set page first to show shimmer
+            setIsLoadingMore(true);
+            await progressivePagination.onLoadMore(loadedPages + 1);
+            setIsLoadingMore(false);
+          } 
+          // Silent preload: if on last loaded page, silently load next batch
+          else if (page === loadedPages && hasMore && !isLoadingMore) {
+            setCurrentPage(page);
+            // Silent load in background without showing loading state
+            progressivePagination.onLoadMore(loadedPages + 1);
+          }
+          else {
+            setCurrentPage(page);
+          }
+        },
+      };
+    } else if (itemsPerPage) {
+      // Frontend pagination
+      const totalPages = Math.ceil(data.length / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const displayData = data.slice(startIndex, endIndex);
+      return {
+        currentPage,
+        totalPages,
+        totalItems: data.length,
+        itemsPerPage,
+        displayData,
+        hasMore: false,
+        onPageChange: (page: number) => setCurrentPage(page),
+      };
+    }
+    // No pagination
+    return null;
+  };
+
+  const paginationData = getPaginationData();
+  const displayData = paginationData?.displayData || data;
+
+  const renderPageNumbers = () => {
+    if (!paginationData) return null;
+
+    const { currentPage, totalPages } = paginationData;
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+
+      if (currentPage <= 3) {
+        for (let i = 2; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push('...');
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  // Shimmer loading effect for a single row
+  const ShimmerRow = () => (
+    <tr className="animate-pulse">
+      {columns.map((column, index) => (
+        <td
+          key={index}
+          className={`p-3 md:p-4 ${getAlignmentClass(column.align)} ${getResponsiveClass(column)}`}
+        >
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </td>
+      ))}
+    </tr>
+  );
+
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex-1 flex flex-col">
+    <div className="bg-white dark:bg-[#2d2d2d] rounded-lg shadow-lg overflow-hidden flex flex-col flex-1 min-h-full">
+      {/* Table Container */}
       <div className="overflow-x-auto flex-1">
-        <table className="table-auto w-full border-collapse">
-          <thead className="bg-linear-to-r from-primary/10 to-primary/5 sticky top-0">
+        <table className="min-w-full">
+          <thead className="bg-gray-200 dark:bg-[#3f3e3e] border-b-2 border-gray-200 dark:border-[#404040]">
             <tr>
-              {columns.map((column) => (
+              {columns.map((column, index) => (
                 <th
-                  key={column.key}
-                  className={`p-3 md:p-4 text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20 ${getAlignmentClass(
+                  key={index}
+                  className={`p-3 md:p-4 text-xs md:text-sm font-semibold text-gray-700 dark:text-white uppercase tracking-wider ${getAlignmentClass(
                     column.align
                   )} ${getResponsiveClass(column)}`}
                 >
@@ -77,84 +217,132 @@ const Table = <T extends Record<string, any>>({
               ))}
             </tr>
           </thead>
-          <tbody>
-            {data.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className="p-8 text-center text-gray-500">
-                  {emptyMessage}
-                </td>
-              </tr>
-            ) : (
-              data.map((row, rowIndex) => (
-                <tr
-                  key={rowIndex}
-                  className={`${
-                    rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                  } hover:bg-primary/5 transition-colors ${
-                    onRowClick ? 'cursor-pointer' : ''
-                  }`}
-                  onClick={() => onRowClick?.(row, rowIndex)}
-                >
-                  {columns.map((column) => (
-                    <td
-                      key={column.key}
-                      className={`p-3 md:p-4 ${getAlignmentClass(
-                        column.align
-                      )} ${getResponsiveClass(column)}`}
-                    >
-                      {renderCell(column, row, rowIndex)}
-                    </td>
+          <tbody className="h-full">
+            {loading ? (
+              // Show shimmer loading rows
+              <>
+                {Array.from({ length: itemsPerPage || 5 }).map((_, index) => (
+                  <ShimmerRow key={index} />
+                ))}
+              </>
+            ) : displayData.length === 0 ? (
+              // Check if this is an unloaded page (beyond loaded data)
+              paginationData?.loadedPages !== undefined && 
+              currentPage > paginationData.loadedPages ? (
+                // Show shimmer for unloaded pages
+                <>
+                  {Array.from({ length: itemsPerPage || 5 }).map((_, index) => (
+                    <ShimmerRow key={index} />
                   ))}
+                </>
+              ) : (
+                // Show empty state
+                <tr className="h-full">
+                  <td colSpan={columns.length} className="p-8 text-center h-full align-middle">
+                    {emptyComponent || (
+                      <div className="flex flex-col items-center justify-center py-12">
+                        {emptyIcon && <div className="mb-3">{emptyIcon}</div>}
+                        <p className="text-gray-500 dark:text-[#a0a0a0]">{emptyMessage}</p>
+                      </div>
+                    )}
+                  </td>
                 </tr>
-              ))
+              )
+            ) : (
+              <>
+                {displayData.map((row, rowIndex) => (
+                  <tr
+                    key={rowIndex}
+                    className={`${
+                      rowIndex % 2 === 0 ? 'bg-white dark:bg-[#2d2d2d]' : 'bg-gray-50 dark:bg-[#3a3a3a]'
+                    } hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors ${
+                      onRowClick ? 'cursor-pointer' : ''
+                    }`}
+                    onClick={() => onRowClick?.(row, rowIndex)}
+                  >
+                    {columns.map((column) => (
+                      <td
+                        key={column.key}
+                        className={`p-3 md:p-4 ${getAlignmentClass(
+                          column.align
+                        )} ${getResponsiveClass(column)} text-gray-900 dark:text-[#e5e5e5]`}
+                      >
+                        {renderCell(column, row, rowIndex)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </>
             )}
           </tbody>
         </table>
       </div>
 
-      {pagination && data.length > 0 && (
-        <div className="border-t border-gray-200 p-3 md:p-4 bg-gray-50">
+      {/* Pagination Controls - Always show when pagination is enabled */}
+      {paginationData && (
+        <div className="px-4 py-3 bg-gray-50 dark:bg-[#252424] border-t border-gray-200 dark:border-[#404040]">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="text-xs md:text-sm text-gray-700">
-              Showing{' '}
-              <span className="font-semibold">
-                {(pagination.currentPage - 1) * pagination.itemsPerPage + 1}
-              </span>{' '}
-              to{' '}
-              <span className="font-semibold">
-                {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)}
-              </span>{' '}
-              of <span className="font-semibold">{pagination.totalItems}</span> results
+            <div className="text-sm text-gray-600 dark:text-[#a0a0a0]">
+              {paginationData.loadedPages !== undefined ? (
+                // Progressive pagination - show loaded count
+                <>
+                  Loaded {paginationData.loadedPages * paginationData.itemsPerPage > paginationData.totalItems 
+                    ? paginationData.totalItems 
+                    : paginationData.loadedPages * paginationData.itemsPerPage} of {paginationData.totalItems} documents
+                  {' • '}
+                  Showing {Math.min((paginationData.currentPage - 1) * paginationData.itemsPerPage + 1, paginationData.totalItems)} to{' '}
+                  {Math.min(paginationData.currentPage * paginationData.itemsPerPage, paginationData.totalItems)}
+                </>
+              ) : (
+                // Regular pagination
+                <>
+                  Showing {paginationData.totalItems > 0 ? Math.min((paginationData.currentPage - 1) * paginationData.itemsPerPage + 1, paginationData.totalItems) : 0} to{' '}
+                  {Math.min(paginationData.currentPage * paginationData.itemsPerPage, paginationData.totalItems)} of{' '}
+                  {paginationData.totalItems} result{paginationData.totalItems !== 1 ? 's' : ''}
+                </>
+              )}
             </div>
-            <div className="flex gap-1 md:gap-2">
-              <button
-                onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
-                disabled={pagination.currentPage === 1}
-                className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors"
-              >
-                Previous
-              </button>
-              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+            {paginationData.totalPages > 1 && (
+              <div className="flex gap-1 md:gap-2">
                 <button
-                  key={page}
-                  onClick={() => pagination.onPageChange(page)}
-                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                    page === pagination.currentPage
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  onClick={() => paginationData.onPageChange(paginationData.currentPage - 1)}
+                  disabled={paginationData.currentPage === 1 || loading || isLoadingMore}
+                  className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  title="Previous page"
                 >
-                  {page}
+                  <ChevronLeft size={18} />
                 </button>
-              ))}
-              <button
-                onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
-                disabled={pagination.currentPage === pagination.totalPages}
-                className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors"
-              >
-                Next
-              </button>
-            </div>
+                {renderPageNumbers()?.map((page, index) => (
+                  <React.Fragment key={index}>
+                    {page === '...' ? (
+                      <span className="px-2 md:px-3 py-1 text-gray-500 dark:text-gray-400 flex items-center">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => paginationData.onPageChange(page as number)}
+                        disabled={loading || isLoadingMore}
+                        className={`px-2 md:px-3 py-1 rounded-lg text-sm transition-colors disabled:cursor-not-allowed ${
+                          page === paginationData.currentPage
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )}
+                  </React.Fragment>
+                ))}
+                <button
+                  onClick={() => paginationData.onPageChange(paginationData.currentPage + 1)}
+                  disabled={paginationData.currentPage === paginationData.totalPages || loading || isLoadingMore}
+                  className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  title="Next page"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

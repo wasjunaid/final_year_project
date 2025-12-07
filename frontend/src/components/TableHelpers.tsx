@@ -7,9 +7,9 @@ export const StackedCell: React.FC<{
   tertiary?: React.ReactNode;
 }> = ({ primary, secondary, tertiary }) => (
   <div>
-    <div className="font-semibold text-gray-800">{primary}</div>
-    {secondary && <div className="text-sm text-gray-600 mt-1">{secondary}</div>}
-    {tertiary && <div className="text-xs text-gray-400 mt-1">{tertiary}</div>}
+    <div className="font-semibold text-gray-800 dark:text-[#e5e5e5]">{primary}</div>
+    {secondary && <div className="text-sm text-gray-600 dark:text-[#a0a0a0] mt-1">{secondary}</div>}
+    {tertiary && <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">{tertiary}</div>}
   </div>
 );
 
@@ -19,12 +19,12 @@ export const Badge: React.FC<{
   variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'purple';
 }> = ({ children, variant = 'primary' }) => {
   const variantClasses = {
-    primary: 'bg-primary/10 text-primary',
-    success: 'bg-green-100 text-green-700',
-    warning: 'bg-yellow-100 text-yellow-700',
-    danger: 'bg-red-100 text-red-700',
-    info: 'bg-blue-100 text-blue-700',
-    purple: 'bg-purple-100 text-purple-700',
+    primary: 'bg-primary/10 text-primary dark:bg-primary/20',
+    success: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    warning: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    danger: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   };
 
   return (
@@ -48,7 +48,7 @@ export const ActionButtons: React.FC<{
     primary: 'bg-primary text-white hover:bg-primary-dark',
     success: 'bg-green-500 text-white hover:bg-green-600',
     danger: 'bg-red-500 text-white hover:bg-red-600',
-    secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+    secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600',
   };
 
   return (

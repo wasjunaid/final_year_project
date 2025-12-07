@@ -1,10 +1,10 @@
 import React from 'react';
-import { LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useNavigationStore } from '../stores/navigation/navigationStore';
-import { useAuthController } from '../hooks/useAuthController';
-import type { SidebarConfig } from '../models/navigation/model';
+import { LogOut, ChevronLeft, Menu } from 'lucide-react';
+import { useSidebarController } from '../hooks/ui/sidebar';
+import { useAuthController } from '../hooks/auth';
+import type { SidebarConfig } from '../models/sidebar/model';
 import logo from '../assets/logo.png';
+import ThemeToggle from './ThemeToggle';
 
 interface SidebarProps {
   config: SidebarConfig;
@@ -13,37 +13,27 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle }) => {
-  const navigate = useNavigate();
-  const { logout } = useAuthController();
-  const { 
-    currentRoute, 
-    sidebarCollapsed, 
-    navigateTo, 
-    toggleSidebar 
-  } = useNavigationStore();
+  const { signOut } = useAuthController();
+  const { currentPage, navigateToPage, collapsed: sidebarCollapsed, toggle: toggleSidebar } = useSidebarController();
 
   const handleNavigation = (route: string) => {
-    navigateTo(route);
+    navigateToPage(route);
     onMobileToggle();
   };
 
-  const handleLogout = async () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      await logout();
-      navigate('/login');
-    }
+  const handleLogout = () => {
+    signOut();
   };
 
   return (
     <>
       {/* Sidebar */}
       <aside
-        className={`bg-white ${
+        className={`bg-white dark:bg-[#2d2d2d] ${
           sidebarCollapsed ? 'w-20' : 'w-64'
-        } p-3 flex flex-col gap-3 rounded-xl fixed left-2 top-2 md:left-3 md:top-3 h-[calc(100vh-1rem)] md:h-[calc(100vh-1.5rem)] transition-all duration-300 z-50 overflow-y-auto overflow-x-hidden ${
+        } p-3 flex flex-col gap-3 rounded-xl fixed left-2 top-2 md:left-3 md:top-3 h-[calc(100vh-1rem)] md:h-[calc(100vh-1.5rem)] transition-all duration-300 z-50 overflow-y-auto overflow-x-hidden shadow-md border border-gray-200 dark:border-[#404040] ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
-        style={{ boxShadow: '0 0 20px rgba(0, 0, 0, 0.08)' }}
       >
         <div className="flex flex-col h-full">
           {/* Brand Header with Collapse Button */}
@@ -53,17 +43,17 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
               {!sidebarCollapsed && (
                 <>
                   <div className="flex-1">
-                    <div className="font-bold text-sm text-gray-800">
+                    <div className="font-bold text-sm text-gray-800 dark:text-[#e5e5e5]">
                       {config.portalName}
                     </div>
                   </div>
                   {/* Collapse button - inline when expanded */}
                   <button
                     onClick={toggleSidebar}
-                    className="flex bg-gray-600 text-white w-6 h-6 rounded-full shadow-lg hover:bg-gray-700 transition-colors items-center justify-center text-xs shrink-0"
+                    className="flex w-6 h-6 rounded-full hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-colors items-center justify-center text-xs shrink-0"
                     title="Collapse sidebar"
                   >
-                    <ChevronLeft size={14} />
+                    <ChevronLeft size={18} />
                   </button>
                 </>
               )}
@@ -73,10 +63,10 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
             {sidebarCollapsed && (
               <button
                 onClick={toggleSidebar}
-                className="flex bg-gray-600 text-white w-full h-8 rounded-lg shadow-lg hover:bg-gray-700 transition-colors items-center justify-center text-xs mt-3"
+                className="flex w-full h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:shadow-sm transition-colors items-center justify-center text-xs mt-3"
                 title="Expand sidebar"
               >
-                <ChevronRight size={14} />
+                <Menu size={18} />
               </button>
             )}
           </div>
@@ -85,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
           <nav className="flex flex-col gap-1.5 flex-1">
             {config.mainNavItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentRoute === item.route;
+              const isActive = currentPage === item.route;
 
               return (
                 <button
@@ -94,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
                   className={`nav-item flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all relative group ${
                     isActive
                       ? 'bg-primary text-white shadow-md'
-                      : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
+                      : 'text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:shadow-sm'
                   } ${sidebarCollapsed ? 'justify-center' : ''}`}
                   title={sidebarCollapsed ? item.label : ''}
                 >
@@ -111,17 +101,21 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
                       )}
                     </>
                   )}
+                  {/* Red dot indicator when collapsed */}
+                  {sidebarCollapsed && item.badge && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#2d2d2d]" />
+                  )}
                 </button>
               );
             })}
           </nav>
 
           {/* Bottom Navigation */}
-          <div className="border-t pt-3 mt-3">
+          <div className="border-t border-gray-300 dark:border-[#404040] pt-3 mt-3">
             <div className="flex flex-col gap-1.5">
               {config.bottomNavItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = currentRoute === item.route;
+                const isActive = currentPage === item.route;
 
                 return (
                   <button
@@ -130,15 +124,26 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
                     className={`nav-item flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all relative group ${
                       isActive
                         ? 'bg-primary text-white shadow-md'
-                        : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
+                        : 'text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:shadow-sm'
                     } ${sidebarCollapsed ? 'justify-center' : ''}`}
                     title={sidebarCollapsed ? item.label : ''}
                   >
                     <Icon size={20} className="shrink-0" />
                     {!sidebarCollapsed && (
-                      <span className="flex-1 text-left font-medium text-sm">
-                        {item.label}
-                      </span>
+                      <>
+                        <span className="flex-1 text-left font-medium text-sm">
+                          {item.label}
+                        </span>
+                        {item.badge && (
+                          <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                            {item.badge}
+                          </span>
+                        )}
+                      </>
+                    )}
+                    {/* Red dot indicator when collapsed and has badge */}
+                    {sidebarCollapsed && item.badge && (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#2d2d2d]" />
                     )}
                   </button>
                 );
@@ -147,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
               {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className={`nav-item flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all text-red-600 hover:bg-red-50 hover:shadow-sm ${
+                className={`nav-item flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:shadow-sm ${
                   sidebarCollapsed ? 'justify-center' : ''
                 }`}
                 title={sidebarCollapsed ? 'Logout' : ''}
@@ -157,6 +162,11 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
                   <span className="flex-1 text-left font-medium text-sm">Logout</span>
                 )}
               </button>
+              
+              {/* Theme Toggle */}
+              <div className={`${sidebarCollapsed ? 'flex justify-center' : ''}`}>
+                <ThemeToggle variant={sidebarCollapsed ? 'icon' : 'labeled-switch'} />
+              </div>
             </div>
           </div>
         </div>
