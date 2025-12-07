@@ -1,44 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthController } from '../../hooks/useAuthController';
-import type { UserRole } from '../../models/auth';
+import { Eye, EyeOff } from 'lucide-react';
+import { useAuthController } from '../../hooks/auth';
+import { ROLES } from '../../constants/profile';
+import ROUTES from '../../constants/routes';
 import logo from '../../assets/logo.png';
+import bgImg from '../../assets/bg-img.png';
+import Alert from '../../components/Alert';
+import Button from '../../components/Button';
+import TextInput from '../../components/TextInput';
+import Dropdown from '../../components/Dropdown';
+import { useNavigate } from 'react-router-dom';
 
 const SignupPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { signup, loading, error, isAuthenticated, getUserRole, clearError } = useAuthController();
+  const {
+    signUp,
+    loading,
+    error,
+    success,
+    isAuthenticated,
+    clearMessages,
+    navigateToPortal,
+  } = useAuthController();
   
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    role: 'patient' as UserRole,
+    role: ROLES.PATIENT,
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
+
+  const navigate = useNavigate();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      const role = getUserRole();
-      if (role === 'doctor') {
-        navigate('/doctor');
-      } else if (role === 'patient') {
-        navigate('/patient');
-      } else if (role === 'admin') {
-        navigate('/admin');
-      }
+      navigateToPortal();
     }
-  }, [isAuthenticated, navigate, getUserRole]);
+  }, [isAuthenticated, navigateToPortal]);
 
-  // Clear error when component unmounts
+  // Clear messages when component unmounts
   useEffect(() => {
-    return () => clearError();
-  }, [clearError]);
+    return () => clearMessages();
+  }, [clearMessages]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -48,7 +57,7 @@ const SignupPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
+    clearMessages();
     setValidationError('');
 
     // Validate passwords match
@@ -58,143 +67,112 @@ const SignupPage: React.FC = () => {
     }
 
     // Validate password length
-    if (formData.password.length < 6) {
-      setValidationError('Password must be at least 6 characters');
+    if (formData.password.length < 8) {
+      setValidationError('Password must be at least 8 characters');
       return;
     }
     
-    try {
-      const { confirmPassword, ...signupPayload } = formData;
-      await signup(signupPayload);
-      // Navigation will happen via useEffect watching isAuthenticated
-    } catch (err) {
-      // Error is already set in store
-      console.error('Signup failed:', err);
-    }
+    const { confirmPassword, ...signupPayload } = formData;
+    await signUp(signupPayload);
+    
+    // Navigation will happen via useEffect or redirect to verify email
   };
 
   const displayError = validationError || error;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-white to-primary/5 py-8">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-8 md:p-12 w-full max-w-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat py-8" style={{ backgroundImage: `url(${bgImg})` }}>
+      <div className="bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-2xl">
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <img src={logo} alt="Logo" className="h-16 w-auto mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
-          <p className="text-gray-500">Join our healthcare platform</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-[#e5e5e5] mb-2">Create Account</h1>
+          <p className="text-gray-500 dark:text-[#a0a0a0]">Join our healthcare platform</p>
         </div>
+
+        {/* Success Alert */}
+        {success && (
+          <Alert 
+            type="success"
+            title={success.title}
+            message={success.message}
+            subtitle={success.subtitle}
+            onClose={clearMessages}
+            className="mb-6"
+          />
+        )}
 
         {/* Error Alert */}
         {displayError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            <p className="text-sm">{displayError}</p>
-          </div>
+          <Alert 
+            type="error"
+            title={typeof displayError === 'string' ? 'Error' : displayError.title}
+            message={typeof displayError === 'string' ? displayError : displayError.message}
+            subtitle={typeof displayError === 'string' ? undefined : displayError.subtitle}
+            onClose={() => {
+              clearMessages();
+              setValidationError('');
+            }}
+            className="mb-6"
+          />
         )}
 
         {/* Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                First Name
-              </label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                placeholder="John"
-                disabled={loading}
-              />
-            </div>
+          <TextInput
+            label="Email Address"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            placeholder="you@example.com"
+            disabled={loading}
+          />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Last Name
-              </label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                placeholder="Doe"
-                disabled={loading}
-              />
-            </div>
-          </div>
+          <Dropdown
+            label="Role"
+            options={[
+              { value: ROLES.PATIENT, label: 'Patient' },
+              { value: ROLES.DOCTOR, label: 'Doctor' },
+            ]}
+            value={formData.role}
+            onChange={(value) => handleChange({ target: { name: 'role', value } } as any)}
+            required
+            disabled={loading}
+            fullWidth
+          />
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-              placeholder="you@example.com"
-              disabled={loading}
-            />
-          </div>
+          <TextInput
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            minLength={8}
+            placeholder="••••••••"
+            disabled={loading}
+            showPasswordToggle
+            onTogglePassword={() => setShowPassword(!showPassword)}
+            rightIcon={showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            helperText="At least 8 characters"
+          />
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Role
-            </label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-              className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-              disabled={loading}
-            >
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-              placeholder="••••••••"
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-              placeholder="••••••••"
-              disabled={loading}
-            />
-          </div>
+          <TextInput
+            label="Confirm Password"
+            type={showConfirmPassword ? "text" : "password"}
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+            minLength={8}
+            placeholder="••••••••"
+            disabled={loading}
+            showPasswordToggle
+            onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
+            rightIcon={showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          />
 
           <div className="flex items-start">
             <input
@@ -203,34 +181,33 @@ const SignupPage: React.FC = () => {
               required
               className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary mt-1"
             />
-            <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+            <label htmlFor="terms" className="ml-2 text-sm text-gray-600 dark:text-[#a0a0a0]">
               I agree to the{' '}
-              <a href="#" className="text-primary hover:text-primary-dark">
+              <a href="#" className="text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-primary">
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="#" className="text-primary hover:text-primary-dark">
+              <a href="#" className="text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-primary">
                 Privacy Policy
               </a>
             </label>
           </div>
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
             disabled={loading}
-            className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            fullWidth
           >
             {loading ? 'Creating account...' : 'Create Account'}
-          </button>
+          </Button>
         </form>
 
         {/* Login Link */}
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-[#a0a0a0]">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary font-semibold hover:text-primary-dark">
-              Sign in
-            </Link>
+            <Button variant="link" onClick={() => navigate(ROUTES.AUTH.SIGN_IN)}>Sign in</Button>
           </p>
         </div>
       </div>
