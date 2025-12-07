@@ -17,6 +17,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 import NotificationsPage from '../notifications/NotificationsPage';
 import PatientProfilePage from '../patient/PatientProfilePage';
 import { PatientDocumentsPage } from '../patient/PatientDocumentsPage';
+import { PatientInsurancePage } from '../patient/PatientInsurancePage';
 
 const PatientPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -44,7 +45,7 @@ const PatientPortal: React.FC = () => {
       case 'lab-tests':
         return <div className="p-6"><h1 className="text-2xl font-bold">Lab tests - Coming Soon</h1></div>;
       case 'insurance':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Insurance - Coming Soon</h1></div>;
+        return <PatientInsurancePage />;
       case 'documents':
         return <PatientDocumentsPage />
       case 'ehr':
