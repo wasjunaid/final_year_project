@@ -203,7 +203,7 @@ const Table = <T extends Record<string, any>>({
       {/* Table Container */}
       <div className="overflow-x-auto flex-1">
         <table className="min-w-full">
-          <thead className="bg-gray-200 dark:bg-[#3f3e3e] border-b-2 border-gray-200 dark:border-[#404040]">
+          <thead className="bg-gray-200 dark:bg-[#252525] border-b-2 border-gray-200 dark:border-[#404040]">
             <tr>
               {columns.map((column, index) => (
                 <th

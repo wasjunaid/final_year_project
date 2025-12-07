@@ -16,7 +16,7 @@ export const BLOOD_GROUP = {
 } as const;
 
 export const ROLES = {
-    SYSTEM_ADMIN: "admin",
+    SYSTEM_ADMIN: "super admin",
     SYSTEM_SUB_ADMIN: "sub admin",
 
     PATIENT: "patient",
