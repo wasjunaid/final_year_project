@@ -17,6 +17,7 @@ import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
 import { HospitalManagementDashboard } from '../systemAdmin/HospitalManagementDashboard';
 import { UserManagementDashboard } from '../systemAdmin/UserManagementDashboard';
+import { InsuranceManagementDashboard } from '../systemAdmin/InsuranceManagementDashboard';
 
 const SystemAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -44,6 +45,8 @@ const SystemAdminPortal: React.FC = () => {
         return <UserManagementDashboard />;
       case 'hospitals':
         return <HospitalManagementDashboard />;
+      case 'insurances':
+        return <InsuranceManagementDashboard />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':
