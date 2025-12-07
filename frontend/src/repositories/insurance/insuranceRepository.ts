@@ -1,7 +1,6 @@
 import type { InsuranceCompanyModel } from '../../models/insurance/model';
 import type { CreateInsuranceCompanyPayload, UpdateInsuranceCompanyPayload } from '../../models/insurance/payload';
 import { toInsuranceCompanyModels, toInsuranceCompanyModel } from '../../models/insurance/transformers';
-import { validators } from '../../utils/validations';
 import { AppError } from '../../utils/appError';
 
 // Factory to create insurance repository with DI for service

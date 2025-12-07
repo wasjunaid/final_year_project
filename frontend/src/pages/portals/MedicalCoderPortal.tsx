@@ -12,6 +12,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 // Import pages
 import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
+import { MedicalCoderDashboard } from '../medicalCoder';
 
 const MedicalCoderPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -31,7 +32,7 @@ const MedicalCoderPortal: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'coding':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Medical Coding - Coming Soon</h1></div>;
+        return <MedicalCoderDashboard />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':
