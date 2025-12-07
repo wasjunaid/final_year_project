@@ -18,6 +18,7 @@ import GenericProfilePage from '../profile/GenericProfilePage';
 import { HospitalManagementDashboard } from '../systemAdmin/HospitalManagementDashboard';
 import { UserManagementDashboard } from '../systemAdmin/UserManagementDashboard';
 import { InsuranceManagementDashboard } from '../systemAdmin/InsuranceManagementDashboard';
+import { LogsManagementDashboard } from '../systemAdmin/LogsManagementDashboard';
 
 const SystemAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -40,7 +41,7 @@ const SystemAdminPortal: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'logs':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Logs Overview - Coming Soon</h1></div>;
+        return <LogsManagementDashboard />;
       case 'users':
         return <UserManagementDashboard />;
       case 'hospitals':

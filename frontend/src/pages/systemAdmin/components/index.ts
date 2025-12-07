@@ -5,3 +5,4 @@ export { HospitalAdminsList } from './HospitalAdminsList';
 export { CreateUser } from './CreateUser';
 export { InsuranceCompaniesList } from './InsuranceCompaniesList';
 export { CreateOrEditInsurance } from './CreateOrEditInsurance';
+export { LogFiltersComponent } from './LogFiltersComponent';
