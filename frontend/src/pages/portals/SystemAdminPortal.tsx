@@ -16,6 +16,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
 import { HospitalManagementDashboard } from '../systemAdmin/HospitalManagementDashboard';
+import { UserManagementDashboard } from '../systemAdmin/UserManagementDashboard';
 
 const SystemAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -40,7 +41,7 @@ const SystemAdminPortal: React.FC = () => {
       case 'logs':
         return <div className="p-6"><h1 className="text-2xl font-bold">Logs Overview - Coming Soon</h1></div>;
       case 'users':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Users Management - Coming Soon</h1></div>;
+        return <UserManagementDashboard />;
       case 'hospitals':
         return <HospitalManagementDashboard />;
       case 'notifications':

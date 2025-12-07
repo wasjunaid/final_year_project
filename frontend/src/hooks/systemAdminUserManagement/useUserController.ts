@@ -1,0 +1,146 @@
+import { useState, useEffect } from 'react';
+import type { SystemSubAdminModel, HospitalAdminModel } from '../../models/systemAdminUserManagement/model';
+import type { CreateSystemSubAdminPayload, CreateHospitalAdminPayload } from '../../models/systemAdminUserManagement/payload';
+import { ROLES } from '../../constants/profile';
+
+// Factory to create system admin user management controller hook with DI for repository
+export const createUseSystemAdminUserManagementController = ({ systemAdminUserManagementRepository }: { systemAdminUserManagementRepository: any }) => {
+  return () => {
+    const [systemSubAdmins, setSystemSubAdmins] = useState<SystemSubAdminModel[]>([]);
+    const [hospitalAdmins, setHospitalAdmins] = useState<HospitalAdminModel[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+
+    // Fetch system sub admins
+    const fetchSystemSubAdmins = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await systemAdminUserManagementRepository.getAllSystemSubAdmins();
+        setSystemSubAdmins(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch system sub admins');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Fetch hospital admins
+    const fetchHospitalAdmins = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await systemAdminUserManagementRepository.getAllHospitalAdmins();
+        setHospitalAdmins(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch hospital admins');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Create system sub admin
+    const createSystemSubAdmin = async (payload: CreateSystemSubAdminPayload) => {
+      try {
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+
+        const newUser = await systemAdminUserManagementRepository.createSystemSubAdmin(payload);
+        setSystemSubAdmins((prev) => [...prev, newUser]);
+        setSuccess('System sub admin created successfully! Password has been sent to their email.');
+        
+        return newUser;
+      } catch (err: any) {
+        setError(err.message || 'Failed to create system sub admin');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Create hospital admin
+    const createHospitalAdmin = async (payload: CreateHospitalAdminPayload) => {
+      try {
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+
+        const newUser = await systemAdminUserManagementRepository.createHospitalAdmin(payload);
+        setHospitalAdmins((prev) => [...prev, newUser]);
+        setSuccess('Hospital admin created successfully! Password has been sent to their email.');
+        
+        return newUser;
+      } catch (err: any) {
+        setError(err.message || 'Failed to create hospital admin');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Delete system sub admin
+    const deleteSystemSubAdmin = async (systemAdminId: number) => {
+      try {
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+
+        await systemAdminUserManagementRepository.deleteSystemSubAdmin(systemAdminId);
+        setSystemSubAdmins((prev) => prev.filter((user) => user.system_admin_id !== systemAdminId));
+        setSuccess('System sub admin deleted successfully');
+      } catch (err: any) {
+        setError(err.message || 'Failed to delete system sub admin');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Delete hospital admin
+    const deleteHospitalAdmin = async (hospitalStaffId: number) => {
+      try {
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+
+        await systemAdminUserManagementRepository.deleteHospitalAdmin(hospitalStaffId);
+        setHospitalAdmins((prev) => prev.filter((user) => user.hospital_staff_id !== hospitalStaffId));
+        setSuccess('Hospital admin deleted successfully');
+      } catch (err: any) {
+        setError(err.message || 'Failed to delete hospital admin');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Clear messages
+    const clearMessages = () => {
+      setError(null);
+      setSuccess(null);
+    };
+
+    // Auto-fetch on mount
+    useEffect(() => {
+      fetchSystemSubAdmins();
+      fetchHospitalAdmins();
+    }, []);
+
+    return {
+      systemSubAdmins,
+      hospitalAdmins,
+      loading,
+      error,
+      success,
+      fetchSystemSubAdmins,
+      fetchHospitalAdmins,
+      createSystemSubAdmin,
+      createHospitalAdmin,
+      deleteSystemSubAdmin,
+      deleteHospitalAdmin,
+      clearMessages,
+    };
+  };
+};
