@@ -9,58 +9,60 @@ import {
   User 
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
-import { useNavigationStore } from '../../stores/navigation/navigationStore';
-import type { SidebarConfig } from '../../models/navigation/model';
+import { useSidebarController } from '../../hooks/ui/sidebar';
+import { useNotificationController } from '../../hooks/notification';
+import type { SidebarConfig } from '../../models/sidebar/model';
 
-// Import patient-specific pages
-import AppointmentsDashboardPage from '../appointment/AppointmentsDashboardPage';
-import DocumentsPage from '../documents/DocumentsPage';
-import LabTestsPage from '../labTests/LabTestsPage';
-import InsurancePage from '../insurance/InsurancePage';
+// Import patient pages
 import NotificationsPage from '../notifications/NotificationsPage';
-import ProfilePage from '../profile/ProfilePage';
-
-const patientSidebarConfig: SidebarConfig = {
-  portalName: 'Patient Portal',
-  mainNavItems: [
-    { icon: Calendar, label: 'My Appointments', route: 'appointments' },
-    { icon: FolderOpen, label: 'My Documents', route: 'documents' },
-    { icon: TestTube, label: 'Lab Results', route: 'lab-tests' },
-    { icon: Shield, label: 'Insurance', route: 'insurance' },
-    { icon: FileText, label: 'Medical History', route: 'medical-history' },
-  ],
-  bottomNavItems: [
-    { icon: Bell, label: 'Notifications', route: 'notifications' },
-    { icon: User, label: 'My Profile', route: 'profile' },
-  ],
-};
+import PatientProfilePage from '../patient/PatientProfilePage';
 
 const PatientPortal: React.FC = () => {
-  const { currentRoute } = useNavigationStore();
+  const { currentPage } = useSidebarController();
+  const { unreadCount } = useNotificationController();
+
+  const patientSidebarConfig: SidebarConfig = {
+    portalName: 'Patient Portal',
+    mainNavItems: [
+      { icon: Calendar, label: 'Appointments', route: 'appointments' },
+      { icon: TestTube, label: 'Lab Results', route: 'lab-tests' },
+      { icon: Shield, label: 'Insurance', route: 'insurance' },
+      { icon: FolderOpen, label: 'Medical Records', route: 'documents' },
+      { icon: FileText, label: 'Access Requests', route: 'ehr' },
+    ],
+    bottomNavItems: [
+      { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
+      { icon: User, label: 'My Profile', route: 'profile' },
+    ],
+  };
 
   const renderPage = () => {
-    switch (currentRoute) {
+    switch (currentPage) {
       case 'appointments':
-        return <AppointmentsDashboardPage />;
-      case 'documents':
-        return <DocumentsPage />;
+        return <div className="p-6"><h1 className="text-2xl font-bold">Appointments - Coming Soon</h1></div>;
       case 'lab-tests':
-        return <LabTestsPage />;
+        return <div className="p-6"><h1 className="text-2xl font-bold">Lab tests - Coming Soon</h1></div>;
       case 'insurance':
-        return <InsurancePage />;
-      case 'medical-history':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Medical History - Coming Soon</h1></div>;
+        return <div className="p-6"><h1 className="text-2xl font-bold">Insurance - Coming Soon</h1></div>;
+      case 'documents':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Documents - Coming Soon</h1></div>;
+      case 'ehr':
+        return <div className="p-6"><h1 className="text-2xl font-bold">Access Requests - Coming Soon</h1></div>;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':
-        return <ProfilePage />;
+        return <PatientProfilePage />;
       default:
-        return <AppointmentsDashboardPage />;
+        return (
+          <div className="flex items-center justify-center h-full">
+              <h1 className="text-2xl font-bold">Patient Portal</h1>
+          </div>
+        );
     }
   };
 
   return (
-    <BasePortal portalType="patient" sidebarConfig={patientSidebarConfig}>
+    <BasePortal sidebarConfig={patientSidebarConfig}>
       {renderPage()}
     </BasePortal>
   );
