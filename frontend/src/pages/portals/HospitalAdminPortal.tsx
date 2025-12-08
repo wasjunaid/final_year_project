@@ -17,6 +17,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 // Import pages
 import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
+import HospitalStaffManagementPage from '../hospitalAdmin/HospitalStaffManagementPage';
 
 const HospitalAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -47,7 +48,7 @@ const HospitalAdminPortal: React.FC = () => {
       case 'lab-tests':
         return <div className="p-6"><h1 className="text-2xl font-bold">Lab Tests - Coming Soon</h1></div>;
       case 'staff':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Staff Management - Coming Soon</h1></div>;
+        return <HospitalStaffManagementPage />;
       case 'doctors':
         return <div className="p-6"><h1 className="text-2xl font-bold">Doctor Panel - Coming Soon</h1></div>;
       case 'documents':
