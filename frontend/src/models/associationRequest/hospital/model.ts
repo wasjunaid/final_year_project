@@ -5,6 +5,7 @@ export interface HospitalAssociationRequestModel {
   person_id: number;
   person_name?: string;
   person_email?: string;
+  hospitalName?: string;
   role: string;
   created_at?: string;
   updated_at?: string;

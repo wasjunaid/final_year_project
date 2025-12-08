@@ -7,6 +7,7 @@ export const toHospitalAssociationRequestModel = (dto: HospitalAssociationReques
   person_id: dto.person_id,
   person_name: (dto as any).person_name || (((dto as any).person_first_name || (dto as any).person_last_name) ? `${((dto as any).person_first_name || '').trim()} ${((dto as any).person_last_name || '').trim()}`.trim() : ((dto as any).person_full_name || undefined)),
   person_email: (dto as any).person_email || undefined,
+  hospitalName: (dto as any).hospital_name || undefined,
   role: dto.role,
   created_at: dto.created_at,
   updated_at: dto.updated_at,
