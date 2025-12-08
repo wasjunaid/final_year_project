@@ -5,13 +5,9 @@ import type { NavbarConfig } from "../../../models/navbar/model";
 import { useNavbarController } from "../../../hooks/ui/navbar";
 import { useDocumentController } from "../../../hooks/document";
 import { DocumentModel } from "../../../models/document";
-import {
-  AllDocumentsList,
-  VerifiedDocumentsList,
-  UnverifiedDocumentsList,
-  UploadDocument,
-  DocumentDetailsView,
-} from "./components";
+import { UploadUnverifiedDocument } from "./components";
+import { AllDocumentsList, VerifiedDocumentsList, DocumentDetailsView } from '../../documents/components';
+import { UnverifiedDocumentsList } from "../../documents/components/UnverifiedDocumentsList";
 
 export const PatientDocumentsPage = () => {
   const documentController = useDocumentController();
@@ -103,7 +99,7 @@ export const PatientDocumentsPage = () => {
         )}
 
         {activeTab === "upload" && (
-        <UploadDocument
+        <UploadUnverifiedDocument
           loading={documentController.loading}
           error={documentController.error}
           success={documentController.success}

@@ -6,7 +6,6 @@ import {
   DocumentTransformer
 } from "../../models/document";
 import type {
-  UploadVerifiedDocumentPayload,
   GetAllVerifiedDocumentsAgainstAppointmentPayload
 } from "../../models/document";
 
@@ -136,28 +135,27 @@ export class DocumentRepository {
     return DocumentTransformer.toModel(response.data);
   }
 
-  //Upload a verified document (doctor/lab tech uploads)
+  //Upload a verified document (frontdesk, lab technician, doctor, hospital admin can use this)
   async uploadVerifiedDocument(
     file: File,
-    appointmentId: number,
-    labTestId: number,
-    detail: string
+    detail: string,
+    patientId?: number,
+    appointmentId?: number,
+    labTestId?: number,
+    onUploadProgress?: (progressEvent: any) => void
   ): Promise<DocumentModel> {
     // Validation
     if (!file) {
       throw new Error("File is required");
     }
 
-    if (!appointmentId || appointmentId <= 0) {
-      throw new Error("Valid appointment ID is required");
-    }
-
-    if (!labTestId || labTestId <= 0) {
-      throw new Error("Valid lab test ID is required");
-    }
-
+    // detail is required
     if (!detail || detail.trim() === "") {
       throw new Error("Document detail is required");
+    }
+
+    if (!patientId && !appointmentId && !labTestId) {
+      throw new Error("At least one of patientId, appointmentId, or labTestId must be provided");
     }
 
     // File size validation (max 10MB)
@@ -172,24 +170,30 @@ export class DocumentRepository {
       "image/jpeg",
       "image/jpg",
       "image/png",
-      "image/gif"
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ];
     if (!allowedTypes.includes(file.type)) {
-      throw new Error("Invalid file type. Only PDF and images are allowed");
+      throw new Error("Invalid file type. Only PDF, images, and Word documents are allowed");
     }
 
-    const payload: UploadVerifiedDocumentPayload = {
-      originalname: file.name,
-      filename: `${Date.now()}-${file.name}`,
-      mimetype: file.type,
-      filepath: `/uploads/documents/${Date.now()}-${file.name}`,
-      filesize: file.size,
-      appointment_id: appointmentId,
-      lab_test_id: labTestId,
-      detail: detail.trim()
-    };
+    // Build FormData to send only the file and minimal identifiers. Backend will add metadata (mimetype, filesize, stored filename, etc.).
+    const formData = new FormData();
+    formData.append('file', file);
+    if (detail && detail.trim() !== '') {
+      formData.append('detail', detail.trim());
+    }
+    if (patientId && patientId > 0) {
+      formData.append('patient_id', String(patientId));
+    }
+    if (appointmentId && appointmentId > 0) {
+      formData.append('appointment_id', String(appointmentId));
+    }
+    if (labTestId && labTestId > 0) {
+      formData.append('lab_test_id', String(labTestId));
+    }
 
-    const response = await this.documentService.uploadVerifiedDocument(payload);
+    const response = await this.documentService.uploadVerifiedDocument(formData, onUploadProgress);
     return DocumentTransformer.toModel(response.data);
   }
 

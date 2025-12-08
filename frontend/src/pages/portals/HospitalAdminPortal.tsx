@@ -18,6 +18,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
 import HospitalStaffManagementPage from '../hospitalAdmin/HospitalStaffManagementPage';
+import DocumentUploadDashboard from '../documents/DocumentUploadDashboard';
 
 const HospitalAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -52,7 +53,7 @@ const HospitalAdminPortal: React.FC = () => {
       case 'doctors':
         return <div className="p-6"><h1 className="text-2xl font-bold">Doctor Panel - Coming Soon</h1></div>;
       case 'documents':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Documents - Coming Soon</h1></div>;
+        return <DocumentUploadDashboard />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':

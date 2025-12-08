@@ -15,7 +15,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   onFileSelect,
   onFileRemove,
   disabled = false,
-  accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png',
+  accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif',
   maxSizeMB = 10,
 }) => {
   const [dragActive, setDragActive] = useState(false);

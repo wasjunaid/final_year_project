@@ -1,17 +1,17 @@
 import React from 'react';
-import Table, { type TableColumn } from '../../../../components/table';
-import { DocumentModel } from '../../../../models/document';
-import { StackedCell, Badge, ActionButtons } from '../../../../components/TableHelpers';
-import { getDocumentTypeColor, formatDocumentType } from '../../../../constants/documentTypes';
+import Table, { type TableColumn } from '../../../components/table';
+import { DocumentModel } from '../../../models/document';
+import { StackedCell, Badge, ActionButtons } from '../../../components/TableHelpers';
+import { getDocumentTypeColor, formatDocumentType } from '../../../constants/documentTypes';
 
-interface VerifiedDocumentsListProps {
+interface UnverifiedDocumentsListProps {
   documents: DocumentModel[];
   loading: boolean;
   onViewDocument: (document: DocumentModel) => void;
   onDownloadDocument: (documentId: string, originalName: string) => void;
 }
 
-export const VerifiedDocumentsList: React.FC<VerifiedDocumentsListProps> = ({
+export const UnverifiedDocumentsList: React.FC<UnverifiedDocumentsListProps> = ({
   documents,
   loading,
   onViewDocument,
@@ -50,18 +50,8 @@ export const VerifiedDocumentsList: React.FC<VerifiedDocumentsListProps> = ({
       },
     },
     {
-      key: "uploaderFullName",
-      header: "Uploaded By",
-      hideOnMobile: true,
-      render: (doc) => (
-        <span className="text-gray-600 dark:text-[#a0a0a0]">
-          {doc.uploaderFullName || "N/A"}
-        </span>
-      ),
-    },
-    {
       key: "createdAt",
-      header: "Date",
+      header: "Upload Date",
       hideOnTablet: true,
       render: (doc) => (
         <span className="text-gray-600 dark:text-[#a0a0a0]">
@@ -98,7 +88,7 @@ export const VerifiedDocumentsList: React.FC<VerifiedDocumentsListProps> = ({
       data={documents}
       loading={loading}
       itemsPerPage={10}
-      emptyMessage="No verified documents found."
+      emptyMessage="No unverified documents found."
     />
   );
 };

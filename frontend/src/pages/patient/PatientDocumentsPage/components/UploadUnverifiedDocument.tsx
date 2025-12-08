@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DOCUMENT_TYPES, DOCUMENT_TYPE_OPTIONS } from '../../../../constants/documentTypes';
 import { FileUploadZone } from '../../../../components/FileUploadZone';
 
-interface UploadDocumentProps {
+interface UploadUnverifiedDocumentProps {
   loading: boolean;
   error: string | null;
   success: string | null;
@@ -11,7 +11,7 @@ interface UploadDocumentProps {
   onUpload: (file: File, documentType: string, documentDetail: string) => Promise<void>;
 }
 
-export const UploadDocument: React.FC<UploadDocumentProps> = ({
+export const UploadUnverifiedDocument: React.FC<UploadUnverifiedDocumentProps> = ({
   loading,
   error,
   success,

@@ -2,7 +2,6 @@
 
 import apiClient from "../apiClient";
 import type {
-  UploadVerifiedDocumentPayload,
   GetAllVerifiedDocumentsAgainstAppointmentPayload,
   UploadUnverifiedDocumentResponseDto,
   UploadVerifiedDocumentResponseDto,
@@ -79,11 +78,22 @@ export class DocumentService {
 
   /**
    * Upload a verified document (doctor/lab tech uploads)
+   * Expects a FormData containing the file and optional metadata (file, detail, patient_id, appointment_id, lab_test_id)
    */
   static async uploadVerifiedDocument(
-    payload: UploadVerifiedDocumentPayload
+    formData: FormData,
+    onUploadProgress?: (progressEvent: any) => void
   ): Promise<UploadVerifiedDocumentResponseDto> {
-    const response = await apiClient.post<UploadVerifiedDocumentResponseDto>(`/document/upload/verified`, payload);
+    const response = await apiClient.post<UploadVerifiedDocumentResponseDto>(
+      `/document/upload/verified`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress,
+      }
+    );
     return response.data;
   }
 

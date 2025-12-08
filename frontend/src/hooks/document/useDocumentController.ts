@@ -25,9 +25,10 @@ export interface IDocumentController {
   uploadUnverifiedDocument: (file: File, documentType: string, detail: string) => Promise<void>;
   uploadVerifiedDocument: (
     file: File,
-    appointmentId: number,
-    labTestId: number,
-    detail: string
+    detail: string,
+    patientId?: number,
+    appointmentId?: number,
+    labTestId?: number,
   ) => Promise<void>;
   downloadDocument: (documentId: string, originalName: string) => Promise<void>;
   clearMessages: () => void;
@@ -214,29 +215,73 @@ export const useDocumentController = (): IDocumentController => {
 
   const uploadVerifiedDocument = async (
     file: File,
-    appointmentId: number,
-    labTestId: number,
-    detail: string
+    detail: string,
+    patientId?: number,
+    appointmentId?: number,
+    labTestId?: number,
   ): Promise<void> => {
-    setLoading(true);
+    setIsUploading(true);
+    setUploadProgress(0);
     setError(null);
     setSuccess(null);
+
+    // Create optimistic placeholder
+    const optimisticDoc: Partial<DocumentModel> = {
+      documentId: `temp-${Date.now()}`,
+      originalName: file.name,
+      mimeType: file.type,
+      fileSize: file.size,
+      createdAt: new Date(),
+      documentType: null,
+      isVerified: true,
+      detail: detail,
+    };
+
+    // Add temp doc immediately
+    setVerifiedDocuments((prev) => [optimisticDoc as DocumentModel, ...prev]);
+    setDocuments((prev) => [optimisticDoc as DocumentModel, ...prev]);
+
     try {
+      const onUploadProgress = (progressEvent: any) => {
+        if (progressEvent.total) {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+        }
+      };
+
       const uploadedDocument = await documentRepository.uploadVerifiedDocument(
         file,
+        detail,
+        patientId,
         appointmentId,
         labTestId,
-        detail
+        onUploadProgress
       );
-      setVerifiedDocuments((prev) => [uploadedDocument, ...prev]);
+
+      setUploadProgress(100);
+
+      // Replace optimistic with real doc
+      setVerifiedDocuments((prev) => prev.map((doc) => doc.documentId === optimisticDoc.documentId ? uploadedDocument : doc));
+      setDocuments((prev) => prev.map((doc) => doc.documentId === optimisticDoc.documentId ? uploadedDocument : doc));
+
       setSuccess("Verified document uploaded successfully");
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to upload verified document";
+
+      setTimeout(() => setUploadProgress(0), 1000);
+    } catch (err: any) {
+      // Remove temp doc on failure
+      setVerifiedDocuments((prev) => prev.filter((doc) => doc.documentId !== optimisticDoc.documentId));
+      setDocuments((prev) => prev.filter((doc) => doc.documentId !== optimisticDoc.documentId));
+
+      const serverMessage = err?.response?.data?.message;
+      const errorMessage = serverMessage || (err instanceof Error ? err.message : "Failed to upload verified document");
       setError(errorMessage);
-      console.error("Error uploading verified document:", err);
+
+      console.error("Error uploading verified document:", err, "serverMessage:", serverMessage );
+
+      setUploadProgress(0);
       throw err;
     } finally {
-      setLoading(false);
+      setIsUploading(false);
     }
   };
 

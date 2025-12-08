@@ -1,17 +1,17 @@
 import React from 'react';
-import Table, { type TableColumn } from '../../../../components/table';
-import { DocumentModel } from '../../../../models/document';
-import { StackedCell, Badge, ActionButtons } from '../../../../components/TableHelpers';
-import { getDocumentTypeColor, formatDocumentType } from '../../../../constants/documentTypes';
+import Table, { type TableColumn } from '../../../components/table';
+import { DocumentModel } from '../../../models/document';
+import { StackedCell, Badge, ActionButtons } from '../../../components/TableHelpers';
+import { getDocumentTypeColor, formatDocumentType } from '../../../constants/documentTypes';
 
-interface UnverifiedDocumentsListProps {
+interface AllDocumentsListProps {
   documents: DocumentModel[];
   loading: boolean;
   onViewDocument: (document: DocumentModel) => void;
   onDownloadDocument: (documentId: string, originalName: string) => void;
 }
 
-export const UnverifiedDocumentsList: React.FC<UnverifiedDocumentsListProps> = ({
+export const AllDocumentsList: React.FC<AllDocumentsListProps> = ({
   documents,
   loading,
   onViewDocument,
@@ -50,8 +50,18 @@ export const UnverifiedDocumentsList: React.FC<UnverifiedDocumentsListProps> = (
       },
     },
     {
+      key: "category",
+      header: "Category",
+      hideOnTablet: true,
+      render: (doc) => (
+        <Badge variant={doc.isVerified ? "success" : "warning"}>
+          {doc.isVerified ? "Verified" : "Unverified"}
+        </Badge>
+      ),
+    },
+    {
       key: "createdAt",
-      header: "Upload Date",
+      header: "Date",
       hideOnTablet: true,
       render: (doc) => (
         <span className="text-gray-600 dark:text-[#a0a0a0]">
@@ -81,14 +91,13 @@ export const UnverifiedDocumentsList: React.FC<UnverifiedDocumentsListProps> = (
     },
   ];
 
-
   return (
     <Table
       columns={columns}
       data={documents}
       loading={loading}
       itemsPerPage={10}
-      emptyMessage="No unverified documents found."
+      emptyMessage="No documents found."
     />
   );
 };

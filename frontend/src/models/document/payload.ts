@@ -6,14 +6,11 @@ export interface UploadUnverifiedDocumentPayload {
 }
 
 export interface UploadVerifiedDocumentPayload {
-  originalname: string;
-  filename: string;
-  mimetype: string;
-  filepath: string;
-  filesize: number;
-  appointment_id: number;
-  lab_test_id: number;
+  file: File;
   detail: string;
+  appointment_id?: number;
+  lab_test_id?: number;
+  patient_id?: number;
 }
 
 export interface GetAllVerifiedDocumentsAgainstAppointmentPayload {

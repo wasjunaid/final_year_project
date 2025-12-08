@@ -1,17 +1,17 @@
 import React from 'react';
-import Table, { type TableColumn } from '../../../../components/table';
-import { DocumentModel } from '../../../../models/document';
-import { StackedCell, Badge, ActionButtons } from '../../../../components/TableHelpers';
-import { getDocumentTypeColor, formatDocumentType } from '../../../../constants/documentTypes';
+import Table, { type TableColumn } from '../../../components/table';
+import { DocumentModel } from '../../../models/document';
+import { StackedCell, Badge, ActionButtons } from '../../../components/TableHelpers';
+import { getDocumentTypeColor, formatDocumentType } from '../../../constants/documentTypes';
 
-interface AllDocumentsListProps {
+interface VerifiedDocumentsListProps {
   documents: DocumentModel[];
   loading: boolean;
   onViewDocument: (document: DocumentModel) => void;
   onDownloadDocument: (documentId: string, originalName: string) => void;
 }
 
-export const AllDocumentsList: React.FC<AllDocumentsListProps> = ({
+export const VerifiedDocumentsList: React.FC<VerifiedDocumentsListProps> = ({
   documents,
   loading,
   onViewDocument,
@@ -50,13 +50,13 @@ export const AllDocumentsList: React.FC<AllDocumentsListProps> = ({
       },
     },
     {
-      key: "category",
-      header: "Category",
-      hideOnTablet: true,
+      key: "uploaderFullName",
+      header: "Uploaded By",
+      hideOnMobile: true,
       render: (doc) => (
-        <Badge variant={doc.isVerified ? "success" : "warning"}>
-          {doc.isVerified ? "Verified" : "Unverified"}
-        </Badge>
+        <span className="text-gray-600 dark:text-[#a0a0a0]">
+          {doc.uploaderFullName || "N/A"}
+        </span>
       ),
     },
     {
@@ -91,13 +91,14 @@ export const AllDocumentsList: React.FC<AllDocumentsListProps> = ({
     },
   ];
 
+
   return (
     <Table
       columns={columns}
       data={documents}
       loading={loading}
       itemsPerPage={10}
-      emptyMessage="No documents found."
+      emptyMessage="No verified documents found."
     />
   );
 };
