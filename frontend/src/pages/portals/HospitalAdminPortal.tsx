@@ -19,6 +19,7 @@ import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
 import HospitalStaffManagementPage from '../hospitalAdmin/HospitalStaffManagementPage';
 import DocumentUploadDashboard from '../documents/DocumentUploadDashboard';
+import HospitalAssociationPage from '../hospitalAdmin/doctorAssociation/DoctorAssociationPage';
 
 const HospitalAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -31,7 +32,7 @@ const HospitalAdminPortal: React.FC = () => {
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
       { icon: TestTube, label: 'Lab Tests', route: 'lab-tests' },
       { icon: Users, label: 'Staff Management', route: 'staff' },
-      { icon: UserCog, label: 'Doctor Panel', route: 'doctors' },
+      { icon: UserCog, label: 'Association', route: 'association' },
       { icon: FolderOpen, label: 'Documents', route: 'documents' },
     ],
     bottomNavItems: [
@@ -50,8 +51,8 @@ const HospitalAdminPortal: React.FC = () => {
         return <div className="p-6"><h1 className="text-2xl font-bold">Lab Tests - Coming Soon</h1></div>;
       case 'staff':
         return <HospitalStaffManagementPage />;
-      case 'doctors':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Doctor Panel - Coming Soon</h1></div>;
+      case 'association':
+        return <HospitalAssociationPage />;
       case 'documents':
         return <DocumentUploadDashboard />;
       case 'notifications':
