@@ -6,7 +6,6 @@ export const toPersonAssociationRequestModel = (dto: PersonAssociationRequestDto
   hospital_id: dto.hospital_id,
   hospitalName: (dto as any).hospital_name || undefined,
   created_at: dto.created_at,
-  updated_at: dto.updated_at,
 });
 
 export const toPersonAssociationRequestModels = (dtos: PersonAssociationRequestDto[]): PersonAssociationRequestModel[] => dtos.map(toPersonAssociationRequestModel);

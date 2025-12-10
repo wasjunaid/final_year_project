@@ -3,7 +3,8 @@ import {
   Calendar, 
   Bell, 
   User, 
-  UserCog
+  UserCog,
+  LucideGitPullRequestArrow
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -14,6 +15,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 import NotificationsPage from '../notifications/NotificationsPage';
 import DoctorProfilePage from '../doctor/DoctorProfilePage';
 import PersonAssociationRequestsPage from '../associationRequest/PersonAssociationRequestsPage';
+import { AccessRequestDashboard } from '../accessRequest';
 
 const DoctorPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -24,6 +26,7 @@ const DoctorPortal: React.FC = () => {
     mainNavItems: [
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
       { icon: UserCog, label: 'Association', route: 'association' },
+      { icon: LucideGitPullRequestArrow, label: 'Access Requests', route: 'access-requests' },
     ],
     bottomNavItems: [
       { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -38,6 +41,8 @@ const DoctorPortal: React.FC = () => {
         return <div className="p-6"><h1 className="text-2xl font-bold">Appointments - Coming Soon</h1></div>;
       case 'association':
         return <PersonAssociationRequestsPage />;
+      case 'access-requests':
+        return <AccessRequestDashboard />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':
