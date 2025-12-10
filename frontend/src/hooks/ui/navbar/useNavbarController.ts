@@ -73,6 +73,7 @@ export const useNavbarController = (config?: NavbarConfig) => {
     searchQuery,
     
     // Actions
+    setConfig,  //if manual config is required (for example: role based config)
     setActiveTab,
     setSearchQuery,
   };

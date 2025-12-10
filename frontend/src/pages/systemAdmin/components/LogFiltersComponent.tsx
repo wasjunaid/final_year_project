@@ -35,35 +35,6 @@ export const LogFiltersComponent: React.FC<LogFiltersComponentProps> = ({
 
   return (
     <div className="bg-white dark:bg-[#272829] rounded-lg shadow p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Search className="w-5 h-5" />
-          Filters & Search
-        </h3>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onRefresh}
-            disabled={isLoading}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          {hasActiveFilters && (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onResetFilters}
-              className="flex items-center gap-2"
-            >
-              <X className="w-4 h-4" />
-              Clear Filters
-            </Button>
-          )}
-        </div>
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Search Query */}

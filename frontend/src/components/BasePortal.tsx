@@ -35,7 +35,7 @@ const BasePortal: React.FC<BasePortalProps> = ({
       {/* Main Content Area */}
       <div 
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarCollapsed ? 'ml-0 md:ml-28' : 'ml-0 md:ml-72'
+          sidebarCollapsed ? 'ml-0 md:ml-24' : 'ml-0 md:ml-68'
         } p-2 md:p-3`}
       >
         {/* Navbar - only render if config exists */}

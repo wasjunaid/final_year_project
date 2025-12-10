@@ -7,7 +7,7 @@ export const UserManagementDashboard: React.FC = () => {
   const navbarConfig: NavbarConfig = useMemo(() => ({
     title: 'User Management Dashboard',
     tabs: [
-      { label: 'System Sub Admins', value: 'system' },
+      { label: 'System Admins', value: 'system' },
       { label: 'Hospital Admins', value: 'hospital' },
       { label: 'Create User', value: 'create' },
     ],
