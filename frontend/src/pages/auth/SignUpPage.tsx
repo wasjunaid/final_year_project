@@ -125,7 +125,6 @@ const SignupPage: React.FC = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            required
             placeholder="you@example.com"
             disabled={loading}
           />
@@ -138,7 +137,6 @@ const SignupPage: React.FC = () => {
             ]}
             value={formData.role}
             onChange={(value) => handleChange({ target: { name: 'role', value } } as any)}
-            required
             disabled={loading}
             fullWidth
           />
@@ -149,7 +147,6 @@ const SignupPage: React.FC = () => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            required
             minLength={8}
             placeholder="••••••••"
             disabled={loading}
@@ -165,7 +162,6 @@ const SignupPage: React.FC = () => {
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
-            required
             minLength={8}
             placeholder="••••••••"
             disabled={loading}
@@ -178,7 +174,6 @@ const SignupPage: React.FC = () => {
             <input
               type="checkbox"
               id="terms"
-              required
               className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary mt-1"
             />
             <label htmlFor="terms" className="ml-2 text-sm text-gray-600 dark:text-[#a0a0a0]">

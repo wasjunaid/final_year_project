@@ -11,6 +11,43 @@ import TextInput from '../../components/TextInput';
 import Dropdown from '../../components/Dropdown';
 import Button from '../../components/Button';
 
+// QuickLogins component: fills automatically when a preset is selected.
+const QuickLogins: React.FC<{ onSelect: (email: string, password: string, role: UserRole) => void; disabled?: boolean }> = ({ onSelect, disabled }) => {
+  const quickLogins = [
+    { label: 'Super Admin', email: 'superadmin@example.com', password: 'Test@123', role: ROLES.SYSTEM_ADMIN as UserRole },
+    { label: 'System Sub Admin', email: 'subadmin@example.com', password: 'Test@123', role: ROLES.SYSTEM_SUB_ADMIN as UserRole },
+    { label: 'Hospital Admin', email: 'hospitaladmin@example.com', password: 'Test@123', role: ROLES.HOSPITAL_ADMIN as UserRole },
+    { label: 'Front Desk', email: 'frontdesk@example.com', password: 'Test@123', role: ROLES.HOSPITAL_FRONT_DESK as UserRole },
+    { label: 'Lab Technician', email: 'labtech@example.com', password: 'Test@123', role: ROLES.HOSPITAL_LAB_TECHNICIAN as UserRole },
+    { label: 'Doctor', email: 'doctor@example.com', password: 'Test@123', role: ROLES.DOCTOR as UserRole },
+    { label: 'Medical Coder', email: 'medicalcoder@example.com', password: 'Test@123', role: ROLES.MEDICAL_CODER as UserRole },
+    { label: 'Patient', email: 'patient@example.com', password: 'Test@123', role: ROLES.PATIENT as UserRole },
+  ];
+
+  const options = quickLogins.map((q, i) => ({ value: String(i), label: `${q.label} — ${q.email}` }));
+
+  const handleSelect = (value: string | null) => {
+    if (!value) return;
+    const idx = Number(value);
+    const q = quickLogins[idx];
+    if (q) onSelect(q.email, q.password, q.role);
+  };
+
+  return (
+    <div className="mt-2">
+      <Dropdown
+        label={<span className="text-red-600">Quick Logins</span>}
+        options={options}
+        value={null}
+        onChange={(value) => handleSelect(value as any)}
+        placeholder="Choose a test account"
+        disabled={disabled}
+        fullWidth
+      />
+    </div>
+  );
+};
+
 const LoginPage: React.FC = () => {
   const {
     signIn,
@@ -52,10 +89,10 @@ const LoginPage: React.FC = () => {
     const { name, value, type } = e.target as HTMLInputElement;
     const checked = (e.target as HTMLInputElement).checked;
     
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: type === 'checkbox' ? checked : value,
-    });
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,8 +111,14 @@ const LoginPage: React.FC = () => {
     setResendLoading(false);
   };
 
+  const applyQuickLogin = (email: string, password: string, role: UserRole) => {
+    setFormData({ email, password, role, rememberMe: false });
+    // Optionally auto-submit: comment/uncomment the next line if you want auto sign-in
+    // signIn({ email, password, role }, false);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${bgImg})` }}>
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat p-8" style={{ backgroundImage: `url(${bgImg})` }}>
       <div className="bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-xl">
         {/* Logo/Header */}
         <div className="text-center mb-8">
@@ -124,6 +167,10 @@ const LoginPage: React.FC = () => {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Quick logins dropdown - fills the form with preset credentials */}
+          <QuickLogins onSelect={applyQuickLogin} disabled={loading} />
+          <div className='border-t border-gray-300'/>
+          
           <TextInput
             label="Email Address"
             type="email"
@@ -162,7 +209,7 @@ const LoginPage: React.FC = () => {
               { value: ROLES.HOSPITAL_LAB_TECHNICIAN, label: 'Lab Technician' },
             ]}
             value={formData.role}
-            onChange={(value) => handleChange({ target: { name: 'role', value } } as any)}
+            onChange={(value) => setFormData((prev) => ({ ...prev, role: value as UserRole }))}
             disabled={loading}
             fullWidth
           />
