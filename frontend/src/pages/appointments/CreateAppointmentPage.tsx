@@ -12,6 +12,8 @@ import type { AssociatedDoctorModel } from '../../models/associatedStaff/doctors
 import { useNavbarController } from '../../hooks/ui/navbar';
 import { usePatientProfileController } from '../../hooks/profile';
 import type { CreateAppointmentPayload } from '../../models/appointment/payload';
+import DoctorCard from '../../components/DoctorCard';
+import HospitalCard from '../../components/HospitalCard';
 
 const CreateAppointmentPage: React.FC = () => {
   const { role } = useAuthController();
@@ -44,16 +46,15 @@ const CreateAppointmentPage: React.FC = () => {
       try {
         const allDoctors = await fetchForAppointmentBooking();
         if (!mounted) return;
-        const filtered = (allDoctors || []).filter((d: AssociatedDoctorModel) => String(d.hospitalId) === String(hospitalId));
+        const filtered = (allDoctors || []).filter((d: AssociatedDoctorModel) => String(d.hospitalId  ?? '') === String(hospitalId));
 
         // Debugging: if no doctors after filtering but API returned doctors, log for inspection and fallback
         if (filtered.length === 0 && (allDoctors || []).length > 0) {
           console.warn('[CreateAppointmentPage] No doctors matched selected hospitalId.', { hospitalId, allDoctors });
-          // Fallback for debugging/UX: show first doctor so user can still pick one (remove in production)
           const all = allDoctors || [];
-          if (all.length > 0) setDoctorId(String(all[0].id));
+          if (all.length > 0) setDoctorId(String(all[0].id ?? ''));
         } else {
-          if (filtered.length > 0) setDoctorId(String(filtered[0].id));
+          if (filtered.length > 0) setDoctorId(String(filtered[0].id ?? ''));
           else setDoctorId('');
         }
       } catch (err: any) {
@@ -65,8 +66,45 @@ const CreateAppointmentPage: React.FC = () => {
     return () => { mounted = false; };
   }, [hospitalId, fetchForAppointmentBooking]);
 
+  // ensure doctors are fetched once for filters/listing
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        await fetchForAppointmentBooking();
+      } catch (err) {
+        // ignore - controller handles errors
+      }
+    };
+    if (mounted) load();
+    return () => { mounted = false; };
+  }, [fetchForAppointmentBooking]);
+
   const hospitalOptions = hospitals.map((h: any) => ({ value: String(h.hospital_id ?? h.id ?? h.hospitalId), label: h.name ?? h.hospital_name ?? `Hospital ${h.hospital_id ?? h.id ?? h.hospitalId}` }));
-  const doctorOptions = (controllerDoctors || []).map((d) => ({ value: String(d.id), label: d.fullName || d.firstName || `${(d as any).firstName} ${(d as any).lastName ?? ''}` }));
+
+  // derive unique specializations for filter dropdown
+  const specializationSet = new Set<string>();
+  (controllerDoctors || []).forEach((d: any) => {
+    const s = (d.specialization ?? d.doctor_specialization ?? '').toString().trim();
+    if (s) specializationSet.add(s);
+  });
+
+  // apply filters: hospital (if selected), specialization and search
+  const filteredDoctors = (controllerDoctors || []).filter((d: any) => {
+    if (hospitalId) {
+      const hid = String(d.hospitalId ?? d.hospital_id ?? d.hospitalId ?? '');
+      if (hid !== String(hospitalId)) return false;
+    }
+    return true;
+  });
+
+  const doctorOptions = filteredDoctors.map((d: any) => ({ value: String(d.id ?? d.doctor_id), label: d.fullName || d.firstName || `${d.doctor_first_name ?? ''} ${d.doctor_last_name ?? ''}` }));
+
+  // currently selected doctor object (supports both DTO and internal shapes)
+  const selectedDoctor = (controllerDoctors || []).find((d) => {
+    const id = String((d as any).id ?? (d as any).doctor_id ?? '');
+    return id === String(doctorId);
+  }) ?? null;
 
   const handleSubmit = async () => {
     setLocalError('');
@@ -97,46 +135,74 @@ const CreateAppointmentPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 max-w-3xl">
+    <div className="p-4">
       {hospitalsError && <Alert type="error" title="Hospitals" message={hospitalsError} className="mb-3" />}
       {createError && <Alert type="error" title="Create" message={createError} className="mb-3" />}
       {createSuccess && <Alert type="success" title="Create" message={createSuccess} className="mb-3" />}
       {localError && <Alert type="error" title="Validation" message={localError} className="mb-3" />}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Dropdown label="Hospital" options={hospitalOptions} value={hospitalId} onChange={(v) => setHospitalId(v)} searchable />
-        <div />
-        
-        <Dropdown label="Doctor" options={doctorOptions} value={doctorId} onChange={(v) => setDoctorId(v)} searchable />
-        <div />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+        {/* main card */}
+        <div className="bg-white dark:bg-[#2b2b2b] rounded-xl shadow-md border border-gray-200 dark:border-[#404040] p-4  md:col-span-2">
+          <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Dropdown label="Hospital" options={hospitalOptions} value={hospitalId} onChange={(v) => setHospitalId(v)} searchable />
+              <div />
+            </div>
 
-        <TextInput
-          label="Date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate((e.target as HTMLInputElement).value)}
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Dropdown label="Doctor" options={doctorOptions} value={doctorId} onChange={(v) => setDoctorId(v)} searchable />
+              <div />
+            </div>
 
-        <TextInput
-          label="Time"
-          type="time"
-          value={time}
-          onChange={(e) => setTime((e.target as HTMLInputElement).value)}
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <TextInput
+                label="Date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate((e.target as HTMLInputElement).value)}
+              />
 
-        <div className="md:col-span-2">
-          <TextInput
-            label="Notes"
-            value={notes}
-            onChange={(e) => setNotes((e.target as HTMLInputElement).value)}
-            multiline
-            placeholder='Example: Persistent headaches and dizziness for 3 days. Prefer morning appointments.'
-          />
+              <TextInput
+                label="Time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime((e.target as HTMLInputElement).value)}
+              />
+
+              <div className="md:col-span-2">
+                <TextInput
+                  label="Notes"
+                  value={notes}
+                  onChange={(e) => setNotes((e.target as HTMLInputElement).value)}
+                  multiline
+                  placeholder='Example: Persistent headaches and dizziness for 3 days. Prefer morning appointments.'
+                />
+              </div>
+
+              <div className="">
+                <PrimaryButton onClick={handleSubmit} loading={creating}>Create Appointment Request</PrimaryButton>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="mt-4">
-        <PrimaryButton onClick={handleSubmit} loading={creating}>Create Appointment Request</PrimaryButton>
+        {/* side card */}
+        <div className="bg-white dark:bg-[#2b2b2b] rounded-xl shadow-md border border-gray-200 dark:border-[#404040] p-4 md:col-span-1">
+          <div className="sticky top-4 space-y-4">
+            <div>
+              <h6 className="text-sm font-semibold mb-2">Selected Doctor</h6>
+              {doctorId ? <DoctorCard doctor={selectedDoctor} /> : <div className="text-xs text-gray-500">No doctor selected</div>}
+            </div>
+
+            <div>
+              <h6 className="text-sm font-semibold mb-2">Selected Hospital</h6>
+              {hospitalId ? (
+                <HospitalCard hospital={(hospitals || []).find((h: any) => String(h.hospital_id ?? h.id ?? h.hospitalId) === String(hospitalId))} selected onSelect={(id) => setHospitalId(id)} />
+              ) : <div className="text-xs text-gray-500">No hospital selected</div>}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

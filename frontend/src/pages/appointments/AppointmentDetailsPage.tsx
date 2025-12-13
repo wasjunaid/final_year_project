@@ -362,9 +362,109 @@ const AppointmentsDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Right: quick actions */}
+      {/* Right: side cards */}
       <div className="col-span-4">
         <div className="bg-white dark:bg-[#2b2b2b] p-4 rounded-lg shadow flex flex-col gap-4">
+          <div>
+            <h3 className="font-semibold">Appointment Info</h3>
+            <p className="text-sm text-gray-500">Cost, date & time (editable when permitted)</p>
+          </div>
+
+          {/* Editable fields */}
+          <div className="grid grid-cols-1 gap-3">
+            <TextInput
+              label="Appointment Cost"
+              type="number"
+              value={local.appointmentCost ?? ''}
+              onChange={(e) => updateLocalField({ appointmentCost: e.target.value === '' ? null : Number(e.target.value) })}
+              disabled={!writeableByFrontdesk}
+            />
+
+            <TextInput
+              label="Date"
+              type="date"
+              value={local.date ?? ''}
+              onChange={(e) => updateLocalField({ date: e.target.value })}
+              disabled={!writeableByFrontdesk && !canReschedule}
+            />
+
+            <TextInput
+              label="Time"
+              type="time"
+              value={local.time ?? ''}
+              onChange={(e) => updateLocalField({ time: e.target.value })}
+              disabled={!writeableByFrontdesk && !canReschedule}
+            />
+          </div>
+
+          {/* Save changes for frontdesk (non-approval save) */}
+          {writeableByFrontdesk && (
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={async () => {
+                  if (!local) return;
+                  if (!local.doctorId) {
+                    alert('Doctor ID is required');
+                    return;
+                  }
+                  if (!local.date) {
+                    alert('Date is required');
+                    return;
+                  }
+                  if (!local.time) {
+                    alert('Time is required');
+                    return;
+                  }
+
+                  setSaving(true);
+                  try {
+                    const payload: any = {
+                      doctor_id: local.doctorId,
+                      date: local.date,
+                      time: local.time.length === 5 ? `${local.time}:00` : local.time,
+                    };
+                    if (local.appointmentCost != null) payload.appointment_cost = local.appointmentCost;
+
+                    const updated = await appointmentCtrl.rescheduleForHospital(local.appointmentId, payload);
+                    setLocal((prev) => ({
+                      ...prev!,
+                      ...updated,
+                      patientName: updated.patientName || prev?.patientName,
+                      doctorName: updated.doctorName || prev?.doctorName,
+                      hospitalName: updated.hospitalName || prev?.hospitalName,
+                    }));
+                    alert('Changes saved successfully');
+                  } catch (err: any) {
+                    alert(err?.message || 'Failed to save changes');
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                loading={saving}
+              >
+                Save Changes
+              </Button>
+
+              <Button variant="ghost" onClick={() => {
+                // revert local edits by reloading appointment from appointment list (if available)
+                if (!appointment) return;
+                setLocal({ ...appointment });
+              }}>
+                Revert
+              </Button>
+            </div>
+          )}
+
+          {/* If user can reschedule (patient/doctor) and not frontdesk, show hint that they can edit here */}
+          {!writeableByFrontdesk && canReschedule && (
+            <div className="text-sm text-gray-600">
+              You can edit date & time here and then press "Reschedule" in Quick Actions to submit.
+            </div>
+          )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white dark:bg-[#2b2b2b] p-4 mt-4 rounded-lg shadow flex flex-col gap-4">
           <div>
             <h3 className="font-semibold">Quick Actions</h3>
             <p className="text-sm text-gray-500">Actions available for your role & appointment status</p>
