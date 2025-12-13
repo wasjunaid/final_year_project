@@ -39,7 +39,7 @@ export interface DoctorProfileModel extends PersonProfileModel {
   yearsOfExperience?: number;
   sittingStart?: string; // HH:MM:SS format
   sittingEnd?: string; // HH:MM:SS format;
-  status: DoctorStatus;
+  status: DoctorStatus; // Not implemented yet
   hospitalId?: number;
   hospitalName?: string;
   isDoctorProfileComplete: boolean;

@@ -3,7 +3,7 @@ import { useNavbarController } from '../../hooks/ui/navbar';
 import { useDoctorProfileController } from '../../hooks/profile';
 import Alert from '../../components/Alert';
 import TextInput from '../../components/TextInput';
-import Dropdown from '../../components/Dropdown';
+// import Dropdown from '../../components/Dropdown';
 import PersonInfoSection from '../../components/PersonInfoSection';
 import type { DoctorProfileModel } from '../../models/profile';
 
@@ -165,7 +165,7 @@ const DoctorProfilePage: React.FC = () => {
             containerClassName="w-full md:w-[calc(50%-0.5rem)]"
           />
 
-          <Dropdown
+          {/*<Dropdown
             label="Status"
             options={[
               { value: '', label: 'Select Status' },
@@ -177,7 +177,8 @@ const DoctorProfilePage: React.FC = () => {
             onChange={(value) => handleChange('status', value)}
             disabled={!isEditing}
             containerClassName="w-full md:w-[calc(50%-0.5rem)]"
-          />
+          />*/}
+          <div />
 
           <TextInput
             label="Sitting Start Time"

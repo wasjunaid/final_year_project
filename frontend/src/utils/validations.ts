@@ -161,8 +161,8 @@ export const validators = {
   // Validate license number (13 digits for doctors)
   licenseNumber(license: string): void {
     const cleanLicense = license.replace(/[\s\-]/g, '');
-    if (!/^\d{13}$/.test(cleanLicense)) {
-      throw new ValidationError('License number must be 13 digits');
+    if (!/^\d{10}$/.test(cleanLicense)) {
+      throw new ValidationError('License number must be 10 digits');
     }
   },
 
@@ -175,9 +175,12 @@ export const validators = {
 
   // Validate time format (HH:MM:SS)
   timeFormat(time: string): void {
-    const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
-    if (!timeRegex.test(time)) {
-      throw new ValidationError('Time must be in HH:MM:SS format (e.g., 09:00:00)');
+    const regex = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+
+    if (!regex.test(time)) {
+      throw new ValidationError(
+        'Time must be in HH:mm or HH:mm:ss format'
+      );
     }
   },
 
@@ -185,9 +188,15 @@ export const validators = {
   sittingHours(startTime: string, endTime: string): void {
     this.timeFormat(startTime);
     this.timeFormat(endTime);
-    
-    if (startTime >= endTime) {
+
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+
+    const startMinutes = sh * 60 + sm;
+    const endMinutes = eh * 60 + em;
+
+    if (startMinutes >= endMinutes) {
       throw new ValidationError('Sitting start time must be before end time');
     }
-  },
+  }
 };
