@@ -56,7 +56,7 @@ export const toAppointmentModel = (d: AppointmentDto): AppointmentModel => {
 
 export const toAppointmentModels = (arr: AppointmentDto[] = []): AppointmentModel[] => arr.map(toAppointmentModel);
 
-export const toAssociatedDoctorModel = (d: AppointmentBookingDoctorDto): AppointmentBookingDoctorModel => ({
+export const toDoctorsForAppointmentBookingModel = (d: AppointmentBookingDoctorDto): AppointmentBookingDoctorModel => ({
   id: d.doctor_id,
   hospitalId: d.hospital_id,
   specialization: d.specialization ?? null,

@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import TextInput from '../../components/TextInput';
+import Alert from '../../components/Alert';
+import Dropdown from '../../components/Dropdown';
 import Button from '../../components/Button';
 import { Badge } from '../../components/TableHelpers';
 import { useAppointmentController } from '../../hooks/appointment';
+import { useDoctorController } from '../../hooks/doctor';
 import { useAuthController } from '../../hooks/auth';
 import { useSidebarController } from '../../hooks/ui/sidebar';
 import { ROLES } from '../../constants/profile';
@@ -21,6 +24,9 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   const [local, setLocal] = useState<AppointmentModel | null>(null);
   const [saving, setSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+
+  const { doctors: controllerDoctors, fetchForAppointmentBooking } = useDoctorController();
 
   // new state for patient reschedule reason (visible when patient rescheduling)
   const [rescheduleReason, setRescheduleReason] = useState<string>('');
@@ -28,19 +34,80 @@ const AppointmentsDetailsPage: React.FC = () => {
   useEffect(() => {
     if (appointment) {
       setLocal((prev) => {
-        if (!prev) return { ...appointment };
+        const buildDoctorName = () => {
+          if ((appointment as any).doctorName) return (appointment as any).doctorName;
+          const df = `${(appointment as any).doctor_first_name ?? ''}`.trim();
+          const dl = `${(appointment as any).doctor_last_name ?? ''}`.trim();
+          const combined = `${df} ${dl}`.trim();
+          return combined || undefined;
+        };
+
+        const buildDoctorId = () => {
+          return (appointment as any).doctorId ?? (appointment as any).doctor_id ?? (appointment as any).doctor ?? undefined;
+        };
+
+        const buildPatientName = () => {
+          return appointment.patientName ?? (appointment as any).patient_full_name ?? undefined;
+        };
+
+        const buildHospitalName = () => {
+          return appointment.hospitalName ?? (appointment as any).hospital_name ?? undefined;
+        };
+
+        const buildHospitalId = () => {
+          return (appointment as any).hospitalId ?? (appointment as any).hospital_id ?? (appointment as any).hospital ?? undefined;
+        };
+
+        if (!prev) return { ...appointment, patientName: buildPatientName(), doctorName: buildDoctorName(), hospitalName: buildHospitalName(), doctorId: buildDoctorId(), hospitalId: buildHospitalId() } as AppointmentModel;
         return {
           ...prev,
           ...appointment,
-          patientName: appointment.patientName || prev.patientName,
-          doctorName: appointment.doctorName || prev.doctorName,
-          hospitalName: appointment.hospitalName || prev.hospitalName,
+          patientName: buildPatientName() ?? prev.patientName,
+          doctorName: buildDoctorName() ?? prev.doctorName,
+          hospitalName: buildHospitalName() ?? prev.hospitalName,
+          doctorId: buildDoctorId() ?? prev.doctorId,
+          hospitalId: buildHospitalId() ?? prev.hospitalId,
         };
       });
     } else {
       setLocal(null);
     }
   }, [appointment]);
+
+  // Ensure doctors are fetched so front-desk dropdown has options
+  useEffect(() => {
+    let mounted = true;
+    const loadDoctors = async () => {
+      try {
+        await fetchForAppointmentBooking?.();
+      } catch (e) {
+        // ignore
+      }
+    };
+    if (mounted) loadDoctors();
+    return () => { mounted = false; };
+  }, [fetchForAppointmentBooking, selectedAppointmentId]);
+
+  // derive doctor options (filter by hospital when available)
+  const doctorOptions = (controllerDoctors || []).filter((d: any) => {
+    if (!local) return true;
+    const hid = String(d.hospitalId ?? d.hospital_id ?? '');
+    const lh = String(local.hospitalId ?? '');
+    if (lh && hid !== lh) return false;
+    return true;
+  }).map((d: any) => ({ value: String(d.id ?? d.doctor_id ?? ''), label: d.fullName || `${d.firstName ?? ''} ${d.lastName ?? ''}`.trim() }));
+
+  // Ensure local.doctorName is filled using controllerDoctors when missing
+  useEffect(() => {
+    if (!local) return;
+    if (local.doctorName && String(local.doctorName).trim() !== '') return;
+    const did = String(local.doctorId ?? '');
+    if (!did) return;
+    const found = (controllerDoctors || []).find((d: any) => String(d.id ?? d.doctor_id ?? '') === did);
+    if (found) {
+      updateLocalField({ doctorName: found.fullName || `${found.firstName ?? ''} ${found.lastName ?? ''}`.trim() });
+    }
+  }, [controllerDoctors, local]);
 
   const isPatient = role === ROLES.PATIENT;
   const isDoctor = role === ROLES.DOCTOR;
@@ -56,6 +123,12 @@ const AppointmentsDetailsPage: React.FC = () => {
         if (isPatient) await appointmentCtrl.fetchForPatient?.();
         else if (isDoctor) await appointmentCtrl.fetchForDoctor?.();
         else await appointmentCtrl.fetchForHospital?.();
+        // also fetch doctors for dropdown when needed
+        try {
+          await fetchForAppointmentBooking?.();
+        } catch (e) {
+          // ignore
+        }
       } catch (err) {
         if (!mounted) return;
       }
@@ -92,6 +165,15 @@ const AppointmentsDetailsPage: React.FC = () => {
   const updateLocalField = (patch: Partial<AppointmentModel>) => {
     setLocal((prev) => (prev ? { ...prev, ...patch } : prev));
   };
+
+  // detect if front-desk user made any changes compared to original appointment
+  const appointmentDoctorId = (appointment as any)?.doctorId ?? (appointment as any)?.doctor_id ?? (appointment as any)?.doctor ?? undefined;
+  const hasChanges = !!(appointment && local && (
+    String(local.doctorId ?? '') !== String(appointmentDoctorId ?? '') ||
+    String(local.date ?? '') !== String(appointment.date ?? '') ||
+    String(local.time ?? '') !== String(appointment.time ?? '') ||
+    (local.appointmentCost ?? '') !== (appointment.appointmentCost ?? '')
+  ));
 
   // const handleSaveChanges = async () => {
   //   if (!local) return;
@@ -261,7 +343,9 @@ const AppointmentsDetailsPage: React.FC = () => {
       // Clear reason after success for patient so the input resets
       if (isPatient) setRescheduleReason('');
 
-      alert('Appointment rescheduled successfully');
+      // show success message instead of alert
+      setSuccessMessage('Appointment rescheduled successfully');
+      setTimeout(() => setSuccessMessage(''), 4000);
     } catch (err: any) {
       alert(err?.message || 'Failed to reschedule');
     } finally {
@@ -293,6 +377,11 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   return (
     <div className="grid grid-cols-12 gap-4">
+      {successMessage && (
+        <div className="col-span-12">
+          <Alert type="success" title="Success" message={successMessage} />
+        </div>
+      )}
       {/* Left: main card */}
       <div className="col-span-8">
         <div className="bg-white dark:bg-[#2b2b2b] p-6 rounded-lg shadow">
@@ -307,33 +396,30 @@ const AppointmentsDetailsPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <TextInput label="Patient" value={local.patientName ?? ''} disabled />
-            <TextInput label="Hospital" value={local.hospitalName ?? ''} disabled />
-            <TextInput
-              label="Doctor"
-              value={String(local.doctorName ?? '')}
-              onChange={(e) => updateLocalField({ doctorName: e.target.value })}
-              disabled={!writeableByFrontdesk}
-            />
-            <TextInput
-              label="Appointment Cost"
-              type="number"
-              value={local.appointmentCost ?? ''}
-              onChange={(e) => updateLocalField({ appointmentCost: e.target.value === '' ? null : Number(e.target.value) })}
-              disabled={!writeableByFrontdesk}
-            />
-            <TextInput
-              label="Date"
-              value={local.date ?? ''}
-              onChange={(e) => updateLocalField({ date: e.target.value })}
-              disabled={!writeableByFrontdesk && !canReschedule}
-            />
-            <TextInput
-              label="Time"
-              value={local.time ?? ''}
-              onChange={(e) => updateLocalField({ time: e.target.value })}
-              disabled={!writeableByFrontdesk && !canReschedule}
-            />
+            {!isPatient && (<TextInput label="Patient" value={local.patientName ?? ''} disabled />)}
+            
+            {!isFrontDesk && (<TextInput label="Hospital" value={local.hospitalName ?? ''} disabled />)}
+            
+            {!isDoctor && (
+              writeableByFrontdesk ? (
+                <Dropdown
+                  label="Doctor"
+                  options={doctorOptions}
+                  value={String(local.doctorId ?? '')}
+                  onChange={(v) => {
+                    const selected = (controllerDoctors || []).find((d: any) => String(d.id ?? d.doctor_id) === String(v));
+                    updateLocalField({ doctorId: v ? Number(v) : undefined, doctorName: selected ? (selected.fullName) : local?.doctorName });
+                  }}
+                  searchable
+                />
+              ) : (
+                <TextInput
+                  label="Doctor"
+                  value={String(local.doctorName ?? '')}
+                  disabled
+                />
+              )
+            )}
           </div>
 
           {/* If patient can reschedule, show reason input here instead of prompt */}
@@ -351,7 +437,7 @@ const AppointmentsDetailsPage: React.FC = () => {
 
           <div className="mt-6">
             <TextInput
-              label="Doctor Note"
+              label="Notes"
               multiline
               rows={6}
               value={local.notes ?? ''}
@@ -397,63 +483,7 @@ const AppointmentsDetailsPage: React.FC = () => {
             />
           </div>
 
-          {/* Save changes for frontdesk (non-approval save) */}
-          {writeableByFrontdesk && (
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={async () => {
-                  if (!local) return;
-                  if (!local.doctorId) {
-                    alert('Doctor ID is required');
-                    return;
-                  }
-                  if (!local.date) {
-                    alert('Date is required');
-                    return;
-                  }
-                  if (!local.time) {
-                    alert('Time is required');
-                    return;
-                  }
-
-                  setSaving(true);
-                  try {
-                    const payload: any = {
-                      doctor_id: local.doctorId,
-                      date: local.date,
-                      time: local.time.length === 5 ? `${local.time}:00` : local.time,
-                    };
-                    if (local.appointmentCost != null) payload.appointment_cost = local.appointmentCost;
-
-                    const updated = await appointmentCtrl.rescheduleForHospital(local.appointmentId, payload);
-                    setLocal((prev) => ({
-                      ...prev!,
-                      ...updated,
-                      patientName: updated.patientName || prev?.patientName,
-                      doctorName: updated.doctorName || prev?.doctorName,
-                      hospitalName: updated.hospitalName || prev?.hospitalName,
-                    }));
-                    alert('Changes saved successfully');
-                  } catch (err: any) {
-                    alert(err?.message || 'Failed to save changes');
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
-                loading={saving}
-              >
-                Save Changes
-              </Button>
-
-              <Button variant="ghost" onClick={() => {
-                // revert local edits by reloading appointment from appointment list (if available)
-                if (!appointment) return;
-                setLocal({ ...appointment });
-              }}>
-                Revert
-              </Button>
-            </div>
-          )}
+          {/* (Reset moved to Quick Actions) */}
 
           {/* If user can reschedule (patient/doctor) and not frontdesk, show hint that they can edit here */}
           {!writeableByFrontdesk && canReschedule && (
@@ -469,6 +499,20 @@ const AppointmentsDetailsPage: React.FC = () => {
             <h3 className="font-semibold">Quick Actions</h3>
             <p className="text-sm text-gray-500">Actions available for your role & appointment status</p>
           </div>
+
+          {/* Reset (Quick Actions) - visible during reschedule or when user made changes */}
+          {((hasChanges && isFrontDesk) || (isPatient && canReschedule) || (isDoctor && canReschedule)) && (
+            <div className="flex flex-col gap-2">
+              <Button variant="outline" onClick={() => {
+                if (!appointment) return;
+                setLocal({ ...appointment });
+                // setSuccessMessage('Changes reset');
+                // setTimeout(() => setSuccessMessage(''), 3000);
+              }}>
+                Reset
+              </Button>
+            </div>
+          )}
 
           {/* Processing: frontdesk actions */}
           {local.status === 'processing' && isFrontDesk && (
