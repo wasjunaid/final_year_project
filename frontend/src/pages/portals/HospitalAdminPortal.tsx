@@ -4,7 +4,7 @@ import {
   Users, 
   UserCog,
   Calendar, 
-  TestTube,
+  // TestTube,
   FolderOpen, 
   Bell, 
   User 
@@ -20,6 +20,7 @@ import GenericProfilePage from '../profile/GenericProfilePage';
 import HospitalStaffManagementPage from '../hospitalAdmin/HospitalStaffManagementPage';
 import DocumentUploadDashboard from '../documents/DocumentUploadDashboard';
 import HospitalAssociationPage from '../hospitalAdmin/doctorAssociation/DoctorAssociationPage';
+import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
 
 const HospitalAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -30,7 +31,7 @@ const HospitalAdminPortal: React.FC = () => {
     mainNavItems: [
       { icon: Building2, label: 'Dashboard', route: 'dashboard' },
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
-      { icon: TestTube, label: 'Lab Tests', route: 'lab-tests' },
+      // { icon: TestTube, label: 'Lab Tests', route: 'lab-tests' },
       { icon: Users, label: 'Staff Management', route: 'staff' },
       { icon: UserCog, label: 'Association', route: 'association' },
       { icon: FolderOpen, label: 'Documents', route: 'documents' },
@@ -44,9 +45,9 @@ const HospitalAdminPortal: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Hospital Dashboard - Coming Soon</h1></div>;
+        return <div className="p-6"><h1 className="text-2xl font-bold">Dashboard - Coming Soon</h1></div>;
       case 'appointments':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Appointments - Coming Soon</h1></div>;
+        return <AppointmentsDashboard />
       case 'lab-tests':
         return <div className="p-6"><h1 className="text-2xl font-bold">Lab Tests - Coming Soon</h1></div>;
       case 'staff':

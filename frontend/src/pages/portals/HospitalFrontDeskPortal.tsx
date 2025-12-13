@@ -3,7 +3,6 @@ import {
   Calendar,
   Bell, 
   User, 
-  FolderOpen
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -14,6 +13,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
 import DocumentUploadDashboard from '../documents/DocumentUploadDashboard';
+import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
 
 const HospitalFrontDeskPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -26,7 +26,7 @@ const HospitalFrontDeskPortal: React.FC = () => {
       // { icon: UserPlus, label: 'Patient Registration', route: 'registration' },
       // { icon: ClipboardCheck, label: 'Check-In', route: 'check-in' },
       // { icon: Users, label: 'Patient List', route: 'patients' },
-      { icon: FolderOpen, label: 'Documents', route: 'documents' },
+      // { icon: FolderOpen, label: 'Documents', route: 'documents' },
     ],
     bottomNavItems: [
       { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -37,7 +37,7 @@ const HospitalFrontDeskPortal: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'appointments':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Appointments - Coming Soon</h1></div>;
+        return <AppointmentsDashboard />
       case 'documents':
         return <DocumentUploadDashboard />;
       case 'notifications':

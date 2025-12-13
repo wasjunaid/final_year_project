@@ -2,9 +2,8 @@ import React from 'react';
 import { 
   Calendar, 
   FolderOpen, 
-  TestTube, 
+  // TestTube, 
   Shield, 
-  FileText,
   Bell, 
   User, 
   LucideGitPullRequestArrow
@@ -20,6 +19,7 @@ import PatientProfilePage from '../patient/PatientProfilePage';
 import { PatientDocumentsPage } from '../patient/PatientDocumentsPage';
 import { PatientInsurancePage } from '../patient/PatientInsurancePage';
 import { AccessRequestsPage } from '../accessRequest';
+import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
 
 const PatientPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -29,7 +29,7 @@ const PatientPortal: React.FC = () => {
     portalName: 'Patient Portal',
     mainNavItems: [
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
-      { icon: TestTube, label: 'Lab Results', route: 'lab-tests' },
+      // { icon: TestTube, label: 'Lab Results', route: 'lab-tests' },
       { icon: Shield, label: 'Insurance', route: 'insurance' },
       { icon: FolderOpen, label: 'Medical Records', route: 'documents' },
       { icon: LucideGitPullRequestArrow, label: 'Access Requests', route: 'access-requests' },
@@ -43,7 +43,7 @@ const PatientPortal: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'appointments':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Appointments - Coming Soon</h1></div>;
+        return <AppointmentsDashboard />
       case 'lab-tests':
         return <div className="p-6"><h1 className="text-2xl font-bold">Lab tests - Coming Soon</h1></div>;
       case 'insurance':
