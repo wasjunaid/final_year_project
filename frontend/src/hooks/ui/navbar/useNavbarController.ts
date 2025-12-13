@@ -40,9 +40,13 @@ export const useNavbarController = (config?: NavbarConfig) => {
       // Try to restore saved state for this page
       restorePageState(currentPage);
       
-      // If no saved state and tabs exist, select first tab by default
       const store = useNavbarStore.getState();
-      if (config.tabs && config.tabs.length > 0 && !store.activeTab) {
+      if (!store.activeTab && config.initialActiveTab) {
+        //if no tab is selected and initialTab is given then set it to that tab 
+        setActiveTab(config.initialActiveTab!);
+      }
+      else if (config.tabs && config.tabs.length > 0 && !store.activeTab) {
+        // If no saved state and tabs exist, select first tab by default
         setActiveTab(config.tabs[0].value);
       }
       

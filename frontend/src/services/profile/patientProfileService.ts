@@ -1,6 +1,7 @@
 import apiClient from '../apiClient';
 import type { ApiResponse } from '../../models/api/dto';
-import type { PatientDTO, UpdatePatientRequest } from '../../models/profile/dto';
+import type { PatientDTO } from '../../models/profile/dto';
+import type { UpdatePatientRequest } from '../../models/profile/payload';
 
 // Profile service - pure HTTP helpers returning DTOs wrapped in ApiResponse
 export const patientProfileService = {

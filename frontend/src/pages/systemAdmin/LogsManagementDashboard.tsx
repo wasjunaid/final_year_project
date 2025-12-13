@@ -11,21 +11,18 @@ import { LogFiltersComponent } from './components/LogFiltersComponent';
 export const LogsManagementDashboard: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
 
-  const navbarConfig: NavbarConfig = useMemo(
-    () => ({
-      title: 'Logs & Audit Trail',
-      tabs: [],
-      actions: [
-        {
-          label: showFilters ? 'Hide Filters' : 'Show Filters',
-          icon: Filter,
-          onClick: () => setShowFilters(!showFilters),
-          variant: showFilters ? 'secondary' : 'ghost',
-        },
-      ],
-    }),
-    [showFilters]
-  );
+  const navbarConfig: NavbarConfig = useMemo(() => ({
+    title: 'Logs & Audit Trail',
+    tabs: [],
+    actions: [
+      {
+        label: showFilters ? 'Hide Filters' : 'Show Filters',
+        icon: Filter,
+        onClick: () => setShowFilters(!showFilters),
+        variant: showFilters ? 'secondary' : 'ghost',
+      },
+    ],
+  }), [showFilters]);
 
   useNavbarController(navbarConfig);
 

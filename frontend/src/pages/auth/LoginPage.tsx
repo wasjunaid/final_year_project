@@ -26,7 +26,7 @@ const QuickLogins: React.FC<{ onSelect: (email: string, password: string, role: 
 
   const options = quickLogins.map((q, i) => ({ value: String(i), label: `${q.label} — ${q.email}` }));
 
-  const handleSelect = (value: string | null) => {
+  const handleSelect = (value: string) => {
     if (!value) return;
     const idx = Number(value);
     const q = quickLogins[idx];
@@ -38,8 +38,8 @@ const QuickLogins: React.FC<{ onSelect: (email: string, password: string, role: 
       <Dropdown
         label={<span className="text-red-600">Quick Logins</span>}
         options={options}
-        value={null}
-        onChange={(value) => handleSelect(value as any)}
+        value={''}
+        onChange={(value) => handleSelect(value)}
         placeholder="Choose a test account"
         disabled={disabled}
         fullWidth
@@ -209,7 +209,7 @@ const LoginPage: React.FC = () => {
               { value: ROLES.HOSPITAL_LAB_TECHNICIAN, label: 'Lab Technician' },
             ]}
             value={formData.role}
-            onChange={(value) => setFormData((prev) => ({ ...prev, role: value as UserRole }))}
+             onChange={(value) => setFormData((prev) => ({ ...prev, role: value as UserRole }))} 
             disabled={loading}
             fullWidth
           />

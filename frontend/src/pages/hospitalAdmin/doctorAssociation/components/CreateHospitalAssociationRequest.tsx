@@ -51,7 +51,6 @@ export const CreateHospitalAssociationRequest: React.FC = () => {
         <div className="flex gap-2 mt-3">
           <Button onClick={handleSend} disabled={sending}>{sending ? 'Sending...' : 'Send Request'}</Button>
         </div>
-        <p className='text-xs text-red-500 mt-2'>TODO: test with medical coder as well (role selection might be needed)</p>
       </div>
     </div>
   );

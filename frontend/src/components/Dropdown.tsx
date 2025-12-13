@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect, forwardRef } from 'react';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 export interface DropdownOption {
   value: string;
-  label: string;
+  label: React.ReactNode;
 }
 
 export interface DropdownProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size' | 'onChange'> {
-  label?: string;
+  label?: React.ReactNode;
   options: DropdownOption[];
   value: string;
   onChange: (value: string) => void;
@@ -56,10 +56,14 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(({
   const selectedOption = options.find(opt => opt.value === value);
   
   const filteredOptions = searchable && searchQuery
-    ? options.filter(opt => 
-        opt.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        opt.value.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? options.filter(opt => {
+        const label = opt.label;  // extract label
+        const labelStr = typeof label === 'string' ? label : '';  // consider only string labels for searching
+        return (
+          labelStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          opt.value.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      })
     : options;
 
   const widthStyle = fullWidth ? 'w-full' : '';
@@ -173,7 +177,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(({
             {searchable && (
               <div className="p-2 border-b border-gray-200 dark:border-[#404040]">
                 <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                  {/* <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" /> */}
                   <input
                     ref={searchInputRef}
                     type="text"

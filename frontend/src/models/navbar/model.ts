@@ -25,6 +25,7 @@ export interface NavbarTab {
 export interface NavbarConfig {
   title?: string;
   subtitle?: string;
+  initialActiveTab?: string;
   showBackButton?: boolean;
   showSearch?: boolean;
   searchPlaceholder?: string;

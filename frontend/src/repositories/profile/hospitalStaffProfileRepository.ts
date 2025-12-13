@@ -37,7 +37,7 @@ export const createHospitalStaffProfileRepository = () => {
     },
 
     // Update hospital staff profile (if needed in the future)
-    async updateHospitalStaff(data: Partial<HospitalStaffProfileModel>): Promise<HospitalStaffProfileModel> {
+    async updateHospitalStaff(_data: Partial<HospitalStaffProfileModel>): Promise<HospitalStaffProfileModel> {
       try {
         // Re-fetch full profile after update
         return await this.getHospitalStaff();

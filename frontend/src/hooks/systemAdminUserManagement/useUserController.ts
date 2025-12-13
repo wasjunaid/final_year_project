@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { SystemSubAdminModel, HospitalAdminModel } from '../../models/systemAdminUserManagement/model';
 import type { CreateSystemSubAdminPayload, CreateHospitalAdminPayload } from '../../models/systemAdminUserManagement/payload';
-import { ROLES } from '../../constants/profile';
 
 // Factory to create system admin user management controller hook with DI for repository
 export const createUseSystemAdminUserManagementController = ({ systemAdminUserManagementRepository }: { systemAdminUserManagementRepository: any }) => {
@@ -48,7 +47,7 @@ export const createUseSystemAdminUserManagementController = ({ systemAdminUserMa
         setSuccess(null);
 
         const newUser = await systemAdminUserManagementRepository.createSystemSubAdmin(payload);
-        setSystemSubAdmins((prev) => [...prev, newUser]);
+        setSystemSubAdmins((prev: SystemSubAdminModel[]) => [...prev, newUser]);
         setSuccess('System sub admin created successfully! Password has been sent to their email.');
         
         return newUser;
@@ -68,7 +67,7 @@ export const createUseSystemAdminUserManagementController = ({ systemAdminUserMa
         setSuccess(null);
 
         const newUser = await systemAdminUserManagementRepository.createHospitalAdmin(payload);
-        setHospitalAdmins((prev) => [...prev, newUser]);
+        setHospitalAdmins((prev: HospitalAdminModel[]) => [...prev, newUser]);
         setSuccess('Hospital admin created successfully! Password has been sent to their email.');
         
         return newUser;
@@ -88,7 +87,7 @@ export const createUseSystemAdminUserManagementController = ({ systemAdminUserMa
         setSuccess(null);
 
         await systemAdminUserManagementRepository.deleteSystemSubAdmin(systemAdminId);
-        setSystemSubAdmins((prev) => prev.filter((user) => user.system_admin_id !== systemAdminId));
+        setSystemSubAdmins((prev: SystemSubAdminModel[]) => prev.filter((user) => user.system_admin_id !== systemAdminId));
         setSuccess('System sub admin deleted successfully');
       } catch (err: any) {
         setError(err.message || 'Failed to delete system sub admin');
@@ -106,7 +105,7 @@ export const createUseSystemAdminUserManagementController = ({ systemAdminUserMa
         setSuccess(null);
 
         await systemAdminUserManagementRepository.deleteHospitalAdmin(hospitalStaffId);
-        setHospitalAdmins((prev) => prev.filter((user) => user.hospital_staff_id !== hospitalStaffId));
+        setHospitalAdmins((prev : HospitalAdminModel[]) => prev.filter((user) => user.hospital_staff_id !== hospitalStaffId));
         setSuccess('Hospital admin deleted successfully');
       } catch (err: any) {
         setError(err.message || 'Failed to delete hospital admin');

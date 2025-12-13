@@ -95,7 +95,7 @@ export const CreateOrEditInsurance: React.FC<CreateOrEditInsuranceProps> = ({
 
           {editingCompany && (
             <Button type="button" variant="secondary" onClick={handleCancel} disabled={loading}>
-              Cancel
+              Back
             </Button>
           )}
         </div>
