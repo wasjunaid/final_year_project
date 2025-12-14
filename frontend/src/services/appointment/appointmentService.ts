@@ -4,7 +4,8 @@ import type { AppointmentDto } from '../../models/appointment/dto';
 import type { 
   CreateAppointmentPayload, 
   PatientRescheduleAppointmentPayload, 
-  HospitalRescheduleAppointmentPayload 
+  HospitalRescheduleAppointmentPayload, 
+  CompleteDoctorPayload
 } from '../../models/appointment/payload';
 
 const appointmentService = {
@@ -71,7 +72,7 @@ const appointmentService = {
   //   return resp.data;
   // },
 
-  async completeDoctor(appointmentId: number, payload: { doctor_note: string }): Promise<ApiResponse<any>> {
+  async completeDoctor(appointmentId: number, payload: CompleteDoctorPayload): Promise<ApiResponse<any>> {
     const resp = await apiClient.put<ApiResponse<any>>(`/appointment/complete-doctor/${appointmentId}`, payload);
     return resp.data;
   },

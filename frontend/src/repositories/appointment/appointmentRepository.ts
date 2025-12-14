@@ -1,6 +1,6 @@
 import appointmentService from '../../services/appointment/appointmentService';
 import type { AppointmentModel } from '../../models/appointment/model';
-import type { PatientRescheduleAppointmentPayload, HospitalRescheduleAppointmentPayload } from '../../models/appointment/payload';
+import type { PatientRescheduleAppointmentPayload, HospitalRescheduleAppointmentPayload, CompleteDoctorPayload } from '../../models/appointment/payload';
 import { toAppointmentModels } from '../../models/appointment/transformers';
 import { AppError } from '../../utils/appError';
 
@@ -148,7 +148,7 @@ const appointmentRepository = {
   //   }
   // },
 
-  async completeDoctor(appointmentId: number, payload: { doctor_note: string }) {
+  async completeDoctor(appointmentId: number, payload: CompleteDoctorPayload) {
     try {
       const resp = await appointmentService.completeDoctor(appointmentId, payload);
       if (!resp.success) throw new AppError({ message: resp.message || 'Failed to complete', title: 'Complete Failed' });

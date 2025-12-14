@@ -10,6 +10,11 @@ export interface AppointmentDto {
 
   reason?: string | null;
   doctor_note?: string | null;
+  history_of_present_illness?: string | null;
+  review_of_systems?: string | null;
+  physical_exam?: string | null;
+  diagnosis?: string | null;
+  plan?: string | null;
 
   status: string;
 

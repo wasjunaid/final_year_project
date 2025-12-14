@@ -26,6 +26,16 @@ export interface AppointmentModel {
   // doctor's note / reason (cleaned)
   notes?: string | null;
 
+  // clinical fields entered by doctor when completing appointment
+  historyOfPresentIllness?: string | null;
+  reviewOfSystems?: string | null;
+  physicalExam?: string | null;
+  diagnosis?: string | null;
+  diagnosisList?: string[];
+  // transient UI field for adding a single diagnosis (not persisted)
+  _newDiagnosis?: string | null;
+  plan?: string | null;
+
   // status (keep as typed union or string)
   status: AppointmentStatusType | string;
 

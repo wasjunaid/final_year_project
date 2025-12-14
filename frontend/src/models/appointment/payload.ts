@@ -31,7 +31,12 @@ export interface HospitalRescheduleAppointmentPayload {
 
 // Payload for completing an appointment by doctor
 export interface CompleteDoctorPayload {
-  doctor_note: string;
+  doctor_note?: string | null;
+  history_of_present_illness?: string | null;
+  review_of_systems?: string | null;
+  physical_exam?: string | null;
+  diagnosis?: string | null;
+  plan?: string | null;
 }
 
 // Payload for starting an appointment (could be extended later)

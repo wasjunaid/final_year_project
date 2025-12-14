@@ -12,6 +12,17 @@ export const toAppointmentModel = (d: AppointmentDto): AppointmentModel => {
 
   const notes = toNullableString(d.doctor_note ?? d.reason ?? null);
 
+  const historyOfPresentIllness = toNullableString((d as any).history_of_present_illness ?? null);
+  const reviewOfSystems = toNullableString((d as any).review_of_systems ?? null);
+  const physicalExam = toNullableString((d as any).physical_exam ?? null);
+  const diagnosis = toNullableString((d as any).diagnosis ?? null);
+  const plan = toNullableString((d as any).plan ?? null);
+
+  const diagnosisList: string[] = (diagnosis || '')
+    .split(',')
+    .map((s) => String(s || '').trim())
+    .filter((s) => s.length > 0);
+
   return {
     appointmentId: Number(d.appointment_id),
     patientId: Number(d.patient_id),
@@ -31,6 +42,13 @@ export const toAppointmentModel = (d: AppointmentDto): AppointmentModel => {
     // totalCost: toNumberOrNull((d as any).total_cost ?? null),
 
     notes,
+
+    historyOfPresentIllness,
+    reviewOfSystems,
+    physicalExam,
+    diagnosis,
+    diagnosisList,
+    plan,
 
     status: (d.status ?? '') as AppointmentStatusType | string,
 

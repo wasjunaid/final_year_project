@@ -3,7 +3,8 @@ import type { AppointmentModel } from '../../models/appointment/model';
 import type { 
   CreateAppointmentPayload, 
   PatientRescheduleAppointmentPayload, 
-  HospitalRescheduleAppointmentPayload 
+  HospitalRescheduleAppointmentPayload, 
+  CompleteDoctorPayload
 } from '../../models/appointment/payload';
 
 // Factory to create appointment controller with DI for repository
@@ -174,7 +175,7 @@ export const createUseAppointmentController = ({ appointmentRepository }: { appo
       }
     };
 
-    const completeDoctor = async (appointmentId: number, payload: { doctor_note: string }) => {
+    const completeDoctor = async (appointmentId: number, payload: CompleteDoctorPayload) => {
       try {
         setLoading(true);
         setError(null);

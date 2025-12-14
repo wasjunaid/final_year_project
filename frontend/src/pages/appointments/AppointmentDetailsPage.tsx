@@ -11,6 +11,7 @@ import { useSidebarController } from '../../hooks/ui/sidebar';
 import { ROLES } from '../../constants/profile';
 import type { AppointmentModel } from '../../models/appointment/model';
 import { AppointmentStatus } from '../../models/appointment/enums';
+import type { CompleteDoctorPayload } from '../../models/appointment/payload';
 
 const AppointmentsDetailsPage: React.FC = () => {
   const appointmentCtrl = useAppointmentController();
@@ -25,6 +26,7 @@ const AppointmentsDetailsPage: React.FC = () => {
   const [local, setLocal] = useState<AppointmentModel | null>(null);
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const { doctors: controllerDoctors, fetchForAppointmentBooking } = useDoctorController();
 
@@ -109,6 +111,18 @@ const AppointmentsDetailsPage: React.FC = () => {
     }
   }, [controllerDoctors, local]);
 
+  // ensure diagnosisList exists on local (split diagnosis string into list)
+  useEffect(() => {
+    if (!local) return;
+    if (local.diagnosisList && Array.isArray(local.diagnosisList)) return;
+    const dstr = local.diagnosis ?? '';
+    const list = String(dstr)
+      .split(',')
+      .map((s) => String(s || '').trim())
+      .filter((s) => s.length > 0);
+    updateLocalField({ diagnosisList: list });
+  }, [local]);
+
   const isPatient = role === ROLES.PATIENT;
   const isDoctor = role === ROLES.DOCTOR;
   const isFrontDesk =
@@ -158,8 +172,8 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   const writeableByFrontdesk = local.status === AppointmentStatus.processing && isFrontDesk;
   const canStart = local.status === AppointmentStatus.upcoming && isDoctor;
-  const canCancel = local.status === AppointmentStatus.upcoming && (isPatient || isDoctor || isFrontDesk);
-  const canReschedule = local.status === AppointmentStatus.upcoming && (isPatient || isDoctor || isFrontDesk);
+  const canCancel = local.status === AppointmentStatus.upcoming && (isPatient);
+  const canReschedule = local.status === AppointmentStatus.upcoming && (isPatient || isFrontDesk || isDoctor);
   const doctorCanComplete = local.status === AppointmentStatus.in_progress && isDoctor;
 
   const updateLocalField = (patch: Partial<AppointmentModel>) => {
@@ -168,12 +182,39 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   // detect if front-desk user made any changes compared to original appointment
   const appointmentDoctorId = (appointment as any)?.doctorId ?? (appointment as any)?.doctor_id ?? (appointment as any)?.doctor ?? undefined;
-  const hasChanges = !!(appointment && local && (
-    String(local.doctorId ?? '') !== String(appointmentDoctorId ?? '') ||
-    String(local.date ?? '') !== String(appointment.date ?? '') ||
-    String(local.time ?? '') !== String(appointment.time ?? '') ||
-    (local.appointmentCost ?? '') !== (appointment.appointmentCost ?? '')
-  ));
+  const hasChanges = (() => {
+    if (!appointment || !local) return false;
+    const simpleChange = (
+      String(local.doctorId ?? '') !== String(appointmentDoctorId ?? '') ||
+      String(local.date ?? '') !== String(appointment.date ?? '') ||
+      String(local.time ?? '') !== String(appointment.time ?? '') ||
+      (local.appointmentCost ?? '') !== (appointment.appointmentCost ?? '')
+    );
+
+    const getAppointmentDiagnosis = () => {
+      const a: any = appointment as any;
+      if (a.diagnosis) return String(a.diagnosis ?? '').trim();
+      if (Array.isArray(a.diagnosisList)) return (a.diagnosisList || []).join(', ').trim();
+      return '';
+    };
+
+    const getLocalDiagnosis = () => {
+      if (local.diagnosis) return String(local.diagnosis ?? '').trim();
+      if (Array.isArray(local.diagnosisList)) return (local.diagnosisList || []).join(', ').trim();
+      return '';
+    };
+
+    const clinicalChange = (
+      String(local.notes ?? '').trim() !== String((appointment as any).notes ?? '').trim() ||
+      String(local.historyOfPresentIllness ?? '').trim() !== String((appointment as any).historyOfPresentIllness ?? (appointment as any).history_of_present_illness ?? '').trim() ||
+      String(local.reviewOfSystems ?? '').trim() !== String((appointment as any).reviewOfSystems ?? (appointment as any).review_of_systems ?? '').trim() ||
+      String(local.physicalExam ?? '').trim() !== String((appointment as any).physicalExam ?? (appointment as any).physical_exam ?? '').trim() ||
+      String(local.plan ?? '').trim() !== String((appointment as any).plan ?? '').trim() ||
+      getLocalDiagnosis() !== getAppointmentDiagnosis()
+    );
+
+    return simpleChange || clinicalChange;
+  })();
 
   // const handleSaveChanges = async () => {
   //   if (!local) return;
@@ -232,7 +273,8 @@ const AppointmentsDetailsPage: React.FC = () => {
         hospitalName: updated.hospitalName || prev?.hospitalName,
       }));
     } catch (err: any) {
-      alert(err?.message || 'Failed to approve');
+      setErrorMessage(err?.message || 'Failed to approve');
+      setTimeout(() => setErrorMessage(''), 4000);
     } finally {
       setSaving(false);
     }
@@ -252,7 +294,8 @@ const AppointmentsDetailsPage: React.FC = () => {
         hospitalName: updated.hospitalName || prev?.hospitalName,
       }));
     } catch (err: any) {
-      alert(err?.message || 'Failed to deny');
+      setErrorMessage(err?.message || 'Failed to deny');
+      setTimeout(() => setErrorMessage(''), 4000);
     } finally {
       setSaving(false);
     }
@@ -271,7 +314,8 @@ const AppointmentsDetailsPage: React.FC = () => {
         hospitalName: updated.hospitalName || prev?.hospitalName,
       }));
     } catch (err: any) {
-      alert(err?.message || 'Failed to start appointment');
+      setErrorMessage(err?.message || 'Failed to start appointment');
+      setTimeout(() => setErrorMessage(''), 4000);
     } finally {
       setSaving(false);
     }
@@ -285,7 +329,8 @@ const AppointmentsDetailsPage: React.FC = () => {
       await appointmentCtrl.cancel(local.appointmentId);
       setLocal((prev) => (prev ? { ...prev, status: 'cancelled' } : prev));
     } catch (err: any) {
-      alert(err?.message || 'Failed to cancel');
+      setErrorMessage(err?.message || 'Failed to cancel');
+      setTimeout(() => setErrorMessage(''), 4000);
     } finally {
       setSaving(false);
     }
@@ -300,18 +345,21 @@ const AppointmentsDetailsPage: React.FC = () => {
     const newTime = local.time ?? '';
 
     if (!newDate) {
-      alert('Date is required for rescheduling');
+      setErrorMessage('Date is required for rescheduling');
+      setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
     if (!newTime) {
-      alert('Time is required for rescheduling');
+      setErrorMessage('Time is required for rescheduling');
+      setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
 
     // If patient, ensure reason is provided (from the new input shown below)
-    if (isPatient) {
+      if (isPatient) {
       if (!rescheduleReason || rescheduleReason.trim().length === 0) {
-        alert('Reason is required for rescheduling');
+        setErrorMessage('Reason is required for rescheduling');
+        setTimeout(() => setErrorMessage(''), 4000);
         return;
       }
     }
@@ -347,7 +395,8 @@ const AppointmentsDetailsPage: React.FC = () => {
       setSuccessMessage('Appointment rescheduled successfully');
       setTimeout(() => setSuccessMessage(''), 4000);
     } catch (err: any) {
-      alert(err?.message || 'Failed to reschedule');
+      setErrorMessage(err?.message || 'Failed to reschedule');
+      setTimeout(() => setErrorMessage(''), 4000);
     } finally {
       setSaving(false);
     }
@@ -357,7 +406,21 @@ const AppointmentsDetailsPage: React.FC = () => {
     if (!local) return;
     setSaving(true);
     try {
-      const updated = await appointmentCtrl.completeDoctor(local.appointmentId, { doctor_note: local.notes ?? '' });
+      // compile diagnoses list into comma-separated string for backend
+      const diagnosisString = (local.diagnosisList && local.diagnosisList.length > 0)
+        ? local.diagnosisList.join(', ')
+        : (local.diagnosis ?? null);
+
+      const payload: CompleteDoctorPayload = {
+        doctor_note: local.notes ?? null,
+        history_of_present_illness: local.historyOfPresentIllness ?? null,
+        review_of_systems: local.reviewOfSystems ?? null,
+        physical_exam: local.physicalExam ?? null,
+        diagnosis: diagnosisString ?? null,
+        plan: local.plan ?? null,
+      };
+
+      const updated = await appointmentCtrl.completeDoctor(local.appointmentId, payload);
       setLocal((prev) => ({
         ...prev!,
         ...updated,
@@ -366,7 +429,8 @@ const AppointmentsDetailsPage: React.FC = () => {
         hospitalName: updated.hospitalName || prev?.hospitalName,
       }));
     } catch (err: any) {
-      alert(err?.message || 'Failed to save doctor note');
+      setErrorMessage(err?.message || 'Failed to save doctor note');
+      setTimeout(() => setErrorMessage(''), 4000);
     } finally {
       setSaving(false);
     }
@@ -377,79 +441,214 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   return (
     <div className="grid grid-cols-12 gap-4">
+      {errorMessage && (
+        <div className="col-span-12">
+          <Alert type="error" title="Error" message={errorMessage} />
+        </div>
+      )}
       {successMessage && (
         <div className="col-span-12">
           <Alert type="success" title="Success" message={successMessage} />
         </div>
       )}
+
       {/* Left: main card */}
-      <div className="col-span-8">
-        <div className="bg-white dark:bg-[#2b2b2b] p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between mb-4">
-						<div className='flex items-center gap-2'>
-							{/* <Button variant='secondary' icon={ArrowBigLeftIcon} onClick={() => setActiveTab("appointments")} /> */}
-            	<h2 className="text-xl font-semibold">Appointment #{local.appointmentId}</h2>
-						</div>
-            <Badge variant={local.status === 'completed' ? 'success' : local.status === 'processing' ? 'warning' : 'info'}>
-              {local.status}
-            </Badge>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {!isPatient && (<TextInput label="Patient" value={local.patientName ?? ''} disabled />)}
-            
-            {!isFrontDesk && (<TextInput label="Hospital" value={local.hospitalName ?? ''} disabled />)}
-            
-            {!isDoctor && (
-              writeableByFrontdesk ? (
-                <Dropdown
-                  label="Doctor"
-                  options={doctorOptions}
-                  value={String(local.doctorId ?? '')}
-                  onChange={(v) => {
-                    const selected = (controllerDoctors || []).find((d: any) => String(d.id ?? d.doctor_id) === String(v));
-                    updateLocalField({ doctorId: v ? Number(v) : undefined, doctorName: selected ? (selected.fullName) : local?.doctorName });
-                  }}
-                  searchable
-                />
-              ) : (
-                <TextInput
-                  label="Doctor"
-                  value={String(local.doctorName ?? '')}
-                  disabled
-                />
-              )
-            )}
-          </div>
-
-          {/* If patient can reschedule, show reason input here instead of prompt */}
-          {isPatient && canReschedule && (
-            <div className="mt-4">
-              <TextInput
-                label="Reschedule Reason (required)"
-                value={rescheduleReason}
-                onChange={(e) => setRescheduleReason(e.target.value)}
-                multiline
-                rows={3}
-              />
+      <div className='lg:col-span-8 flex flex-col gap-2'>
+        {/* details card */}
+        <div className="col-span-8">
+          <div className="bg-white dark:bg-[#2b2b2b] p-6 rounded-lg shadow">
+            <div className="flex items-center justify-between mb-4">
+              <div className='flex items-center gap-2'>
+                {/* <Button variant='secondary' icon={ArrowBigLeftIcon} onClick={() => setActiveTab("appointments")} /> */}
+                <h2 className="text-xl font-semibold">Appointment #{local.appointmentId}</h2>
+              </div>
+              <Badge variant={local.status === 'completed' ? 'success' : local.status === 'processing' ? 'warning' : 'info'}>
+                {local.status}
+              </Badge>
             </div>
-          )}
 
-          <div className="mt-6">
+            <div className="grid grid-cols-2 gap-4">
+              {!isPatient && (<TextInput label="Patient" value={local.patientName ?? ''} disabled />)}
+              
+              {!isFrontDesk && (<TextInput label="Hospital" value={local.hospitalName ?? ''} disabled />)}
+              
+              {!isDoctor && (
+                writeableByFrontdesk ? (
+                  <Dropdown
+                    label="Doctor"
+                    options={doctorOptions}
+                    value={String(local.doctorId ?? '')}
+                    onChange={(v) => {
+                      const selected = (controllerDoctors || []).find((d: any) => String(d.id ?? d.doctor_id) === String(v));
+                      updateLocalField({ doctorId: v ? Number(v) : undefined, doctorName: selected ? (selected.fullName) : local?.doctorName });
+                    }}
+                    searchable
+                  />
+                ) : (
+                  <TextInput
+                    label="Doctor"
+                    value={String(local.doctorName ?? '')}
+                    disabled
+                  />
+                )
+              )}
+            </div>
+
+            {/* If patient can reschedule, show reason input here instead of prompt */}
+            {isPatient && canReschedule && (
+              <div className="mt-4">
+                <TextInput
+                  label="Reschedule Reason (required)"
+                  value={rescheduleReason}
+                  onChange={(e) => setRescheduleReason(e.target.value)}
+                  multiline
+                  rows={3}
+                />
+              </div>
+            )}
+
+            {/* Clinical fields moved to a dedicated card below for better UI */}
+          </div>
+        </div>
+
+        {/* Clinical Details: moved to its own card for readability */}
+        <div className="col-span-8">
+          <div className="bg-white dark:bg-[#2b2b2b] p-6 rounded-lg shadow mt-4">
+            <h3>
+              {(local.status === AppointmentStatus.in_progress || local.status === 'in progress' || local.status === AppointmentStatus.completed || local.status === 'completed') ? 'Clinical Details' : ''}
+            </h3>
+
             <TextInput
               label="Notes"
               multiline
-              rows={6}
+              rows={4}
               value={local.notes ?? ''}
               onChange={(e) => updateLocalField({ notes: e.target.value })}
-              disabled={!doctorCanComplete && !isDoctor}
+              disabled={!doctorCanComplete}
             />
+
+            {(doctorCanComplete || local.status === AppointmentStatus.completed || local.doctorCompleted) && (
+              <>
+                <div className="mt-4">
+                  <TextInput
+                    label="History of Present Illness"
+                    value={local.historyOfPresentIllness ?? ''}
+                    onChange={(e) => updateLocalField({ historyOfPresentIllness: e.target.value })}
+                    multiline
+                    rows={3}
+                    disabled={!doctorCanComplete}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <TextInput
+                    label="Review of Systems"
+                    value={local.reviewOfSystems ?? ''}
+                    onChange={(e) => updateLocalField({ reviewOfSystems: e.target.value })}
+                    multiline
+                    rows={3}
+                    disabled={!doctorCanComplete}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <TextInput
+                    label="Physical Exam"
+                    value={local.physicalExam ?? ''}
+                    onChange={(e) => updateLocalField({ physicalExam: e.target.value })}
+                    multiline
+                    rows={3}
+                    disabled={!doctorCanComplete}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <div className="flex flex-col gap-3">
+                    {(local.diagnosisList ?? []).map((d, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <TextInput
+                            label={idx === 0 ? 'Diagnoses' : ''}
+                            value={d}
+                            onChange={(e) => {
+                              const list = [...(local.diagnosisList ?? [])];
+                              list[idx] = e.target.value;
+                              updateLocalField({ diagnosisList: list, diagnosis: list.join(', ') });
+                            }}
+                            placeholder="e.g. Hypertension"
+                            disabled={!doctorCanComplete}
+                          />
+                        </div>
+                        {doctorCanComplete && (
+                          <Button
+                            variant="danger"
+                            size='sm'
+                            onClick={() => {
+                              const list = (local.diagnosisList ?? []).filter((_, i) => i !== idx);
+                              updateLocalField({ diagnosisList: list, diagnosis: list.join(', ') });
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+
+                    {((local.diagnosisList ?? []).length === 0) && (
+                      <div>
+                        <TextInput label="Diagnoses" value={''} disabled placeholder="No diagnoses recorded" />
+                      </div>
+                    )}
+
+                    {doctorCanComplete && (
+                      <div className="pt-2">
+                        <Button onClick={() => {
+                          const next = [...(local.diagnosisList ?? []), ''];
+                          updateLocalField({ diagnosisList: next, diagnosis: next.join(', ') });
+                        }}>
+                          Add
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <TextInput
+                    label="Plan"
+                    value={local.plan ?? ''}
+                    onChange={(e) => updateLocalField({ plan: e.target.value })}
+                    multiline
+                    rows={3}
+                    disabled={!doctorCanComplete}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <TextInput
+                    label="Completed At"
+                    value={(() => {
+                      const ts = local.doctorCompletedAt ?? local.updatedAt ?? '';
+                      try {
+                        if (!ts) return '';
+                        const dt = new Date(ts);
+                        if (isNaN(dt.getTime())) return ts;
+                        return dt.toLocaleString();
+                      } catch (e) {
+                        return ts;
+                      }
+                    })()}
+                    disabled
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Right: side cards */}
-      <div className="col-span-4">
+      <div className="lg:col-span-4 flex flex-col gap-">
         <div className="bg-white dark:bg-[#2b2b2b] p-4 rounded-lg shadow flex flex-col gap-4">
           <div>
             <h3 className="font-semibold">Appointment Info</h3>
@@ -533,7 +732,7 @@ const AppointmentsDetailsPage: React.FC = () => {
           {local.status === 'upcoming' && (
             <div className="flex flex-col gap-2">
               {canStart && (
-                <Button onClick={handleStart} loading={saving}>
+                <Button variant='success' onClick={handleStart} loading={saving}>
                   Start Appointment
                 </Button>
               )}
@@ -555,12 +754,12 @@ const AppointmentsDetailsPage: React.FC = () => {
             <div className="flex flex-col gap-2">
               {isDoctor && (
                 <>
-                  <Button onClick={handleSaveDoctorNote} loading={saving}>
+                  <Button variant='success' onClick={handleSaveDoctorNote} loading={saving}>
                     Save & Complete
                   </Button>
-                  <Button onClick={handleStart} loading={saving}>
+                  {/* <Button onClick={handleStart} loading={saving}>
                     Refresh State
-                  </Button>
+                  </Button> */}
                 </>
               )}
               {!isDoctor && <div className="text-sm text-gray-600">Appointment is in progress. Only the doctor can add notes and complete it.</div>}
