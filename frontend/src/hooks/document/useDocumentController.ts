@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DocumentModel } from "../../models/document";
+import type { InsertPlaceholderPayload } from "../../models/document";
 import { getDocumentRepository } from "../../repositories/document";
 
 export interface IDocumentController {
@@ -15,6 +16,9 @@ export interface IDocumentController {
   success: string | null;
   uploadProgress: number;
   isUploading: boolean;
+  // Placeholders (created by doctors/lab techs)
+  placeholdersForPatient: DocumentModel[];
+  placeholdersForLabTech: DocumentModel[];
 
   // Operations
   fetchAllDocuments: () => Promise<void>;
@@ -31,6 +35,13 @@ export interface IDocumentController {
     labTestId?: number,
   ) => Promise<void>;
   downloadDocument: (documentId: string, originalName: string) => Promise<void>;
+  fetchPlaceholdersForPatient: () => Promise<DocumentModel[]>;
+  fetchPlaceholdersForLabTech: () => Promise<DocumentModel[]>;
+  insertPlaceholderForLabTestDocument: (payload: InsertPlaceholderPayload) => Promise<DocumentModel>;
+  deleteDocument: (documentId: string) => Promise<void>;
+  uploadVerifiedDocumentAgainstPlaceholder: (documentId: string, file: File, detail: string, onUploadProgress?: (e:any)=>void) => Promise<DocumentModel>;
+  uploadUnverifiedDocumentAgainstPlaceholder: (documentId: string, file: File, detail: string, onUploadProgress?: (e:any)=>void) => Promise<DocumentModel>;
+  fetchAllVerifiedDocumentsAgainstAppointmentGET: () => Promise<DocumentModel[]>;
   clearMessages: () => void;
   clearError: () => void;
 }
@@ -48,6 +59,8 @@ export const useDocumentController = (): IDocumentController => {
   const [success, setSuccess] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [placeholdersForPatient, setPlaceholdersForPatient] = useState<DocumentModel[]>([]);
+  const [placeholdersForLabTech, setPlaceholdersForLabTech] = useState<DocumentModel[]>([]);
 
   // Operations
   const fetchAllDocuments = async (): Promise<void> => {
@@ -129,6 +142,149 @@ export const useDocumentController = (): IDocumentController => {
         err instanceof Error ? err.message : "Failed to fetch documents for appointment";
       setError(errorMessage);
       console.error("Error fetching documents by appointment:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPlaceholdersForPatient = async (): Promise<DocumentModel[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await documentRepository.getPlaceholdersForPatient();
+      setPlaceholdersForPatient(data);
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch placeholders';
+      setError(errorMessage);
+      console.error('Error fetching placeholders for patient:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPlaceholdersForLabTech = async (): Promise<DocumentModel[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await documentRepository.getPlaceholdersForLabTech();
+      setPlaceholdersForLabTech(data);
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch placeholders';
+      setError(errorMessage);
+      console.error('Error fetching placeholders for lab tech:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const insertPlaceholderForLabTestDocument = async (payload: InsertPlaceholderPayload): Promise<DocumentModel> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const created = await documentRepository.insertPlaceholderForLabTestDocument(payload);
+      // add to documents/verified lists as optimistic
+      setDocuments(prev => [created, ...prev]);
+      if (created.isVerified) setVerifiedDocuments(prev => [created, ...prev]);
+      return created;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create placeholder';
+      setError(errorMessage);
+      console.error('Error inserting placeholder:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteDocument = async (documentId: string): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await documentRepository.deleteDocument(documentId);
+      setDocuments(prev => prev.filter(d => d.documentId !== documentId));
+      setVerifiedDocuments(prev => prev.filter(d => d.documentId !== documentId));
+      setUnverifiedDocuments(prev => prev.filter(d => d.documentId !== documentId));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete document';
+      setError(errorMessage);
+      console.error('Error deleting document:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uploadVerifiedDocumentAgainstPlaceholder = async (
+    documentId: string,
+    file: File,
+    detail: string,
+    onUploadProgress?: (progressEvent: any) => void
+  ): Promise<DocumentModel> => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    setError(null);
+    setSuccess(null);
+    try {
+      const uploaded = await documentRepository.uploadVerifiedDocumentAgainstPlaceholder(documentId, file, detail, onUploadProgress);
+      // replace or add
+      setVerifiedDocuments(prev => [uploaded, ...prev.filter(d => d.documentId !== uploaded.documentId)]);
+      setDocuments(prev => [uploaded, ...prev.filter(d => d.documentId !== uploaded.documentId)]);
+      setSuccess('Verified document uploaded successfully');
+      return uploaded;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to upload verified document';
+      setError(errorMessage);
+      console.error('Error uploading verified document against placeholder:', err);
+      throw err;
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const uploadUnverifiedDocumentAgainstPlaceholder = async (
+    documentId: string,
+    file: File,
+    detail: string,
+    onUploadProgress?: (progressEvent: any) => void
+  ): Promise<DocumentModel> => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    setError(null);
+    setSuccess(null);
+    try {
+      const uploaded = await documentRepository.uploadUnverifiedDocumentAgainstPlaceholder(documentId, file, detail, onUploadProgress);
+      setUnverifiedDocuments(prev => [uploaded, ...prev.filter(d => d.documentId !== uploaded.documentId)]);
+      setDocuments(prev => [uploaded, ...prev.filter(d => d.documentId !== uploaded.documentId)]);
+      setSuccess('Document uploaded successfully');
+      return uploaded;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to upload document';
+      setError(errorMessage);
+      console.error('Error uploading unverified document against placeholder:', err);
+      throw err;
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const fetchAllVerifiedDocumentsAgainstAppointmentGET = async (): Promise<DocumentModel[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await documentRepository.getAllVerifiedDocumentsAgainstAppointmentGET();
+      setVerifiedDocuments(data);
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch appointment documents (GET)';
+      setError(errorMessage);
+      console.error('Error fetching appointment documents (GET):', err);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -333,6 +489,10 @@ export const useDocumentController = (): IDocumentController => {
     uploadProgress,
     isUploading,
 
+    // placeholders
+    placeholdersForPatient,
+    placeholdersForLabTech,
+
     // Operations
     fetchAllDocuments,
     fetchUnverifiedDocuments,
@@ -342,6 +502,13 @@ export const useDocumentController = (): IDocumentController => {
     uploadUnverifiedDocument,
     uploadVerifiedDocument,
     downloadDocument,
+    fetchPlaceholdersForPatient,
+    fetchPlaceholdersForLabTech,
+    insertPlaceholderForLabTestDocument,
+    deleteDocument,
+    uploadVerifiedDocumentAgainstPlaceholder,
+    uploadUnverifiedDocumentAgainstPlaceholder,
+    fetchAllVerifiedDocumentsAgainstAppointmentGET,
     clearMessages,
     clearError
   };

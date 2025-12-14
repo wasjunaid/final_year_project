@@ -43,6 +43,9 @@ export class DocumentModel {
   labTestName?: string;
   labTestDescription?: string;
   labTestCost?: number;
+  fileName?: string;
+  ipfsHash?: string;
+  updatedAt?: Date;
 
   constructor(
     documentId: string,
@@ -63,7 +66,10 @@ export class DocumentModel {
     labTestId?: number,
     labTestName?: string,
     labTestDescription?: string,
-    labTestCost?: number
+    labTestCost?: number,
+    fileName?: string,
+    ipfsHash?: string,
+    updatedAt?: Date
   ) {
     this.documentId = documentId;
     this.patientId = patientId;
@@ -84,6 +90,9 @@ export class DocumentModel {
     this.labTestName = labTestName;
     this.labTestDescription = labTestDescription;
     this.labTestCost = labTestCost;
+    this.fileName = fileName;
+    this.ipfsHash = ipfsHash;
+    this.updatedAt = updatedAt;
   }
 
   // Utility methods

@@ -24,7 +24,10 @@ export class DocumentTransformer {
       dto.lab_test_id,
       dto.lab_test_name,
       dto.lab_test_description,
-      dto.lab_test_cost
+      dto.lab_test_cost,
+      (dto as any).file_name ?? undefined,
+      (dto as any).ipfs_hash ?? undefined,
+      (dto as any).updated_at ? new Date((dto as any).updated_at) : undefined
     );
   }
 
@@ -40,6 +43,9 @@ export class DocumentTransformer {
       mime_type: model.mimeType,
       file_size: model.fileSize,
       created_at: model.createdAt.toISOString(),
+      updated_at: model.updatedAt ? model.updatedAt.toISOString() : undefined,
+      file_name: model.fileName,
+      ipfs_hash: model.ipfsHash,
       document_type: model.documentType,
       is_verified: model.isVerified,
       detail: model.detail,

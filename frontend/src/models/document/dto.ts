@@ -7,6 +7,9 @@ export interface DocumentDto {
   mime_type: string;
   file_size: number;
   created_at: string;
+  updated_at?: string;
+  file_name?: string; // stored filename on server
+  ipfs_hash?: string; // optional IPFS hash if stored on IPFS
   document_type?: string | null;
   is_verified: boolean;
   detail: string;

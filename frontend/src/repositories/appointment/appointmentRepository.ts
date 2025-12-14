@@ -160,6 +160,18 @@ const appointmentRepository = {
     }
   },
 
+  async completeLabTests(appointmentId: number) {
+    try {
+      const resp = await appointmentService.completeLabTests(appointmentId);
+      if (!resp.success) throw new AppError({ message: resp.message || 'Failed to complete lab tests', title: 'Complete Lab Tests Failed' });
+      return toAppointmentModels([resp.data])[0];
+    } catch (err: any) {
+      if (err instanceof AppError) throw err;
+      const msg = err?.response?.data?.message || err?.message || 'Failed to complete lab tests';
+      throw new AppError({ message: msg, title: 'Complete Lab Tests Failed' });
+    }
+  },
+
   // async completeLabTest(appointmentId: number) {
   //   try {
   //     const resp = await appointmentService.completeLabTest(appointmentId);

@@ -56,9 +56,9 @@ export const toAppointmentModel = (d: AppointmentDto): AppointmentModel => {
     doctorCompletedAt: toNullableString(d.doctor_completed_at),
 
     // labTestRequired: toBool(d.lab_test_required),
-    // labTestCompleted: toBool(d.lab_test_completed),
-    // labTestCompletedAt: toNullableString(d.lab_test_completed_at),
-    // labTestCompletedBy: (d.lab_test_completed_by ?? null) as number | null,
+      labTestsOrdered: toBool((d as any).lab_tests_ordered ?? (d as any).lab_test_ordered ?? d.lab_test_required),
+      labTestsCompleted: toBool((d as any).lab_tests_completed ?? (d as any).lab_test_completed),
+      labTestsCompletedAt: toNullableString((d as any).lab_tests_completed_at ?? (d as any).lab_test_completed_at),
 
     // prescriptionRequired: toBool(d.prescription_required),
     // prescriptionCompleted: toBool(d.prescription_completed),

@@ -83,6 +83,15 @@ const appointmentService = {
     return body as ApiResponse<any>;
   },
 
+  async completeLabTests(appointmentId: number): Promise<ApiResponse<any>> {
+    const resp = await apiClient.put(`/appointment/complete-lab-tests/${appointmentId}`);
+    const body = resp.data;
+    if (body && typeof body.success === 'undefined') {
+      return { success: true, data: body } as ApiResponse<any>;
+    }
+    return body as ApiResponse<any>;
+  },
+
   // async completeLabTest(appointmentId: number): Promise<ApiResponse<any>> {
   //   const resp = await apiClient.put<ApiResponse<any>>(`/appointment/complete-lab-test/${appointmentId}`);
   //   return resp.data;

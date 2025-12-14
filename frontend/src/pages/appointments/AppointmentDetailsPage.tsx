@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import TextInput from '../../components/TextInput';
 import Alert from '../../components/Alert';
 import Dropdown from '../../components/Dropdown';
@@ -6,10 +6,16 @@ import Button from '../../components/Button';
 import { Badge } from '../../components/TableHelpers';
 import { useAppointmentController } from '../../hooks/appointment';
 import { useDoctorController } from '../../hooks/doctor';
+import { useLabTestController } from '../../hooks/labTest';
+import { useDocumentController } from '../../hooks/document';
+import type { LabTest } from '../../models/labTest/model';
 import { useAuthController } from '../../hooks/auth';
 import { useSidebarController } from '../../hooks/ui/sidebar';
 import { ROLES } from '../../constants/profile';
 import type { AppointmentModel } from '../../models/appointment/model';
+// import { DocumentModel } from '../../models/document';
+// import { AllDocumentsList } from '../documents/components/AllDocumentsList';
+// import { DocumentDetailsView } from '../documents/components/DocumentDetailsView';
 import { AppointmentStatus } from '../../models/appointment/enums';
 import type { CompleteDoctorPayload } from '../../models/appointment/payload';
 import TabbedCard from './components/TabbedComponent';
@@ -30,6 +36,14 @@ const AppointmentsDetailsPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const { doctors: controllerDoctors, fetchForAppointmentBooking } = useDoctorController();
   const [rescheduleReason, setRescheduleReason] = useState('');
+  const { labTests } = useLabTestController();
+  const documentCtrl = useDocumentController();
+  const [selectedLabTestId, setSelectedLabTestId] = useState<string>('');
+  const [localLabTests, setLocalLabTests] = useState<LabTest[]>([]);
+  // const [selectedDocument, setSelectedDocument] = useState<DocumentModel | null>(null);
+  const [showPlaceholdersPanel, setShowPlaceholdersPanel] = useState(false);
+  const [activeUploadFor, setActiveUploadFor] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (appointment) {
@@ -159,6 +173,20 @@ const AppointmentsDetailsPage: React.FC = () => {
       mounted = false;
     };
   }, [selectedAppointmentId, appointment, isPatient, isDoctor, appointmentCtrl]);
+
+  // If this is the patient view, automatically fetch placeholders for this patient when the appointment is loaded
+  useEffect(() => {
+    if (!isPatient) return;
+    if (!local) return;
+    // fetch placeholders so patient can see them in the appointment view
+    (async () => {
+      try {
+        await documentCtrl.fetchPlaceholdersForPatient();
+      } catch (e) {
+        // ignore errors here
+      }
+    })();
+  }, [isPatient, local?.appointmentId]);
 
   if (!selectedAppointmentId) {
     return (
@@ -363,9 +391,8 @@ const AppointmentsDetailsPage: React.FC = () => {
     if (!local) return;
     setSaving(true);
     try {
-      const diagnosisString = (local.diagnosisList && local.diagnosisList.length > 0)
-        ? local.diagnosisList.join(', ')
-        : (local.diagnosis ?? null);
+      const diagnosisString = (local.diagnosisList && local.diagnosisList.length > 0) ? local.diagnosisList.join(', ') : (local.diagnosis ?? null);
+
       const payload: CompleteDoctorPayload = {
         doctor_note: local.notes ?? null,
         history_of_present_illness: local.historyOfPresentIllness ?? null,
@@ -373,7 +400,44 @@ const AppointmentsDetailsPage: React.FC = () => {
         physical_exam: local.physicalExam ?? null,
         diagnosis: diagnosisString ?? null,
         plan: local.plan ?? null,
+        lab_tests_ordered: (localLabTests || []).length > 0 ? true : false,
       };
+      
+      // If there are selected lab tests, create placeholders first. If any placeholder creation fails,
+      // abort and do not complete the appointment.
+      if ((localLabTests || []).length > 0) {
+        const placeholderErrors: string[] = [];
+        const createdPlaceholders: any[] = [];
+        const patientId = local.patientId ?? undefined;
+        const appointmentId = local.appointmentId;
+
+        for (const lt of localLabTests) {
+          try {
+            const payloadPlaceholder = {
+              patient_id: patientId,
+              appointment_id: appointmentId,
+              lab_test_id: lt.labTestId,
+              detail: `Placeholder for lab test: ${lt.name}`,
+              document_type: 'lab test',
+            };
+            const ph = await documentCtrl.insertPlaceholderForLabTestDocument(payloadPlaceholder as any);
+            createdPlaceholders.push(ph);
+          } catch (err: any) {
+            const msg = err?.message || String(err);
+            placeholderErrors.push(`${lt.name}: ${msg}`);
+            console.error('Failed to create placeholder for lab test', lt, err);
+          }
+        }
+
+        if (placeholderErrors.length > 0) {
+          const combined = `Failed to create placeholders: ${placeholderErrors.join(' ; ')}`;
+          setErrorMessage(combined);
+          setSaving(false);
+          return; // abort completion
+        }
+      }
+
+      // All placeholders created (or no lab tests). Now complete the appointment.
       const updated = await appointmentCtrl.completeDoctor(local.appointmentId, payload);
       setLocal((prev) => ({
         ...prev!,
@@ -382,6 +446,12 @@ const AppointmentsDetailsPage: React.FC = () => {
         doctorName: updated.doctorName || prev?.doctorName,
         hospitalName: updated.hospitalName || prev?.hospitalName,
       }));
+      // After completion, load patient placeholders so the UI shows any lab-test placeholders
+      try {
+        await documentCtrl.fetchPlaceholdersForPatient();
+      } catch (e) {
+        // ignore fetch errors here but surface via controller state if needed
+      }
     } catch (err: any) {
       setErrorMessage(err?.message || 'Failed to save doctor note');
       setTimeout(() => setErrorMessage(''), 4000);
@@ -392,19 +462,27 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   // Build tabs for clinical details
   const clinicalTabs = [
+    // {
+    //   id: 'history',
+    //   label: 'History',
+    //   content: (
+    //     <div className="space-y-4">
+    //       <TextInput
+    //         label="History of Present Illness"
+    //         value={local.historyOfPresentIllness ?? ''}
+    //         onChange={(e) => updateLocalField({ historyOfPresentIllness: e.target.value })}
+    //         multiline
+    //         rows={4}
+    //         disabled={!doctorCanComplete}
+    //       />
+    //     </div>
+    //   )
+    // },
     {
-      id: 'history',
-      label: 'History',
+      id: 'doctor-notes',
+      label: 'Doctor Notes',
       content: (
         <div className="space-y-4">
-          <TextInput
-            label="Notes"
-            value={local.notes ?? ''}
-            onChange={(e) => updateLocalField({ notes: e.target.value })}
-            disabled={!doctorCanComplete}
-            multiline
-            rows={4}
-          />
           <TextInput
             label="History of Present Illness"
             value={local.historyOfPresentIllness ?? ''}
@@ -413,14 +491,6 @@ const AppointmentsDetailsPage: React.FC = () => {
             rows={4}
             disabled={!doctorCanComplete}
           />
-        </div>
-      )
-    },
-    {
-      id: 'doctor-notes',
-      label: 'Doctor Notes',
-      content: (
-        <div className="space-y-4">
           <TextInput
             label="Review of Systems"
             value={local.reviewOfSystems ?? ''}
@@ -525,8 +595,60 @@ const AppointmentsDetailsPage: React.FC = () => {
       id: 'lab-tests',
       label: 'Lab Tests',
       content: (
-        <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-gray-400">Lab tests section coming soon...</p>
+        <div className="space-y-4">
+          <div className="flex gap-2 items-end">
+            <div className="flex-1">
+              <Dropdown
+                label="Add Lab Test"
+                options={(labTests || []).map((lt) => ({ value: String(lt.labTestId), label: `${lt.name} ${lt.cost != null ? `— ${lt.cost}` : ''}` }))}
+                value={selectedLabTestId}
+                onChange={(v) => setSelectedLabTestId(v)}
+                searchable
+                searchPlaceholder="Search lab tests..."
+                placeholder="Select a lab test"
+              />
+            </div>
+            <div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (!selectedLabTestId) return;
+                  const lt = (labTests || []).find((x) => String(x.labTestId) === String(selectedLabTestId));
+                  if (!lt) return;
+                  setLocalLabTests((prev) => (prev.find((p) => p.labTestId === lt.labTestId) ? prev : [...prev, lt]));
+                  setSelectedLabTestId('');
+                }}
+                disabled={!doctorCanComplete || !selectedLabTestId}
+              >
+                Add
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {(localLabTests || []).length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No lab tests added yet.</p>
+            ) : (
+              (localLabTests || []).map((lt) => (
+                <div key={lt.labTestId} className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded">
+                  <div>
+                    <div className="font-medium text-gray-800 dark:text-gray-200">{lt.name}</div>
+                    <div className="text-sm text-gray-500">{lt.description ?? ''} {lt.cost != null ? `• Cost: ${lt.cost}` : ''}</div>
+                  </div>
+                  {doctorCanComplete && (
+                    <div>
+                      <Button
+                        variant="outline"
+                        onClick={() => setLocalLabTests((prev) => prev.filter((p) => p.labTestId !== lt.labTestId))}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )
     }
@@ -540,7 +662,8 @@ const AppointmentsDetailsPage: React.FC = () => {
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+    <div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
       {errorMessage && (
         <div className="lg:col-span-3">
           <Alert type="error" message={errorMessage} />
@@ -607,6 +730,18 @@ const AppointmentsDetailsPage: React.FC = () => {
               </div>
             )}
 
+            <div className="mt-4">
+              <TextInput
+                label="Reason"
+                value={local.notes ?? ''}
+                onChange={(e) => updateLocalField({ notes: e.target.value })}
+                disabled={true}
+                // disabled={!doctorCanComplete}
+                multiline
+                rows={4}
+              />
+            </div>
+
             {/* Clinical fields moved to a dedicated card below for better UI */}
           </div>
         </div>
@@ -614,6 +749,76 @@ const AppointmentsDetailsPage: React.FC = () => {
         {/* Clinical Details Tabbed Card */}
         {showClinicalDetails && (
           <TabbedCard tabs={clinicalTabs} defaultTab="history" />
+        )}
+
+        {/* Patient placeholders (lab-test placeholders) - shown after appointment complete or when patient requests */}
+        {((documentCtrl.placeholdersForPatient || []).length > 0 || showPlaceholdersPanel)  && local.status === 'completed' && (
+          <div className="bg-white dark:bg-[#2b2b2b] p-4 mt-4 rounded-lg shadow">
+            <h3 className="font-semibold mb-2">Lab Test Placeholders</h3>
+
+            {/* Hidden file input used to upload patient results against a placeholder */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={async (e) => {
+                const files = e.target.files;
+                const docId = activeUploadFor;
+                if (!docId || !files || files.length === 0) return;
+                const file = files[0];
+                try {
+                  await documentCtrl.uploadUnverifiedDocumentAgainstPlaceholder(docId, file, `Patient upload for ${docId}`);
+                  // refresh placeholders for this patient
+                  await documentCtrl.fetchPlaceholdersForPatient();
+                } catch (err) {
+                  // controller will set error
+                } finally {
+                  setActiveUploadFor(null);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }
+              }}
+            />
+
+            {/* show only placeholders for this appointment */}
+            {(() => {
+              const all = documentCtrl.placeholdersForPatient || [];
+              const filtered = all.filter((p) => Number(p.appointmentId) === Number(local.appointmentId));
+              if (filtered.length === 0) {
+                return <p className="text-sm text-gray-500 dark:text-gray-400">No lab test placeholders for this appointment.</p>;
+              }
+
+              return (
+                <div className="space-y-3">
+                  {filtered.map((ph) => (
+                    <div key={ph.documentId} className="flex items-center justify-between gap-3 bg-white/5 p-3 rounded">
+                      <div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">{ph.labTestName ?? ph.originalName}</div>
+                        <div className="text-sm text-gray-500">{ph.detail ?? ''}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={ph.isVerified ? 'success' : 'warning'}>{ph.isVerified ? 'Verified' : 'Pending'}</Badge>
+                        {/* <Button size='sm' variant="outline" onClick={() => setSelectedDocument(ph)}>View</Button> */}
+                        {/* <Button size='sm' variant="secondary" onClick={() => documentCtrl.downloadDocument(ph.documentId, ph.originalName)}>Download</Button> */}
+                        {/* {!ph.isVerified && (
+                          <Button
+                            size='sm'
+                            variant="primary"
+                            onClick={() => {
+                              setActiveUploadFor(ph.documentId);
+                              if (fileInputRef.current) fileInputRef.current.click();
+                            }}
+                            loading={documentCtrl.isUploading && activeUploadFor === ph.documentId}
+                          >
+                            Upload Result
+                          </Button>
+                        )} */}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
         )}
       </div>
 
@@ -736,7 +941,49 @@ const AppointmentsDetailsPage: React.FC = () => {
               {!isDoctor && <div className="text-sm text-gray-600">Appointment is in progress. Only the doctor can add notes and complete it.</div>}
             </div>
           )}
+
+          {/* Show a direct action to mark lab tests complete for patients when not completed yet */}
+          {isPatient && (local.labTestsCompleted !== true) && local.status === 'completed' && (
+            <Button variant="success" onClick={async () => {
+                setSaving(true);
+                try {
+                  const updated = await appointmentCtrl.completeLabTests(local.appointmentId);
+                  setLocal((prev) => ({ ...prev!, ...updated }));
+                  setSuccessMessage('Lab tests marked complete');
+                  setTimeout(() => setSuccessMessage(''), 4000);
+                } catch (err: any) {
+                  setErrorMessage(err?.message || 'Failed to mark lab tests complete');
+                  setTimeout(() => setErrorMessage(''), 4000);
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              loading={saving}
+            >
+              Mark Lab Tests Complete
+            </Button>
+          )}
+
+          {/* Patient quick action: show/complete lab tests for this appointment */}
+          {/* {isPatient && (
+            <div className="mt-2">
+              <Button
+                
+                onClick={async () => {
+                  try {
+                    await documentCtrl.fetchPlaceholdersForPatient();
+                  } catch (e) {
+                    // ignore
+                  }
+                  setShowPlaceholdersPanel((s) => !s);
+                }}
+              >
+                {showPlaceholdersPanel ? 'Hide Lab Test Placeholders' : 'Complete Lab Tests'}
+              </Button>
+            </div>
+          )} */}
         </div>
+      </div>
       </div>
     </div>
   );

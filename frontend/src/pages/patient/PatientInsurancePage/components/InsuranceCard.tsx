@@ -15,6 +15,8 @@ export const InsuranceCard: React.FC<InsuranceCardProps> = ({
   onDelete,
   onVerify,
 }) => {
+  // Defensive check for verification flag (backend may return either snake_case or camelCase)
+  const isVerified = (insurance as any).is_verified ?? (insurance as any).isVerified ?? false;
   // Determine gradient color based on type
   const gradientColor = insurance.is_primary 
     ? 'from-blue-600 to-blue-800' 
@@ -37,7 +39,7 @@ export const InsuranceCard: React.FC<InsuranceCardProps> = ({
               {insurance.insurance_company_name}
             </div>
           </div>
-          {insurance.is_verified && (
+          {isVerified && (
             <div className="bg-white/20 px-2 py-1 rounded-full text-xs font-semibold backdrop-blur-sm flex items-center gap-1">
               <BadgeCheck size={12} />
               Verified
@@ -68,7 +70,7 @@ export const InsuranceCard: React.FC<InsuranceCardProps> = ({
 
         {/* Action Buttons */}
         <div className="flex gap-2 pt-3 border-t border-white/20">
-          {!insurance.is_verified && (
+          {!isVerified && (
             <button
               onClick={() => onVerify(insurance.patient_insurance_id)}
               className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm px-2 py-1.5 rounded text-xs font-semibold transition-colors"

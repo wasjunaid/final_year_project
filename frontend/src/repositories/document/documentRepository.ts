@@ -8,6 +8,7 @@ import {
 import type {
   GetAllVerifiedDocumentsAgainstAppointmentPayload
 } from "../../models/document";
+import type { InsertPlaceholderPayload } from "../../models/document";
 
 export class DocumentRepository {
   private readonly documentService: typeof DocumentService;
@@ -98,6 +99,11 @@ export class DocumentRepository {
       throw new Error("File is required");
     }
 
+    if (!(file instanceof File)) {
+      console.error('uploadUnverifiedDocument: invalid file object', file);
+      throw new Error('Invalid file provided for upload');
+    }
+
     if (!documentType || documentType.trim() === "") {
       throw new Error("Document type is required");
     }
@@ -147,6 +153,11 @@ export class DocumentRepository {
     // Validation
     if (!file) {
       throw new Error("File is required");
+    }
+
+    if (!(file instanceof File)) {
+      console.error('uploadVerifiedDocument: invalid file object', file);
+      throw new Error('Invalid file provided for upload');
     }
 
     // detail is required
@@ -204,5 +215,89 @@ export class DocumentRepository {
     }
 
     return await this.documentService.downloadDocument(documentId);
+  }
+
+  // Get placeholders created for patient (lab test placeholders)
+  async getPlaceholdersForPatient(): Promise<DocumentModel[]> {
+    const response = await this.documentService.getPlaceholdersForPatient();
+    if (!response || !response.data) return [];
+    const arr = Array.isArray(response.data) ? response.data : (response.data as any).data ?? [];
+    return DocumentTransformer.toModels(arr as any[]);
+  }
+
+  // Get placeholders created for lab technicians
+  async getPlaceholdersForLabTech(): Promise<DocumentModel[]> {
+    const response = await this.documentService.getPlaceholdersForLabTech();
+    if (!response || !response.data) return [];
+    const arr = Array.isArray(response.data) ? response.data : (response.data as any).data ?? [];
+    return DocumentTransformer.toModels(arr as any[]);
+  }
+
+  // Insert a placeholder for a lab test document (doctor creates)
+  async insertPlaceholderForLabTestDocument(payload: InsertPlaceholderPayload): Promise<DocumentModel> {
+    console.log("[DocumentRepository: insertPlaceholderForLabTestDocument] payload:", payload);
+    const response = await this.documentService.insertPlaceholderForLabTestDocument(payload as any);
+    console.log("[DocumentRepository: insertPlaceholderForLabTestDocument] response:", response);
+    if (!response || !response.data) throw new Error('Failed to insert placeholder');
+    return DocumentTransformer.toModel(response.data);
+  }
+
+  // Delete a document by ID
+  async deleteDocument(documentId: string): Promise<void> {
+    const response = await this.documentService.deleteDocument(documentId);
+    if (!response || !response.success) {
+      const msg = (response && (response as any).message) || 'Failed to delete document';
+      throw new Error(msg);
+    }
+  }
+
+  // Upload a verified document against an existing placeholder
+  async uploadVerifiedDocumentAgainstPlaceholder(
+    documentId: string,
+    file: File,
+    detail: string,
+    onUploadProgress?: (progressEvent: any) => void
+  ): Promise<DocumentModel> {
+    if (!file) throw new Error('File is required');
+
+    if (!(file instanceof File)) {
+      console.error('uploadVerifiedDocumentAgainstPlaceholder: invalid file object', file);
+      throw new Error('Invalid file provided for upload');
+    }
+    if (!detail || detail.trim() === '') throw new Error('Detail is required');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('detail', detail.trim());
+
+    const response = await this.documentService.uploadVerifiedDocumentAgainstPlaceholder(documentId, formData, onUploadProgress);
+    if (!response || !response.data) throw new Error('Upload failed');
+    return DocumentTransformer.toModel(response.data);
+  }
+
+  // Upload an unverified document against an existing placeholder
+  async uploadUnverifiedDocumentAgainstPlaceholder(
+    documentId: string,
+    file: File,
+    detail: string,
+    onUploadProgress?: (progressEvent: any) => void
+  ): Promise<DocumentModel> {
+    if (!file) throw new Error('File is required');
+    if (!detail || detail.trim() === '') throw new Error('Detail is required');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('detail', detail.trim());
+
+    const response = await this.documentService.uploadUnverifiedDocumentAgainstPlaceholder(documentId, formData, onUploadProgress);
+    if (!response || !response.data) throw new Error('Upload failed');
+    return DocumentTransformer.toModel(response.data);
+  }
+
+  // Get all verified documents against appointment (GET variant)
+  async getAllVerifiedDocumentsAgainstAppointmentGET(): Promise<DocumentModel[]> {
+    const response = await this.documentService.getAllVerifiedDocumentsAgainstAppointmentGET();
+    if (!response || !response.data) return [];
+    return DocumentTransformer.toModels(response.data);
   }
 }

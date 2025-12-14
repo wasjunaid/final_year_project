@@ -9,6 +9,7 @@ import type {
   GetAllDocumentsResponseDto,
   GetAllVerifiedDocumentsAgainstAppointmentResponseDto
 } from "../../models/document";
+import type { InsertPlaceholderPayload } from "../../models/document";
 
 export class DocumentService {
 
@@ -108,5 +109,85 @@ export class DocumentService {
     );
     const blob = response.data;
     return URL.createObjectURL(blob);
+  }
+
+  /**
+   * Get document placeholders for patient (lab test documents)
+   */
+  static async getPlaceholdersForPatient() {
+    const response = await apiClient.get<GetAllDocumentsResponseDto>(`/document/placeholders-for-patient`);
+    return response.data;
+  }
+
+  /**
+   * Get document placeholders for lab technician
+   */
+  static async getPlaceholdersForLabTech() {
+    const response = await apiClient.get<GetAllDocumentsResponseDto>(`/document/placeholders-for-lab-tech`);
+    return response.data;
+  }
+
+  /**
+   * Insert placeholder for lab test document (doctor)
+   */
+  static async insertPlaceholderForLabTestDocument(payload: InsertPlaceholderPayload): Promise<UploadVerifiedDocumentResponseDto> {
+    const response = await apiClient.post<UploadVerifiedDocumentResponseDto>(`/document/placeholder`, payload);
+    return response.data;
+  }
+
+  /**
+   * Delete a document by ID
+   */
+  static async deleteDocument(documentId: string) {
+    const response = await apiClient.delete<{ success: boolean; message?: string }>(`/document/${documentId}`);
+    return response.data;
+  }
+
+  /**
+   * Upload verified document against placeholder (lab technician)
+   */
+  static async uploadVerifiedDocumentAgainstPlaceholder(
+    documentId: string,
+    formData: FormData,
+    onUploadProgress?: (progressEvent: any) => void
+  ) {
+    const response = await apiClient.put<UploadVerifiedDocumentResponseDto>(
+      `/document/upload/verified/${documentId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress,
+      }
+    );
+    return response.data;
+  }
+
+  /**
+   * Upload unverified document against placeholder (patient)
+   */
+  static async uploadUnverifiedDocumentAgainstPlaceholder(
+    documentId: string,
+    formData: FormData,
+    onUploadProgress?: (progressEvent: any) => void
+  ) {
+    const response = await apiClient.put<UploadUnverifiedDocumentResponseDto>(
+      `/document/upload/unverified/${documentId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress,
+      }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get all verified documents against appointment (GET version)
+   */
+  static async getAllVerifiedDocumentsAgainstAppointmentGET() {
+    const response = await apiClient.get<GetAllDocumentsResponseDto>(
+      `/document/appointment`
+    );
+    return response.data;
   }
 }

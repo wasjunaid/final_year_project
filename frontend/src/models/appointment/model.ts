@@ -43,6 +43,11 @@ export interface AppointmentModel {
   doctorCompleted?: boolean;
   doctorCompletedAt?: string | null;
 
+  // lab test flags
+  labTestsOrdered?: boolean;
+  labTestsCompleted?: boolean;
+  labTestsCompletedAt?: string | null;
+
   // labTestRequired?: boolean;
   // labTestCompleted?: boolean;
   // labTestCompletedAt?: string | null;

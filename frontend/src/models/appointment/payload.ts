@@ -37,6 +37,7 @@ export interface CompleteDoctorPayload {
   physical_exam?: string | null;
   diagnosis?: string | null;
   plan?: string | null;
+  lab_tests_ordered?: boolean;
 }
 
 // Payload for starting an appointment (could be extended later)

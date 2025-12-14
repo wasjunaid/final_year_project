@@ -190,6 +190,21 @@ export const createUseAppointmentController = ({ appointmentRepository }: { appo
       }
     };
 
+    const completeLabTests = async (appointmentId: number) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const updated = await appointmentRepository.completeLabTests(appointmentId);
+        updateAcrossLists(updated);
+        return updated;
+      } catch (err: any) {
+        setError(err?.message || 'Failed to complete lab tests');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const clearMessages = () => {
       setError(null);
       setSuccess(null);
@@ -223,6 +238,7 @@ export const createUseAppointmentController = ({ appointmentRepository }: { appo
       rescheduleForHospital,
       start,
       completeDoctor,
+      completeLabTests,
 
       clearMessages,
     };
