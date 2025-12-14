@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  TestTube,
   Bell, 
   User, 
   FolderOpen
@@ -13,6 +12,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 // Import pages
 import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
+import LabTechDashboard from '../labtech/LabTechDashboard';
 
 const HospitalLabTechnicianPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -21,7 +21,6 @@ const HospitalLabTechnicianPortal: React.FC = () => {
   const labTechnicianSidebarConfig: SidebarConfig = {
     portalName: 'Lab Technician',
     mainNavItems: [
-      { icon: TestTube, label: 'Lab Tests', route: 'lab-tests' },
       { icon: FolderOpen, label: 'Documents', route: 'documents' },
     ],
     bottomNavItems: [
@@ -32,20 +31,19 @@ const HospitalLabTechnicianPortal: React.FC = () => {
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'lab-tests':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Lab Tests - Coming Soon</h1></div>;
       case 'documents':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Documents - Coming Soon</h1></div>;
+        return <LabTechDashboard />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':
         return <GenericProfilePage />;
       default:
-        return (
-          <div className="flex items-center justify-center h-full">
-            <h1 className="text-2xl font-bold">Hospital Lab Technician Portal</h1>
-          </div>
-        )
+        <LabTechDashboard />;
+        // return (
+        //   <div className="flex items-center justify-center h-full">
+        //     <h1 className="text-2xl font-bold">Hospital Lab Technician Portal</h1>
+        //   </div>
+        // )
     }
   };
 
