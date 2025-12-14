@@ -1,0 +1,1 @@
+export { default as useLabTestController } from "./useLabTestController.instance";

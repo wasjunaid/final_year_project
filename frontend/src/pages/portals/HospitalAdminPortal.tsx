@@ -4,8 +4,8 @@ import {
   Users, 
   UserCog,
   Calendar, 
-  // TestTube,
-  FolderOpen, 
+  TestTube,
+  // FolderOpen, 
   Bell, 
   User 
 } from 'lucide-react';
@@ -18,9 +18,10 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
 import HospitalStaffManagementPage from '../hospitalAdmin/HospitalStaffManagementPage';
-import DocumentUploadDashboard from '../documents/DocumentUploadDashboard';
+// import DocumentUploadDashboard from '../documents/DocumentUploadDashboard';
 import HospitalAssociationPage from '../hospitalAdmin/doctorAssociation/DoctorAssociationPage';
 import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
+import LabTestDashboard from '../hospitalAdmin/labTest/LabTestDashboard';
 
 const HospitalAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -31,10 +32,10 @@ const HospitalAdminPortal: React.FC = () => {
     mainNavItems: [
       { icon: Building2, label: 'Dashboard', route: 'dashboard' },
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
-      // { icon: TestTube, label: 'Lab Tests', route: 'lab-tests' },
+      { icon: TestTube, label: 'Lab Tests', route: 'lab-tests' },
       { icon: Users, label: 'Staff Management', route: 'staff' },
       { icon: UserCog, label: 'Association', route: 'association' },
-      { icon: FolderOpen, label: 'Documents', route: 'documents' },
+      // { icon: FolderOpen, label: 'Documents', route: 'documents' },
     ],
     bottomNavItems: [
       { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -49,13 +50,13 @@ const HospitalAdminPortal: React.FC = () => {
       case 'appointments':
         return <AppointmentsDashboard />
       case 'lab-tests':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Lab Tests - Coming Soon</h1></div>;
+        return <LabTestDashboard />;
       case 'staff':
         return <HospitalStaffManagementPage />;
       case 'association':
         return <HospitalAssociationPage />;
-      case 'documents':
-        return <DocumentUploadDashboard />;
+      // case 'documents':
+      //   return <DocumentUploadDashboard />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':
