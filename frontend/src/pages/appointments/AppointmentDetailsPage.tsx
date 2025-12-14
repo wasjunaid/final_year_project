@@ -13,6 +13,7 @@ import { useAuthController } from '../../hooks/auth';
 import { useSidebarController } from '../../hooks/ui/sidebar';
 import { ROLES } from '../../constants/profile';
 import type { AppointmentModel } from '../../models/appointment/model';
+import useAppointmentCodingController from '../../hooks/medicalCoding/useAppointmentCodingController';
 // import { DocumentModel } from '../../models/document';
 // import { AllDocumentsList } from '../documents/components/AllDocumentsList';
 // import { DocumentDetailsView } from '../documents/components/DocumentDetailsView';
@@ -38,6 +39,7 @@ const AppointmentsDetailsPage: React.FC = () => {
   const [rescheduleReason, setRescheduleReason] = useState('');
   const { labTests } = useLabTestController();
   const documentCtrl = useDocumentController();
+  const codingCtrl = useAppointmentCodingController();
   const [selectedLabTestId, setSelectedLabTestId] = useState<string>('');
   const [localLabTests, setLocalLabTests] = useState<LabTest[]>([]);
   // const [selectedDocument, setSelectedDocument] = useState<DocumentModel | null>(null);
@@ -187,6 +189,22 @@ const AppointmentsDetailsPage: React.FC = () => {
       }
     })();
   }, [isPatient, local?.appointmentId]);
+
+  // When appointment is completed, fetch ICD and CPT codes for display
+  useEffect(() => {
+    if (!local) return;
+    const isCompleted = local.status === AppointmentStatus.completed || String(local.status).toLowerCase() === 'completed';
+    if (!isCompleted) return;
+    const id = Number(local.appointmentId);
+    if (!id) return;
+    (async () => {
+      try {
+        await codingCtrl.fetchCodesForAppointment(id);
+      } catch (e) {
+        // controller holds error state; ignore here
+      }
+    })();
+  }, [local?.status, local?.appointmentId]);
 
   if (!selectedAppointmentId) {
     return (
@@ -649,6 +667,85 @@ const AppointmentsDetailsPage: React.FC = () => {
               ))
             )}
           </div>
+        </div>
+      )
+    }
+    ,
+    {
+      id: 'codes',
+      label: 'Codes',
+      content: (
+        <div className="space-y-4">
+          {(() => {
+            const isCompleted = local.status === AppointmentStatus.completed || String(local.status).toLowerCase() === 'completed';
+            if (!isCompleted) return <p className="text-sm text-gray-500">Codes are available after the appointment is completed.</p>;
+
+            if (codingCtrl.loading) return <div className="text-center py-6"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div><p className="text-sm text-gray-500 mt-2">Loading codes...</p></div>;
+            if (codingCtrl.error) return (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="text-red-600 dark:text-red-400 shrink-0">!</div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-red-900 dark:text-red-300 mb-2">Codes Unavailable</h3>
+                    <p className="text-red-700 dark:text-red-400">{codingCtrl.error}</p>
+                  </div>
+                </div>
+              </div>
+            );
+
+            const icds = codingCtrl.icdCodes || [];
+            const cpts = codingCtrl.cptCodes || [];
+
+            return (
+              <div className="space-y-6">
+                {/* ICD Codes */}
+                <div className="bg-white dark:bg-[#2a2a2a] rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="text-green-600 dark:text-green-400">ICD-10 Diagnosis Codes</span>
+                    <span className="ml-auto text-sm font-normal text-gray-600 dark:text-gray-400">{icds.length} found</span>
+                  </h3>
+                  {icds.length > 0 ? (
+                    <div className="space-y-4">
+                      {icds.map((code, idx) => (
+                        <div key={String(idx)} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
+                          <div className="flex items-start justify-between mb-2">
+                            <span className="font-mono font-semibold text-green-600 dark:text-green-400">{code.code}</span>
+                          </div>
+                          <p className="text-gray-900 dark:text-white font-medium mb-2">{code.description || 'No description available'}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Added: {(() => { try { const dt = new Date(code.createdAt ?? ''); return isNaN(dt.getTime()) ? (code.createdAt || '') : dt.toLocaleString(); } catch (e) { return code.createdAt || ''; } })()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-600 dark:text-gray-400 text-center py-4">No ICD-10 codes found for this appointment.</p>
+                  )}
+                </div>
+
+                {/* CPT Codes */}
+                <div className="bg-white dark:bg-[#2a2a2a] rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="text-purple-600 dark:text-purple-400">CPT Procedure Codes</span>
+                    <span className="ml-auto text-sm font-normal text-gray-600 dark:text-gray-400">{cpts.length} found</span>
+                  </h3>
+                  {cpts.length > 0 ? (
+                    <div className="space-y-4">
+                      {cpts.map((code, idx) => (
+                        <div key={String(idx)} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
+                          <div className="flex items-start justify-between mb-2">
+                            <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">{code.code}</span>
+                          </div>
+                          <p className="text-gray-900 dark:text-white font-medium mb-2">{code.description || 'No description available'}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Added: {(() => { try { const dt = new Date(code.createdAt ?? ''); return isNaN(dt.getTime()) ? (code.createdAt || '') : dt.toLocaleString(); } catch (e) { return code.createdAt || ''; } })()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-600 dark:text-gray-400 text-center py-4">No CPT codes found for this appointment.</p>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )
     }
