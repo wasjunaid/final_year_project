@@ -22,15 +22,24 @@ export const VerifiedDocumentsList: React.FC<VerifiedDocumentsListProps> = ({
       key: "originalName",
       header: "Document Name",
       render: (doc) => {
-        const fileName = doc.originalName;
-        const lastDotIndex = fileName.lastIndexOf('.');
+        const fileName = doc.originalName ?? (doc.labTestName ?? 'Untitled');
+        const lastDotIndex = fileName ? fileName.lastIndexOf('.') : -1;
         const nameWithoutExt = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
         const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
-        
+        const sizeStr = (() => {
+          try {
+            if ((doc as any).fileSizeInMB !== undefined && (doc as any).fileSizeInMB !== null) return `${(doc as any).fileSizeInMB} MB`;
+            if ((doc as any).fileSize) return `${(((doc as any).fileSize / (1024 * 1024)) || 0).toFixed(2)} MB`;
+          } catch (e) {
+            // ignore
+          }
+          return '';
+        })();
+
         return (
           <StackedCell 
             primary={nameWithoutExt} 
-            secondary={`${doc.fileSizeInMB} MB`}
+            secondary={sizeStr}
             tertiary={extension}
           />
         );
@@ -63,11 +72,14 @@ export const VerifiedDocumentsList: React.FC<VerifiedDocumentsListProps> = ({
       key: "createdAt",
       header: "Date",
       hideOnTablet: true,
-      render: (doc) => (
-        <span className="text-gray-600 dark:text-[#a0a0a0]">
-          {doc.createdAt.toLocaleDateString()}
-        </span>
-      ),
+      render: (doc) => {
+        const dt = doc.createdAt ? (doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt)) : null;
+        return (
+          <span className="text-gray-600 dark:text-[#a0a0a0]">
+            {dt ? dt.toLocaleDateString() : ''}
+          </span>
+        );
+      },
     },
     {
       key: "actions",

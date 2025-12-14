@@ -20,9 +20,9 @@ export const DocumentDetailsView: React.FC<DocumentDetailsViewProps> = ({
   const [isLoadingDocument, setIsLoadingDocument] = useState(false);
   const [documentError, setDocumentError] = useState<string | null>(null);
 
-  // Extract filename without extension
-  const fileName = document.originalName;
-  const lastDotIndex = fileName.lastIndexOf('.');
+  // Extract filename without extension (guard if originalName is missing)
+  const fileName = document.originalName ?? (document.labTestName ?? 'Untitled');
+  const lastDotIndex = fileName ? fileName.lastIndexOf('.') : -1;
   const nameWithoutExt = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
   const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
 
@@ -65,9 +65,9 @@ export const DocumentDetailsView: React.FC<DocumentDetailsViewProps> = ({
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {nameWithoutExt}
-            </h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {nameWithoutExt}
+              </h2>
           </div>
           <button
             onClick={() => onDownload(document.documentId, document.originalName)}
@@ -114,14 +114,17 @@ export const DocumentDetailsView: React.FC<DocumentDetailsViewProps> = ({
 
           <TextInput
             label="File Size"
-            value={`${document.fileSizeInMB} MB`}
+            value={`${(document as any).fileSizeInMB ?? (document.fileSize ? (((document.fileSize / (1024 * 1024)) || 0).toFixed(2)) : '')} MB`}
             onChange={() => {}}
             readOnly
           />
 
           <TextInput
             label="Upload Date"
-            value={`${document.createdAt.toLocaleDateString()} at ${document.createdAt.toLocaleTimeString()}`}
+            value={`${(() => {
+              const dt = document.createdAt ? (document.createdAt instanceof Date ? document.createdAt : new Date(document.createdAt)) : null;
+              return dt ? `${dt.toLocaleDateString()} at ${dt.toLocaleTimeString()}` : '';
+            })()}`}
             onChange={() => {}}
             readOnly
           />
