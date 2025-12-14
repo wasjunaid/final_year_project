@@ -17,6 +17,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 // Import pages
 import NotificationsPage from '../notifications/NotificationsPage';
 import GenericProfilePage from '../profile/GenericProfilePage';
+import HospitalDashboard from '../hospitalAdmin/HospitalDashboard';
 import HospitalStaffManagementPage from '../hospitalAdmin/HospitalStaffManagementPage';
 // import DocumentUploadDashboard from '../documents/DocumentUploadDashboard';
 import HospitalAssociationPage from '../hospitalAdmin/doctorAssociation/DoctorAssociationPage';
@@ -46,7 +47,7 @@ const HospitalAdminPortal: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Dashboard - Coming Soon</h1></div>;
+        return <HospitalDashboard />;
       case 'appointments':
         return <AppointmentsDashboard />
       case 'lab-tests':
