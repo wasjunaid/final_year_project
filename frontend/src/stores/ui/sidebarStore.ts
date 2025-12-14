@@ -11,6 +11,7 @@ export interface SidebarState {
   currentPage: string;
   pageStates: Record<string, PageState>;
   selectedAppointmentId: number | null;
+  selectedPatientId: number | null;
 
   // Actions
   toggle: () => void;
@@ -19,6 +20,7 @@ export interface SidebarState {
   saveScrollPosition: (position: number) => void;
   getPageState: (page: string) => PageState;
   setSelectedAppointmentId: (id: number | null) => void;
+  setSelectedPatientId: (id: number | null) => void;
 }
 
 const DEFAULT_PAGE_STATE: PageState = {
@@ -34,11 +36,13 @@ export const createSidebarStore = () => {
       currentPage: 'appointments',
       pageStates: {},
       selectedAppointmentId: null,
+      selectedPatientId: null,
 
       // Actions
       toggle: () => set((state) => ({ collapsed: !state.collapsed })),
       setCollapsed: (collapsed) => set({ collapsed }),
       setSelectedAppointmentId: (id) => set({ selectedAppointmentId: id }),
+      setSelectedPatientId: (id) => set({ selectedPatientId: id }),
       
       navigateToPage: (page) => {
         const { currentPage, pageStates } = get();

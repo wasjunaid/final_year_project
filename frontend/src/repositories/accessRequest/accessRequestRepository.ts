@@ -85,6 +85,17 @@ export const accessRequestRepository = {
       throw new AppError({ message: errorMessage, title: 'Deletion Failed' });
     }
   },
+
+  async fetchPatientEhr(patientId: number) {
+    try {
+      const resp = await accessRequestService.getPatientEhr(patientId);
+      if (!resp || !resp.success) return null;
+      return resp.data;
+    } catch (error: any) {
+      if (error?.response?.status === 404) return null;
+      throw error;
+    }
+  },
 };
 
 export default accessRequestRepository;

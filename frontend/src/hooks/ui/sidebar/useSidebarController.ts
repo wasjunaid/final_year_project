@@ -6,12 +6,14 @@ export const useSidebarController = () => {
     currentPage,
     pageStates,
     selectedAppointmentId,
+    selectedPatientId,
     toggle,
     setCollapsed,
     navigateToPage,
     saveScrollPosition,
     getPageState,
     setSelectedAppointmentId,
+    setSelectedPatientId,
   } = useSidebarStore();
 
   return {
@@ -20,6 +22,7 @@ export const useSidebarController = () => {
     currentPage,
     pageStates,
     selectedAppointmentId,
+    selectedPatientId,
     
     // Actions
     toggle,
@@ -28,5 +31,6 @@ export const useSidebarController = () => {
     saveScrollPosition,
     getPageState,
     setSelectedAppointmentId,
+    setSelectedPatientId,
   };
 };

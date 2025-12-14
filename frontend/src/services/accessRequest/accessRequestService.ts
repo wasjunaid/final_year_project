@@ -39,6 +39,12 @@ export const accessRequestService = {
     const response = await apiClient.delete<ApiResponse<null>>(`/ehr-access/${requestId}`);
     return response.data;
   },
+
+  async getPatientEhr(patientId: number): Promise<any> {
+    // send patient_id in the request body
+    const resp = await apiClient.post<ApiResponse<any>>('/ehr-access/patient-data', { patient_id: patientId });
+    return resp.data;
+  },
 };
 
 export default accessRequestService;

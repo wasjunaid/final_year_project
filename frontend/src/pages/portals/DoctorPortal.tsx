@@ -17,6 +17,7 @@ import DoctorProfilePage from '../doctor/DoctorProfilePage';
 import PersonAssociationRequestsPage from '../associationRequest/PersonAssociationRequestsPage';
 import { AccessRequestDashboard } from '../accessRequest';
 import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
+import PatientEhrPage from '../accessRequest/PatientEhrPage';
 
 const DoctorPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -44,6 +45,8 @@ const DoctorPortal: React.FC = () => {
         return <PersonAssociationRequestsPage />;
       case 'access-requests':
         return <AccessRequestDashboard />;
+      case 'ehr':
+        return <PatientEhrPage />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':

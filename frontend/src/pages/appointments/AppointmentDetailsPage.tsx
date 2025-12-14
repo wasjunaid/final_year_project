@@ -43,7 +43,7 @@ const AppointmentsDetailsPage: React.FC = () => {
   const [selectedLabTestId, setSelectedLabTestId] = useState<string>('');
   const [localLabTests, setLocalLabTests] = useState<LabTest[]>([]);
   // const [selectedDocument, setSelectedDocument] = useState<DocumentModel | null>(null);
-  const [showPlaceholdersPanel, setShowPlaceholdersPanel] = useState(false);
+  // const [showPlaceholdersPanel, setShowPlaceholdersPanel] = useState(false);
   const [activeUploadFor, setActiveUploadFor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -849,7 +849,7 @@ const AppointmentsDetailsPage: React.FC = () => {
         )}
 
         {/* Patient placeholders (lab-test placeholders) - shown after appointment complete or when patient requests */}
-        {((documentCtrl.placeholdersForPatient || []).length > 0 || showPlaceholdersPanel)  && local.status === 'completed' && (
+        {((documentCtrl.placeholdersForPatient || []).length > 0)  && local.status === 'completed' && (
           <div className="bg-white dark:bg-[#2b2b2b] p-4 mt-4 rounded-lg shadow">
             <h3 className="font-semibold mb-2">Lab Test Placeholders</h3>
 
