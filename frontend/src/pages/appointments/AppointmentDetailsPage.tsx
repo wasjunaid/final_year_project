@@ -12,6 +12,7 @@ import { ROLES } from '../../constants/profile';
 import type { AppointmentModel } from '../../models/appointment/model';
 import { AppointmentStatus } from '../../models/appointment/enums';
 import type { CompleteDoctorPayload } from '../../models/appointment/payload';
+import TabbedCard from './components/TabbedComponent';
 
 const AppointmentsDetailsPage: React.FC = () => {
   const appointmentCtrl = useAppointmentController();
@@ -25,13 +26,10 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   const [local, setLocal] = useState<AppointmentModel | null>(null);
   const [saving, setSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const { doctors: controllerDoctors, fetchForAppointmentBooking } = useDoctorController();
-
-  // new state for patient reschedule reason (visible when patient rescheduling)
-  const [rescheduleReason, setRescheduleReason] = useState<string>('');
+  const [rescheduleReason, setRescheduleReason] = useState('');
 
   useEffect(() => {
     if (appointment) {
@@ -60,7 +58,15 @@ const AppointmentsDetailsPage: React.FC = () => {
           return (appointment as any).hospitalId ?? (appointment as any).hospital_id ?? (appointment as any).hospital ?? undefined;
         };
 
-        if (!prev) return { ...appointment, patientName: buildPatientName(), doctorName: buildDoctorName(), hospitalName: buildHospitalName(), doctorId: buildDoctorId(), hospitalId: buildHospitalId() } as AppointmentModel;
+        if (!prev) return {
+          ...appointment,
+          patientName: buildPatientName(),
+          doctorName: buildDoctorName(),
+          hospitalName: buildHospitalName(),
+          doctorId: buildDoctorId(),
+          hospitalId: buildHospitalId()
+        } as AppointmentModel;
+
         return {
           ...prev,
           ...appointment,
@@ -76,7 +82,6 @@ const AppointmentsDetailsPage: React.FC = () => {
     }
   }, [appointment]);
 
-  // Ensure doctors are fetched so front-desk dropdown has options
   useEffect(() => {
     let mounted = true;
     const loadDoctors = async () => {
@@ -87,19 +92,22 @@ const AppointmentsDetailsPage: React.FC = () => {
       }
     };
     if (mounted) loadDoctors();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [fetchForAppointmentBooking, selectedAppointmentId]);
 
-  // derive doctor options (filter by hospital when available)
   const doctorOptions = (controllerDoctors || []).filter((d: any) => {
     if (!local) return true;
     const hid = String(d.hospitalId ?? d.hospital_id ?? '');
     const lh = String(local.hospitalId ?? '');
     if (lh && hid !== lh) return false;
     return true;
-  }).map((d: any) => ({ value: String(d.id ?? d.doctor_id ?? ''), label: d.fullName || `${d.firstName ?? ''} ${d.lastName ?? ''}`.trim() }));
+  }).map((d: any) => ({
+    value: String(d.id ?? d.doctor_id ?? ''),
+    label: d.fullName || `${d.firstName ?? ''} ${d.lastName ?? ''}`.trim()
+  }));
 
-  // Ensure local.doctorName is filled using controllerDoctors when missing
   useEffect(() => {
     if (!local) return;
     if (local.doctorName && String(local.doctorName).trim() !== '') return;
@@ -107,11 +115,12 @@ const AppointmentsDetailsPage: React.FC = () => {
     if (!did) return;
     const found = (controllerDoctors || []).find((d: any) => String(d.id ?? d.doctor_id ?? '') === did);
     if (found) {
-      updateLocalField({ doctorName: found.fullName || `${found.firstName ?? ''} ${found.lastName ?? ''}`.trim() });
+      updateLocalField({
+        doctorName: found.fullName || `${found.firstName ?? ''} ${found.lastName ?? ''}`.trim()
+      });
     }
   }, [controllerDoctors, local]);
 
-  // ensure diagnosisList exists on local (split diagnosis string into list)
   useEffect(() => {
     if (!local) return;
     if (local.diagnosisList && Array.isArray(local.diagnosisList)) return;
@@ -125,8 +134,7 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   const isPatient = role === ROLES.PATIENT;
   const isDoctor = role === ROLES.DOCTOR;
-  const isFrontDesk =
-    role === ROLES.HOSPITAL_FRONT_DESK || role === ROLES.HOSPITAL_SUB_ADMIN || role === ROLES.HOSPITAL_ADMIN;
+  const isFrontDesk = role === ROLES.HOSPITAL_FRONT_DESK || role === ROLES.HOSPITAL_SUB_ADMIN || role === ROLES.HOSPITAL_ADMIN;
 
   useEffect(() => {
     let mounted = true;
@@ -137,7 +145,6 @@ const AppointmentsDetailsPage: React.FC = () => {
         if (isPatient) await appointmentCtrl.fetchForPatient?.();
         else if (isDoctor) await appointmentCtrl.fetchForDoctor?.();
         else await appointmentCtrl.fetchForHospital?.();
-        // also fetch doctors for dropdown when needed
         try {
           await fetchForAppointmentBooking?.();
         } catch (e) {
@@ -155,17 +162,21 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   if (!selectedAppointmentId) {
     return (
-      <div className="p-6">
-        <h2 className="text-lg font-semibold">No appointment selected</h2>
-        <p className="text-sm text-gray-600">Select an appointment from the list to see details.</p>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">No appointment selected</h3>
+          <p className="text-gray-600 dark:text-gray-400">Select an appointment from the list to see details.</p>
+        </div>
       </div>
     );
   }
 
   if (!local) {
     return (
-      <div className="p-6">
-        <h2 className="text-lg font-semibold">Loading...</h2>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -180,8 +191,8 @@ const AppointmentsDetailsPage: React.FC = () => {
     setLocal((prev) => (prev ? { ...prev, ...patch } : prev));
   };
 
-  // detect if front-desk user made any changes compared to original appointment
   const appointmentDoctorId = (appointment as any)?.doctorId ?? (appointment as any)?.doctor_id ?? (appointment as any)?.doctor ?? undefined;
+
   const hasChanges = (() => {
     if (!appointment || !local) return false;
     const simpleChange = (
@@ -215,46 +226,6 @@ const AppointmentsDetailsPage: React.FC = () => {
 
     return simpleChange || clinicalChange;
   })();
-
-  // const handleSaveChanges = async () => {
-  //   if (!local) return;
-
-  //   if (!local.doctorId) {
-  //     alert('Doctor ID is required');
-  //     return;
-  //   }
-  //   if (!local.date) {
-  //     alert('Date is required');
-  //     return;
-  //   }
-  //   if (!local.time) {
-  //     alert('Time is required');
-  //     return;
-  //   }
-
-  //   setSaving(true);
-  //   try {
-  //     const payload: any = {
-  //       doctor_id: local.doctorId,
-  //       date: local.date,
-  //       time: local.time,
-  //     };
-
-  //     const updated = await appointmentCtrl.rescheduleForHospital(local.appointmentId, payload);
-  //     setLocal((prev) => ({
-  //       ...prev!,
-  //       ...updated,
-  //       patientName: updated.patientName || prev?.patientName,
-  //       doctorName: updated.doctorName || prev?.doctorName,
-  //       hospitalName: updated.hospitalName || prev?.hospitalName,
-  //     }));
-  //     alert('Changes saved successfully');
-  //   } catch (err: any) {
-  //     alert(err?.message || 'Failed to save changes');
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // };
 
   const handleApprove = async () => {
     if (!local) return;
@@ -336,14 +307,10 @@ const AppointmentsDetailsPage: React.FC = () => {
     }
   };
 
-  // Updated: read date/time from existing inputs and use rescheduleReason state (for patients)
   const handleReschedule = async () => {
     if (!local) return;
-
-    // Read values from local state (these are updated by TextInput fields)
     const newDate = local.date ?? '';
     const newTime = local.time ?? '';
-
     if (!newDate) {
       setErrorMessage('Date is required for rescheduling');
       setTimeout(() => setErrorMessage(''), 4000);
@@ -354,16 +321,13 @@ const AppointmentsDetailsPage: React.FC = () => {
       setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
-
-    // If patient, ensure reason is provided (from the new input shown below)
-      if (isPatient) {
+    if (isPatient) {
       if (!rescheduleReason || rescheduleReason.trim().length === 0) {
         setErrorMessage('Reason is required for rescheduling');
         setTimeout(() => setErrorMessage(''), 4000);
         return;
       }
     }
-
     setSaving(true);
     try {
       const payload: any = {
@@ -371,15 +335,12 @@ const AppointmentsDetailsPage: React.FC = () => {
         date: newDate,
         time: newTime.length === 5 ? `${newTime}:00` : newTime,
       };
-
       if (isPatient) {
         payload.reason = rescheduleReason.trim();
       }
-
       const updated = isPatient
         ? await appointmentCtrl.rescheduleForPatient(local.appointmentId, payload)
         : await appointmentCtrl.rescheduleForHospital(local.appointmentId, payload);
-
       setLocal((prev) => ({
         ...prev!,
         ...updated,
@@ -387,11 +348,7 @@ const AppointmentsDetailsPage: React.FC = () => {
         doctorName: updated.doctorName || prev?.doctorName,
         hospitalName: updated.hospitalName || prev?.hospitalName,
       }));
-
-      // Clear reason after success for patient so the input resets
       if (isPatient) setRescheduleReason('');
-
-      // show success message instead of alert
       setSuccessMessage('Appointment rescheduled successfully');
       setTimeout(() => setSuccessMessage(''), 4000);
     } catch (err: any) {
@@ -406,11 +363,9 @@ const AppointmentsDetailsPage: React.FC = () => {
     if (!local) return;
     setSaving(true);
     try {
-      // compile diagnoses list into comma-separated string for backend
       const diagnosisString = (local.diagnosisList && local.diagnosisList.length > 0)
         ? local.diagnosisList.join(', ')
         : (local.diagnosis ?? null);
-
       const payload: CompleteDoctorPayload = {
         doctor_note: local.notes ?? null,
         history_of_present_illness: local.historyOfPresentIllness ?? null,
@@ -419,7 +374,6 @@ const AppointmentsDetailsPage: React.FC = () => {
         diagnosis: diagnosisString ?? null,
         plan: local.plan ?? null,
       };
-
       const updated = await appointmentCtrl.completeDoctor(local.appointmentId, payload);
       setLocal((prev) => ({
         ...prev!,
@@ -436,25 +390,171 @@ const AppointmentsDetailsPage: React.FC = () => {
     }
   };
 
-	// const { setActiveTab } = useNavbarController();
-  // TODO: Add a back button or implement stack logic in navcontroller to come back to prevous page
+  // Build tabs for clinical details
+  const clinicalTabs = [
+    {
+      id: 'history',
+      label: 'History',
+      content: (
+        <div className="space-y-4">
+          <TextInput
+            label="Notes"
+            value={local.notes ?? ''}
+            onChange={(e) => updateLocalField({ notes: e.target.value })}
+            disabled={!doctorCanComplete}
+            multiline
+            rows={4}
+          />
+          <TextInput
+            label="History of Present Illness"
+            value={local.historyOfPresentIllness ?? ''}
+            onChange={(e) => updateLocalField({ historyOfPresentIllness: e.target.value })}
+            multiline
+            rows={4}
+            disabled={!doctorCanComplete}
+          />
+        </div>
+      )
+    },
+    {
+      id: 'doctor-notes',
+      label: 'Doctor Notes',
+      content: (
+        <div className="space-y-4">
+          <TextInput
+            label="Review of Systems"
+            value={local.reviewOfSystems ?? ''}
+            onChange={(e) => updateLocalField({ reviewOfSystems: e.target.value })}
+            multiline
+            rows={4}
+            disabled={!doctorCanComplete}
+          />
+          <TextInput
+            label="Physical Exam"
+            value={local.physicalExam ?? ''}
+            onChange={(e) => updateLocalField({ physicalExam: e.target.value })}
+            multiline
+            rows={4}
+            disabled={!doctorCanComplete}
+          />
+          <TextInput
+            label="Plan"
+            value={local.plan ?? ''}
+            onChange={(e) => updateLocalField({ plan: e.target.value })}
+            multiline
+            rows={4}
+            disabled={!doctorCanComplete}
+          />
+        </div>
+      )
+    },
+    {
+      id: 'diagnoses',
+      label: 'Diagnoses',
+      content: (
+        <div className="space-y-4">
+          <div className="space-y-3">
+            {(local.diagnosisList ?? []).map((d, idx) => (
+              <div key={idx} className="flex gap-2">
+                <div className="flex-1">
+                  <TextInput
+                    label={`Diagnosis ${idx + 1}`}
+                    value={d}
+                    onChange={(e) => {
+                      const list = [...(local.diagnosisList ?? [])];
+                      list[idx] = e.target.value;
+                      updateLocalField({ diagnosisList: list, diagnosis: list.join(', ') });
+                    }}
+                    placeholder="e.g. Hypertension"
+                    disabled={!doctorCanComplete}
+                  />
+                </div>
+                {doctorCanComplete && (
+                  <div className="pt-7">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const list = (local.diagnosisList ?? []).filter((_, i) => i !== idx);
+                        updateLocalField({ diagnosisList: list, diagnosis: list.join(', ') });
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+            {((local.diagnosisList ?? []).length === 0) && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No diagnoses added yet.</p>
+            )}
+          </div>
+          {doctorCanComplete && (
+            <div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const next = [...(local.diagnosisList ?? []), ''];
+                  updateLocalField({ diagnosisList: next, diagnosis: next.join(', ') });
+                }}
+              >
+                Add Diagnosis
+              </Button>
+            </div>
+          )}
+          {(local.status === AppointmentStatus.completed || local.doctorCompleted) && (
+            <TextInput
+              label="Completed At"
+              value={(() => {
+                const ts = local.doctorCompletedAt ?? local.updatedAt ?? '';
+                try {
+                  if (!ts) return '';
+                  const dt = new Date(ts);
+                  if (isNaN(dt.getTime())) return ts;
+                  return dt.toLocaleString();
+                } catch (e) {
+                  return ts;
+                }
+              })()}
+              disabled
+            />
+          )}
+        </div>
+      )
+    },
+    {
+      id: 'lab-tests',
+      label: 'Lab Tests',
+      content: (
+        <div className="text-center py-8">
+          <p className="text-gray-500 dark:text-gray-400">Lab tests section coming soon...</p>
+        </div>
+      )
+    }
+  ];
+
+  const showClinicalDetails = (
+    local.status === AppointmentStatus.in_progress ||
+    local.status === 'in progress' ||
+    local.status === AppointmentStatus.completed ||
+    local.status === 'completed'
+  );
 
   return (
-    <div className="grid grid-cols-12 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
       {errorMessage && (
-        <div className="col-span-12">
-          <Alert type="error" title="Error" message={errorMessage} />
+        <div className="lg:col-span-3">
+          <Alert type="error" message={errorMessage} />
         </div>
       )}
       {successMessage && (
-        <div className="col-span-12">
-          <Alert type="success" title="Success" message={successMessage} />
+        <div className="lg:col-span-3">
+          <Alert type="success" message={successMessage} />
         </div>
       )}
 
-      {/* Left: main card */}
-      <div className='lg:col-span-8 flex flex-col gap-2'>
-        {/* details card */}
+      {/* Left: main cards */}
+      <div className="lg:col-span-2 space-y-6">
+        {/* Details card */}
         <div className="col-span-8">
           <div className="bg-white dark:bg-[#2b2b2b] p-6 rounded-lg shadow">
             <div className="flex items-center justify-between mb-4">
@@ -511,144 +611,15 @@ const AppointmentsDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Clinical Details: moved to its own card for readability */}
-        <div className="col-span-8">
-          <div className="bg-white dark:bg-[#2b2b2b] p-6 rounded-lg shadow mt-4">
-            <h3>
-              {(local.status === AppointmentStatus.in_progress || local.status === 'in progress' || local.status === AppointmentStatus.completed || local.status === 'completed') ? 'Clinical Details' : ''}
-            </h3>
-
-            <TextInput
-              label="Notes"
-              multiline
-              rows={4}
-              value={local.notes ?? ''}
-              onChange={(e) => updateLocalField({ notes: e.target.value })}
-              disabled={!doctorCanComplete}
-            />
-
-            {(doctorCanComplete || local.status === AppointmentStatus.completed || local.doctorCompleted) && (
-              <>
-                <div className="mt-4">
-                  <TextInput
-                    label="History of Present Illness"
-                    value={local.historyOfPresentIllness ?? ''}
-                    onChange={(e) => updateLocalField({ historyOfPresentIllness: e.target.value })}
-                    multiline
-                    rows={3}
-                    disabled={!doctorCanComplete}
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <TextInput
-                    label="Review of Systems"
-                    value={local.reviewOfSystems ?? ''}
-                    onChange={(e) => updateLocalField({ reviewOfSystems: e.target.value })}
-                    multiline
-                    rows={3}
-                    disabled={!doctorCanComplete}
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <TextInput
-                    label="Physical Exam"
-                    value={local.physicalExam ?? ''}
-                    onChange={(e) => updateLocalField({ physicalExam: e.target.value })}
-                    multiline
-                    rows={3}
-                    disabled={!doctorCanComplete}
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex flex-col gap-3">
-                    {(local.diagnosisList ?? []).map((d, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <div className="flex-1">
-                          <TextInput
-                            label={idx === 0 ? 'Diagnoses' : ''}
-                            value={d}
-                            onChange={(e) => {
-                              const list = [...(local.diagnosisList ?? [])];
-                              list[idx] = e.target.value;
-                              updateLocalField({ diagnosisList: list, diagnosis: list.join(', ') });
-                            }}
-                            placeholder="e.g. Hypertension"
-                            disabled={!doctorCanComplete}
-                          />
-                        </div>
-                        {doctorCanComplete && (
-                          <Button
-                            variant="danger"
-                            size='sm'
-                            onClick={() => {
-                              const list = (local.diagnosisList ?? []).filter((_, i) => i !== idx);
-                              updateLocalField({ diagnosisList: list, diagnosis: list.join(', ') });
-                            }}
-                          >
-                            Remove
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-
-                    {((local.diagnosisList ?? []).length === 0) && (
-                      <div>
-                        <TextInput label="Diagnoses" value={''} disabled placeholder="No diagnoses recorded" />
-                      </div>
-                    )}
-
-                    {doctorCanComplete && (
-                      <div className="pt-2">
-                        <Button onClick={() => {
-                          const next = [...(local.diagnosisList ?? []), ''];
-                          updateLocalField({ diagnosisList: next, diagnosis: next.join(', ') });
-                        }}>
-                          Add
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <TextInput
-                    label="Plan"
-                    value={local.plan ?? ''}
-                    onChange={(e) => updateLocalField({ plan: e.target.value })}
-                    multiline
-                    rows={3}
-                    disabled={!doctorCanComplete}
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <TextInput
-                    label="Completed At"
-                    value={(() => {
-                      const ts = local.doctorCompletedAt ?? local.updatedAt ?? '';
-                      try {
-                        if (!ts) return '';
-                        const dt = new Date(ts);
-                        if (isNaN(dt.getTime())) return ts;
-                        return dt.toLocaleString();
-                      } catch (e) {
-                        return ts;
-                      }
-                    })()}
-                    disabled
-                  />
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        {/* Clinical Details Tabbed Card */}
+        {showClinicalDetails && (
+          <TabbedCard tabs={clinicalTabs} defaultTab="history" />
+        )}
       </div>
 
       {/* Right: side cards */}
-      <div className="lg:col-span-4 flex flex-col gap-">
+      <div className="space-y-6">
+        {/* Appointment Info */}
         <div className="bg-white dark:bg-[#2b2b2b] p-4 rounded-lg shadow flex flex-col gap-4">
           <div>
             <h3 className="font-semibold">Appointment Info</h3>

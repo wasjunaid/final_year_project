@@ -73,8 +73,14 @@ const appointmentService = {
   // },
 
   async completeDoctor(appointmentId: number, payload: CompleteDoctorPayload): Promise<ApiResponse<any>> {
-    const resp = await apiClient.put<ApiResponse<any>>(`/appointment/complete-doctor/${appointmentId}`, payload);
-    return resp.data;
+    const resp = await apiClient.put(`/appointment/complete-doctor/${appointmentId}`, payload);
+    const body = resp.data;
+    // Normalize responses: some endpoints return the ApiResponse wrapper { success, data },
+    // while others may return the resource directly. Convert raw resource into expected wrapper.
+    if (body && typeof body.success === 'undefined') {
+      return { success: true, data: body } as ApiResponse<any>;
+    }
+    return body as ApiResponse<any>;
   },
 
   // async completeLabTest(appointmentId: number): Promise<ApiResponse<any>> {
