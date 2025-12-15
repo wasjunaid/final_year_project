@@ -20,6 +20,7 @@ import useAppointmentCodingController from '../../hooks/medicalCoding/useAppoint
 import { AppointmentStatus } from '../../models/appointment/enums';
 import type { CompleteDoctorPayload } from '../../models/appointment/payload';
 import TabbedCard from './components/TabbedComponent';
+import { useMedicalHistoryController, useAllergyController, useFamilyHistoryController, useSurgicalHistoryController } from '../../hooks/patient';
 
 const AppointmentsDetailsPage: React.FC = () => {
   const appointmentCtrl = useAppointmentController();
@@ -46,6 +47,23 @@ const AppointmentsDetailsPage: React.FC = () => {
   // const [showPlaceholdersPanel, setShowPlaceholdersPanel] = useState(false);
   const [activeUploadFor, setActiveUploadFor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Patient health history controllers
+  const medicalHistoryCtrl = useMedicalHistoryController();
+  const allergyCtrl = useAllergyController();
+  const familyHistoryCtrl = useFamilyHistoryController();
+  const surgicalHistoryCtrl = useSurgicalHistoryController();
+
+  // Local state for adding new entries
+  const [newMedicalHistory, setNewMedicalHistory] = useState({ condition_name: '', diagnosis_date: '' });
+  const [newAllergy, setNewAllergy] = useState({ allergy_name: '' });
+  const [newFamilyHistory, setNewFamilyHistory] = useState({ condition_name: '' });
+  const [newSurgicalHistory, setNewSurgicalHistory] = useState({ surgery_name: '', surgery_date: '' });
+  // Pending entries to be uploaded when appointment is completed
+  const [pendingMedicalHistory, setPendingMedicalHistory] = useState<Array<{ condition_name: string; diagnosis_date?: string }>>([]);
+  const [pendingAllergies, setPendingAllergies] = useState<Array<{ allergy_name: string }>>([]);
+  const [pendingFamilyHistory, setPendingFamilyHistory] = useState<Array<{ condition_name: string }>>([]);
+  const [pendingSurgicalHistory, setPendingSurgicalHistory] = useState<Array<{ surgery_name: string; surgery_date?: string }>>([]);
 
   useEffect(() => {
     if (appointment) {
@@ -205,6 +223,29 @@ const AppointmentsDetailsPage: React.FC = () => {
       }
     })();
   }, [local?.status, local?.appointmentId]);
+
+  // Fetch patient health history when appointment is in progress and doctor is viewing
+  useEffect(() => {
+    if (!local) return;
+    if (!isDoctor) return;
+    const isInProgress = local.status === AppointmentStatus.in_progress || String(local.status).toLowerCase() === 'in progress';
+    if (!isInProgress) return;
+    const patientId = local.patientId;
+    if (!patientId) return;
+    
+    (async () => {
+      try {
+        await Promise.all([
+          medicalHistoryCtrl.fetchMedicalHistoryForDoctor(patientId),
+          allergyCtrl.fetchAllergiesForDoctor(patientId),
+          familyHistoryCtrl.fetchFamilyHistoryForDoctor(patientId),
+          surgicalHistoryCtrl.fetchSurgicalHistoryForDoctor(patientId),
+        ]);
+      } catch (e) {
+        // controllers hold error state; ignore here
+      }
+    })();
+  }, [local?.status, local?.patientId, isDoctor]);
 
   if (!selectedAppointmentId) {
     return (
@@ -421,6 +462,79 @@ const AppointmentsDetailsPage: React.FC = () => {
         lab_tests_ordered: (localLabTests || []).length > 0 ? true : false,
       };
       
+      // If there are any pending patient history entries added during this appointment,
+      // upload them first. If any upload fails, abort and do not complete the appointment.
+      if ((pendingMedicalHistory || []).length > 0 || (pendingAllergies || []).length > 0 || (pendingFamilyHistory || []).length > 0 || (pendingSurgicalHistory || []).length > 0) {
+        const uploadErrors: string[] = [];
+        const patientId = local.patientId ?? undefined;
+
+        // medical history
+        for (const mh of pendingMedicalHistory) {
+          try {
+            await medicalHistoryCtrl.createMedicalHistoryForDoctor(patientId!, { condition_name: mh.condition_name, diagnosis_date: mh.diagnosis_date || undefined });
+          } catch (err: any) {
+            const msg = err?.message || String(err);
+            uploadErrors.push(`Medical history '${mh.condition_name}': ${msg}`);
+            console.error('Failed to upload medical history', mh, err);
+          }
+        }
+
+        // allergies
+        for (const al of pendingAllergies) {
+          try {
+            await allergyCtrl.createAllergyForDoctor(patientId!, { allergy_name: al.allergy_name });
+          } catch (err: any) {
+            const msg = err?.message || String(err);
+            uploadErrors.push(`Allergy '${al.allergy_name}': ${msg}`);
+            console.error('Failed to upload allergy', al, err);
+          }
+        }
+
+        // family history
+        for (const fh of pendingFamilyHistory) {
+          try {
+            await familyHistoryCtrl.createFamilyHistoryForDoctor(patientId!, { condition_name: fh.condition_name });
+          } catch (err: any) {
+            const msg = err?.message || String(err);
+            uploadErrors.push(`Family history '${fh.condition_name}': ${msg}`);
+            console.error('Failed to upload family history', fh, err);
+          }
+        }
+
+        // surgical history (validate date not in future again)
+        for (const sh of pendingSurgicalHistory) {
+          try {
+            if (sh.surgery_date) {
+              const sd = new Date(sh.surgery_date);
+              const today = new Date();
+              sd.setHours(0,0,0,0);
+              today.setHours(0,0,0,0);
+              if (sd.getTime() > today.getTime()) {
+                uploadErrors.push(`Surgery '${sh.surgery_name}': surgery_date cannot be in the future`);
+                continue;
+              }
+            }
+            await surgicalHistoryCtrl.createSurgicalHistoryForDoctor(patientId!, { surgery_name: sh.surgery_name, surgery_date: sh.surgery_date || undefined });
+          } catch (err: any) {
+            const msg = err?.message || String(err);
+            uploadErrors.push(`Surgery '${sh.surgery_name}': ${msg}`);
+            console.error('Failed to upload surgical history', sh, err);
+          }
+        }
+
+        if (uploadErrors.length > 0) {
+          setErrorMessage(`Failed to upload patient history: ${uploadErrors.join(' ; ')}`);
+          setSaving(false);
+          return; // abort completion
+        }
+
+        // clear pending arrays on success
+        setPendingMedicalHistory([]);
+        setPendingAllergies([]);
+        setPendingFamilyHistory([]);
+        setPendingSurgicalHistory([]);
+      }
+
       // If there are selected lab tests, create placeholders first. If any placeholder creation fails,
       // abort and do not complete the appointment.
       if ((localLabTests || []).length > 0) {
@@ -750,6 +864,277 @@ const AppointmentsDetailsPage: React.FC = () => {
       )
     }
   ];
+
+  // Add patient health history tabs only if doctor and appointment is in progress
+  if (isDoctor && (local.status === AppointmentStatus.in_progress || local.status === 'in progress')) {
+    clinicalTabs.push(
+      {
+        id: 'medical-history',
+        label: 'Medical History',
+        content: (
+          <div className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Note:</strong> Current appointment history is automatically added. Only add previous medical conditions here.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <TextInput
+                    label="Condition Name"
+                    value={newMedicalHistory.condition_name}
+                    onChange={(e) => setNewMedicalHistory({ ...newMedicalHistory, condition_name: e.target.value })}
+                    placeholder="e.g. Diabetes"
+                  />
+                </div>
+                <div className="flex-1">
+                  <TextInput
+                    label="Diagnosis Date (Optional)"
+                    type="date"
+                    value={newMedicalHistory.diagnosis_date}
+                    onChange={(e) => setNewMedicalHistory({ ...newMedicalHistory, diagnosis_date: e.target.value })}
+                  />
+                </div>
+                <div className="pt-7">
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      if (!newMedicalHistory.condition_name.trim()) {
+                        setErrorMessage('Condition name is required');
+                        setTimeout(() => setErrorMessage(''), 3000);
+                        return;
+                      }
+                      setPendingMedicalHistory((prev) => [...prev, { condition_name: newMedicalHistory.condition_name, diagnosis_date: newMedicalHistory.diagnosis_date || undefined }]);
+                      setNewMedicalHistory({ condition_name: '', diagnosis_date: '' });
+                      // setSuccessMessage('Medical history queued to upload on completion');
+                      // setTimeout(() => setSuccessMessage(''), 3000);
+                    }}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-3 mt-4">
+              {pendingMedicalHistory.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No medical history added for this appointment.</p>
+              ) : (
+                pendingMedicalHistory.map((item, idx) => (
+                  <div key={idx} className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded border border-gray-200 dark:border-gray-700">
+                    <div>
+                      <div className="font-medium text-gray-800 dark:text-gray-200">{item.condition_name}</div>
+                      <div className="text-sm text-gray-500">
+                        {item.diagnosis_date ? `Diagnosed: ${new Date(item.diagnosis_date).toLocaleDateString()}` : 'Date unknown'}
+                      </div>
+                    </div>
+                    <div>
+                      <Button size="sm" variant="outline" onClick={() => setPendingMedicalHistory((p) => p.filter((_, i) => i !== idx))}>Remove</Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )
+      },
+      {
+        id: 'allergies',
+        label: 'Allergies',
+        content: (
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <TextInput
+                    label="Allergy Name"
+                    value={newAllergy.allergy_name}
+                    onChange={(e) => setNewAllergy({ allergy_name: e.target.value })}
+                    placeholder="e.g. Penicillin"
+                  />
+                </div>
+                <div className="pt-7">
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      if (!newAllergy.allergy_name.trim()) {
+                        setErrorMessage('Allergy name is required');
+                        setTimeout(() => setErrorMessage(''), 3000);
+                        return;
+                      }
+                      setPendingAllergies((prev) => [...prev, { allergy_name: newAllergy.allergy_name }]);
+                      setNewAllergy({ allergy_name: '' });
+                      // setSuccessMessage('Allergy queued to upload on completion');
+                      // setTimeout(() => setSuccessMessage(''), 3000);
+                    }}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-3 mt-4">
+              {pendingAllergies.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No allergies added for this appointment.</p>
+              ) : (
+                pendingAllergies.map((item, idx) => (
+                  <div key={idx} className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded border border-gray-200 dark:border-gray-700">
+                    <div>
+                      <div className="font-medium text-gray-800 dark:text-gray-200">{item.allergy_name}</div>
+                    </div>
+                    <div>
+                      <Button size="sm" variant="outline" onClick={() => setPendingAllergies((p) => p.filter((_, i) => i !== idx))}>Remove</Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )
+      },
+      {
+        id: 'family-history',
+        label: 'Family History',
+        content: (
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <TextInput
+                    label="Family Medical Condition"
+                    value={newFamilyHistory.condition_name}
+                    onChange={(e) => setNewFamilyHistory({ condition_name: e.target.value })}
+                    placeholder="e.g. Hereditary heart disease"
+                    multiline
+                    rows={2}
+                  />
+                </div>
+                <div className="pt-7">
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      if (!newFamilyHistory.condition_name.trim()) {
+                        setErrorMessage('Condition description is required');
+                        setTimeout(() => setErrorMessage(''), 3000);
+                        return;
+                      }
+                      setPendingFamilyHistory((prev) => [...prev, { condition_name: newFamilyHistory.condition_name }]);
+                      setNewFamilyHistory({ condition_name: '' });
+                      // setSuccessMessage('Family history queued to upload on completion');
+                      // setTimeout(() => setSuccessMessage(''), 3000);
+                    }}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-3 mt-4">
+              {pendingFamilyHistory.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No family history added for this appointment.</p>
+              ) : (
+                pendingFamilyHistory.map((item, idx) => (
+                  <div key={idx} className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded border border-gray-200 dark:border-gray-700">
+                    <div>
+                      <div className="font-medium text-gray-800 dark:text-gray-200">{item.condition_name}</div>
+                    </div>
+                    <div>
+                      <Button size="sm" variant="outline" onClick={() => setPendingFamilyHistory((p) => p.filter((_, i) => i !== idx))}>Remove</Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )
+      },
+      {
+        id: 'surgical-history',
+        label: 'Surgical History',
+        content: (
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <TextInput
+                    label="Surgery Name"
+                    value={newSurgicalHistory.surgery_name}
+                    onChange={(e) => setNewSurgicalHistory({ ...newSurgicalHistory, surgery_name: e.target.value })}
+                    placeholder="e.g. Appendectomy"
+                  />
+                </div>
+                <div className="flex-1">
+                  <TextInput
+                    label="Surgery Date (Optional)"
+                    type="date"
+                    value={newSurgicalHistory.surgery_date}
+                    onChange={(e) => setNewSurgicalHistory({ ...newSurgicalHistory, surgery_date: e.target.value })}
+                  />
+                </div>
+                <div className="pt-7">
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      if (!newSurgicalHistory.surgery_name.trim()) {
+                        setErrorMessage('Surgery name is required');
+                        setTimeout(() => setErrorMessage(''), 3000);
+                        return;
+                      }
+                      // validate surgery date not in future
+                      if (newSurgicalHistory.surgery_date) {
+                        try {
+                          const sd = new Date(newSurgicalHistory.surgery_date);
+                          const today = new Date();
+                          // normalize to date-only comparison
+                          sd.setHours(0,0,0,0);
+                          today.setHours(0,0,0,0);
+                          if (sd.getTime() > today.getTime()) {
+                            setErrorMessage('Surgery date cannot be in the future');
+                            setTimeout(() => setErrorMessage(''), 4000);
+                            return;
+                          }
+                        } catch (e) {
+                          // if invalid date, block
+                          setErrorMessage('Invalid surgery date');
+                          setTimeout(() => setErrorMessage(''), 3000);
+                          return;
+                        }
+                      }
+                      setPendingSurgicalHistory((prev) => [...prev, { surgery_name: newSurgicalHistory.surgery_name, surgery_date: newSurgicalHistory.surgery_date || undefined }]);
+                      setNewSurgicalHistory({ surgery_name: '', surgery_date: '' });
+                      // setSuccessMessage('Surgical history queued to upload on completion');
+                      // setTimeout(() => setSuccessMessage(''), 3000);
+                    }}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-3 mt-4">
+              {pendingSurgicalHistory.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No surgical history added for this appointment.</p>
+              ) : (
+                pendingSurgicalHistory.map((item, idx) => (
+                  <div key={idx} className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded border border-gray-200 dark:border-gray-700">
+                    <div>
+                      <div className="font-medium text-gray-800 dark:text-gray-200">{item.surgery_name}</div>
+                      <div className="text-sm text-gray-500">
+                        {item.surgery_date ? `Performed: ${new Date(item.surgery_date).toLocaleDateString()}` : 'Date unknown'}
+                      </div>
+                    </div>
+                    <div>
+                      <Button size="sm" variant="outline" onClick={() => setPendingSurgicalHistory((p) => p.filter((_, i) => i !== idx))}>Remove</Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )
+      }
+    );
+  }
 
   const showClinicalDetails = (
     local.status === AppointmentStatus.in_progress ||
