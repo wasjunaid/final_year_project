@@ -12,7 +12,9 @@ export interface IAllergyController {
 
   // Actions
   fetchAllergiesForDoctor: (patientId: number) => Promise<Allergy[]>;
+  fetchAllergiesForPatient: () => Promise<Allergy[]>;
   createAllergyForDoctor: (patientId: number, payload: CreateAllergyPayload) => Promise<Allergy>;
+  createAllergyForPatient: (payload: CreateAllergyPayload) => Promise<Allergy>;
   clearMessages: () => void;
 }
 
@@ -41,6 +43,25 @@ const createAllergyController = (allergyRepository: IAllergyRepository): IAllerg
     }
   }, [allergyRepository]);
 
+  const fetchAllergiesForPatient = useCallback(async (): Promise<Allergy[]> => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const data = await allergyRepository.getAllergiesForPatient();
+      setAllergies(data);
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch allergies';
+      setError(errorMessage);
+      console.error('Error fetching allergies for patient:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [allergyRepository]);
+
   const createAllergyForDoctor = useCallback(async (patientId: number, payload: CreateAllergyPayload): Promise<Allergy> => {
     setLoading(true);
     setError(null);
@@ -61,6 +82,26 @@ const createAllergyController = (allergyRepository: IAllergyRepository): IAllerg
     }
   }, [allergyRepository]);
 
+  const createAllergyForPatient = useCallback(async (payload: CreateAllergyPayload): Promise<Allergy> => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const newItem = await allergyRepository.createAllergyForPatient(payload);
+      setAllergies(prev => [...prev, newItem]);
+      setSuccess('Allergy added successfully');
+      return newItem;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add allergy';
+      setError(errorMessage);
+      console.error('Error adding allergy for patient:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [allergyRepository]);
+
   const clearMessages = () => {
     setError(null);
     setSuccess(null);
@@ -73,7 +114,9 @@ const createAllergyController = (allergyRepository: IAllergyRepository): IAllerg
     success,
     clearMessages,
     fetchAllergiesForDoctor,
+    fetchAllergiesForPatient,
     createAllergyForDoctor,
+    createAllergyForPatient,
   };
 };
 

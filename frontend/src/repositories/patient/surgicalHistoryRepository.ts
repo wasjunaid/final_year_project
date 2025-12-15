@@ -7,6 +7,7 @@ export interface ISurgicalHistoryRepository {
   getSurgicalHistoryForPatient(): Promise<SurgicalHistory[]>;
   getSurgicalHistoryForDoctor(patientId: number): Promise<SurgicalHistory[]>;
   createSurgicalHistoryForDoctor(patientId: number, payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistory>;
+  createSurgicalHistoryForPatient(payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistory>;
 }
 
 class CreateSurgicalHistoryRepository implements ISurgicalHistoryRepository {
@@ -28,6 +29,11 @@ class CreateSurgicalHistoryRepository implements ISurgicalHistoryRepository {
 
   async createSurgicalHistoryForDoctor(patientId: number, payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistory> {
     const res = await this.surgicalHistoryService.createSurgicalHistoryForDoctor(patientId, payload);
+    return toSurgicalHistoryModel(res);
+  }
+
+  async createSurgicalHistoryForPatient(payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistory> {
+    const res = await this.surgicalHistoryService.createSurgicalHistoryForPatient(payload);
     return toSurgicalHistoryModel(res);
   }
 };

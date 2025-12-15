@@ -13,6 +13,8 @@ export interface ISurgicalHistoryController {
   // Actions
   fetchSurgicalHistoryForDoctor: (patientId: number) => Promise<SurgicalHistory[]>;
   createSurgicalHistoryForDoctor: (patientId: number, payload: CreateSurgicalHistoryPayload) => Promise<SurgicalHistory>;
+  fetchSurgicalHistoryForPatient: () => Promise<SurgicalHistory[]>;
+  createSurgicalHistoryForPatient: (payload: CreateSurgicalHistoryPayload) => Promise<SurgicalHistory>;
   clearMessages: () => void;
 }
 
@@ -41,6 +43,25 @@ const createSurgicalHistoryController = (surgicalHistoryRepository: ISurgicalHis
     }
   }, [surgicalHistoryRepository]);
 
+  const fetchSurgicalHistoryForPatient = useCallback(async (): Promise<SurgicalHistory[]> => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const data = await surgicalHistoryRepository.getSurgicalHistoryForPatient();
+      setSurgicalHistory(data);
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch surgical history';
+      setError(errorMessage);
+      console.error('Error fetching surgical history for patient:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [surgicalHistoryRepository]);
+
   const createSurgicalHistoryForDoctor = useCallback(async (patientId: number, payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistory> => {
     setLoading(true);
     setError(null);
@@ -61,6 +82,26 @@ const createSurgicalHistoryController = (surgicalHistoryRepository: ISurgicalHis
     }
   }, [surgicalHistoryRepository]);
 
+  const createSurgicalHistoryForPatient = useCallback(async (payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistory> => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const newItem = await surgicalHistoryRepository.createSurgicalHistoryForPatient(payload);
+      setSurgicalHistory(prev => [...prev, newItem]);
+      setSuccess('Surgical history added successfully');
+      return newItem;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add surgical history';
+      setError(errorMessage);
+      console.error('Error adding surgical history for patient:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [surgicalHistoryRepository]);
+
   const clearMessages = () => {
     setError(null);
     setSuccess(null);
@@ -73,7 +114,9 @@ const createSurgicalHistoryController = (surgicalHistoryRepository: ISurgicalHis
     success,
     clearMessages,
     fetchSurgicalHistoryForDoctor,
+    fetchSurgicalHistoryForPatient,
     createSurgicalHistoryForDoctor,
+    createSurgicalHistoryForPatient,
   };
 };
 

@@ -6,6 +6,7 @@ export interface IFamilyHistoryService {
   getFamilyHistoryForPatient(): Promise<FamilyHistoryDto[]>;
   getFamilyHistoryForDoctor(patientId: number): Promise<FamilyHistoryDto[]>;
   createFamilyHistoryForDoctor(patientId: number, payload: CreateFamilyHistoryPayload): Promise<FamilyHistoryDto>;
+  createFamilyHistoryForPatient(payload: CreateFamilyHistoryPayload): Promise<FamilyHistoryDto>;
 }
 
 class FamilyHistoryService implements IFamilyHistoryService {
@@ -31,6 +32,13 @@ class FamilyHistoryService implements IFamilyHistoryService {
 
   async createFamilyHistoryForDoctor(patientId: number, payload: CreateFamilyHistoryPayload): Promise<FamilyHistoryDto> {
     const resp = await apiClient.put(`/patient-family-history/doctor/${patientId}`, payload);
+    const payloadData = resp.data;
+    if ((payloadData as any)?.data) return (payloadData as any).data as FamilyHistoryDto;
+    return payloadData as FamilyHistoryDto;
+  }
+
+  async createFamilyHistoryForPatient(payload: CreateFamilyHistoryPayload): Promise<FamilyHistoryDto> {
+    const resp = await apiClient.put(`/patient-family-history`, payload);
     const payloadData = resp.data;
     if ((payloadData as any)?.data) return (payloadData as any).data as FamilyHistoryDto;
     return payloadData as FamilyHistoryDto;

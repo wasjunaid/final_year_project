@@ -16,6 +16,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 // Import patient pages
 import NotificationsPage from '../notifications/NotificationsPage';
 import PatientProfilePage from '../patient/PatientProfilePage';
+import HealthHistoryDashboard from '../patient/PatientHealthHistoryPage/HealthHistoryDashboard';
 import { PatientDocumentsPage } from '../patient/PatientDocumentsPage';
 import { PatientInsurancePage } from '../patient/PatientInsurancePage';
 import { AccessRequestsPage } from '../accessRequest';
@@ -30,6 +31,7 @@ const PatientPortal: React.FC = () => {
     mainNavItems: [
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
       // { icon: TestTube, label: 'Lab Results', route: 'lab-tests' },
+      { icon: FolderOpen, label: 'My Health', route: 'health' },
       { icon: Shield, label: 'Insurance', route: 'insurance' },
       { icon: FolderOpen, label: 'Medical Records', route: 'documents' },
       { icon: LucideGitPullRequestArrow, label: 'Access Requests', route: 'access-requests' },
@@ -50,6 +52,8 @@ const PatientPortal: React.FC = () => {
         return <PatientInsurancePage />;
       case 'documents':
         return <PatientDocumentsPage />
+      case 'health':
+        return <HealthHistoryDashboard />;
       case 'access-requests':
         return <AccessRequestsPage />;
       case 'notifications':

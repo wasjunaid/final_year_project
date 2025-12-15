@@ -12,6 +12,7 @@ export interface IMedicalHistoryController {
 
   // Actions
   fetchMedicalHistoryForDoctor: (patientId: number) => Promise<MedicalHistory[]>;
+  fetchMedicalHistoryForPatient: () => Promise<MedicalHistory[]>;
   createMedicalHistoryForDoctor: (patientId: number, payload: CreateMedicalHistoryPayload) => Promise<MedicalHistory>;
   // For patients inserting their own medical history
   createMedicalHistoryForPatient: (payload: CreateMedicalHistoryPayload) => Promise<MedicalHistory>;
@@ -37,6 +38,25 @@ const createMedicalHistoryController = (medicalHistoryRepository: IMedicalHistor
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch medical history';
       setError(errorMessage);
       console.error('Error fetching medical history:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [medicalHistoryRepository]);
+
+  const fetchMedicalHistoryForPatient = useCallback(async (): Promise<MedicalHistory[]> => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const data = await medicalHistoryRepository.getMedicalHistoryForPatient();
+      setMedicalHistory(data);
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch medical history';
+      setError(errorMessage);
+      console.error('Error fetching medical history for patient:', err);
       throw err;
     } finally {
       setLoading(false);
@@ -95,6 +115,7 @@ const createMedicalHistoryController = (medicalHistoryRepository: IMedicalHistor
     success,
     clearMessages,
     fetchMedicalHistoryForDoctor,
+    fetchMedicalHistoryForPatient,
     createMedicalHistoryForDoctor,
     createMedicalHistoryForPatient,
   };

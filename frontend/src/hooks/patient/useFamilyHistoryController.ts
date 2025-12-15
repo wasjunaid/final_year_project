@@ -13,6 +13,8 @@ export interface IFamilyHistoryController {
   // Actions
   fetchFamilyHistoryForDoctor: (patientId: number) => Promise<FamilyHistory[]>;
   createFamilyHistoryForDoctor: (patientId: number, payload: CreateFamilyHistoryPayload) => Promise<FamilyHistory>;
+  fetchFamilyHistoryForPatient: () => Promise<FamilyHistory[]>;
+  createFamilyHistoryForPatient: (payload: CreateFamilyHistoryPayload) => Promise<FamilyHistory>;
   clearMessages: () => void;
 }
 
@@ -41,6 +43,25 @@ const createFamilyHistoryController = (familyHistoryRepository: IFamilyHistoryRe
     }
   }, [familyHistoryRepository]);
 
+  const fetchFamilyHistoryForPatient = useCallback(async (): Promise<FamilyHistory[]> => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const data = await familyHistoryRepository.getFamilyHistoryForPatient();
+      setFamilyHistory(data);
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch family history';
+      setError(errorMessage);
+      console.error('Error fetching family history for patient:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [familyHistoryRepository]);
+
   const createFamilyHistoryForDoctor = useCallback(async (patientId: number, payload: CreateFamilyHistoryPayload): Promise<FamilyHistory> => {
     setLoading(true);
     setError(null);
@@ -61,6 +82,26 @@ const createFamilyHistoryController = (familyHistoryRepository: IFamilyHistoryRe
     }
   }, [familyHistoryRepository]);
 
+  const createFamilyHistoryForPatient = useCallback(async (payload: CreateFamilyHistoryPayload): Promise<FamilyHistory> => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const newItem = await familyHistoryRepository.createFamilyHistoryForPatient(payload);
+      setFamilyHistory(prev => [...prev, newItem]);
+      setSuccess('Family history added successfully');
+      return newItem;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add family history';
+      setError(errorMessage);
+      console.error('Error adding family history for patient:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [familyHistoryRepository]);
+
   const clearMessages = () => {
     setError(null);
     setSuccess(null);
@@ -73,7 +114,9 @@ const createFamilyHistoryController = (familyHistoryRepository: IFamilyHistoryRe
     success,
     clearMessages,
     fetchFamilyHistoryForDoctor,
+    fetchFamilyHistoryForPatient,
     createFamilyHistoryForDoctor,
+    createFamilyHistoryForPatient,
   };
 };
 

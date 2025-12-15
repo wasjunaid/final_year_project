@@ -890,7 +890,7 @@ const AppointmentsDetailsPage: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <TextInput
-                    label="Diagnosis Date (Optional)"
+                    label="Diagnosis Date"
                     type="date"
                     value={newMedicalHistory.diagnosis_date}
                     onChange={(e) => setNewMedicalHistory({ ...newMedicalHistory, diagnosis_date: e.target.value })}
@@ -905,10 +905,24 @@ const AppointmentsDetailsPage: React.FC = () => {
                         setTimeout(() => setErrorMessage(''), 3000);
                         return;
                       }
-                      setPendingMedicalHistory((prev) => [...prev, { condition_name: newMedicalHistory.condition_name, diagnosis_date: newMedicalHistory.diagnosis_date || undefined }]);
+                      if (!newMedicalHistory.diagnosis_date) {
+                        setErrorMessage('Diagnosis date is required');
+                        setTimeout(() => setErrorMessage(''), 3000);
+                        return;
+                      }
+                      // validate date is not in the future
+                      const sd = new Date(newMedicalHistory.diagnosis_date);
+                      const today = new Date();
+                      sd.setHours(0,0,0,0);
+                      today.setHours(0,0,0,0);
+                      if (isNaN(sd.getTime()) || sd.getTime() > today.getTime()) {
+                        setErrorMessage('Diagnosis date must be a valid date and cannot be in the future');
+                        setTimeout(() => setErrorMessage(''), 3000);
+                        return;
+                      }
+
+                      setPendingMedicalHistory((prev) => [...prev, { condition_name: newMedicalHistory.condition_name, diagnosis_date: newMedicalHistory.diagnosis_date }]);
                       setNewMedicalHistory({ condition_name: '', diagnosis_date: '' });
-                      // setSuccessMessage('Medical history queued to upload on completion');
-                      // setTimeout(() => setSuccessMessage(''), 3000);
                     }}
                   >
                     Add

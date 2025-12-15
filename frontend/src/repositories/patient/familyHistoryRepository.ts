@@ -7,6 +7,7 @@ export interface IFamilyHistoryRepository {
   getFamilyHistoryForPatient(): Promise<FamilyHistory[]>;
   getFamilyHistoryForDoctor(patientId: number): Promise<FamilyHistory[]>;
   createFamilyHistoryForDoctor(patientId: number, payload: CreateFamilyHistoryPayload): Promise<FamilyHistory>;
+  createFamilyHistoryForPatient(payload: CreateFamilyHistoryPayload): Promise<FamilyHistory>;
 }
 
 class CreateFamilyHistoryRepository implements IFamilyHistoryRepository {
@@ -28,6 +29,11 @@ class CreateFamilyHistoryRepository implements IFamilyHistoryRepository {
 
   async createFamilyHistoryForDoctor(patientId: number, payload: CreateFamilyHistoryPayload): Promise<FamilyHistory> {
     const res = await this.familyHistoryService.createFamilyHistoryForDoctor(patientId, payload);
+    return toFamilyHistoryModel(res);
+  }
+
+  async createFamilyHistoryForPatient(payload: CreateFamilyHistoryPayload): Promise<FamilyHistory> {
+    const res = await this.familyHistoryService.createFamilyHistoryForPatient(payload);
     return toFamilyHistoryModel(res);
   }
 };

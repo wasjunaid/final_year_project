@@ -6,6 +6,7 @@ export interface ISurgicalHistoryService {
   getSurgicalHistoryForPatient(): Promise<SurgicalHistoryDto[]>;
   getSurgicalHistoryForDoctor(patientId: number): Promise<SurgicalHistoryDto[]>;
   createSurgicalHistoryForDoctor(patientId: number, payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistoryDto>;
+  createSurgicalHistoryForPatient(payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistoryDto>;
 }
 
 class SurgicalHistoryService implements ISurgicalHistoryService {
@@ -31,6 +32,13 @@ class SurgicalHistoryService implements ISurgicalHistoryService {
 
   async createSurgicalHistoryForDoctor(patientId: number, payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistoryDto> {
     const resp = await apiClient.put(`/patient-surgical-history/doctor/${patientId}`, payload);
+    const payloadData = resp.data;
+    if ((payloadData as any)?.data) return (payloadData as any).data as SurgicalHistoryDto;
+    return payloadData as SurgicalHistoryDto;
+  }
+
+  async createSurgicalHistoryForPatient(payload: CreateSurgicalHistoryPayload): Promise<SurgicalHistoryDto> {
+    const resp = await apiClient.put(`/patient-surgical-history`, payload);
     const payloadData = resp.data;
     if ((payloadData as any)?.data) return (payloadData as any).data as SurgicalHistoryDto;
     return payloadData as SurgicalHistoryDto;
