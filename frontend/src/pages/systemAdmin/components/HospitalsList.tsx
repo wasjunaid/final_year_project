@@ -1,5 +1,5 @@
 import React from 'react';
-import Table from '../../../components/table';
+import Table from '../../../components/Table';
 import Alert from '../../../components/Alert';
 import type { HospitalModel } from '../../../models/hospital';
 import { useHospitalController } from '../../../hooks/hospital';

@@ -1,5 +1,5 @@
 import React from 'react';
-import Table from '../../../components/table';
+import Table from '../../../components/Table';
 import { useInsuranceController } from '../../../hooks/insurance';
 import type { InsuranceCompanyModel } from '../../../models/insurance';
 import Alert from '../../../components/Alert';

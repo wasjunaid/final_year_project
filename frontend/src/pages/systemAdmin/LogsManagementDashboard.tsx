@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Filter } from 'lucide-react';
 import type { NavbarConfig } from '../../models/navbar/model';
 import { useNavbarController } from '../../hooks/ui/navbar';
-import Table from '../../components/table';
+import Table from '../../components/Table';
 import { useLogController } from '../../hooks/log';
 import type { LogModel } from '../../models/log';
 import Alert from '../../components/Alert';

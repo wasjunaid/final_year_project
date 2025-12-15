@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import Table, { type TableColumn } from '../../../../components/table';
+import Table, { type TableColumn } from '../../../../components/Table';
 import { useFamilyHistoryController } from '../../../../hooks/patient';
 import type { FamilyHistory } from '../../../../models/patient/familyHistory/model';
 

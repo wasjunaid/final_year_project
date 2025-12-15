@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import Table, { type TableColumn } from '../../components/table';
+import Table, { type TableColumn } from '../../components/Table';
 import { useDocumentController } from '../../hooks/document';
 import { DocumentModel } from '../../models/document';
 import { StackedCell, Badge } from '../../components/TableHelpers';

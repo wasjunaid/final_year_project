@@ -1,6 +1,6 @@
 import { useEffect,  useState } from "react";
 import Alert from "../../components/Alert";
-import Table, { type TableColumn } from "../../components/table";
+import Table, { type TableColumn } from "../../components/Table";
 import { useAuthController } from "../../hooks/auth";
 import { ROLES } from "../../constants/profile";
 import type { AppointmentModel } from "../../models/appointment/model";

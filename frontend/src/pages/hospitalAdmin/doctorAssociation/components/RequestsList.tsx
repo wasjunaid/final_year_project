@@ -1,5 +1,5 @@
 import React from 'react';
-import Table, { type TableColumn } from '../../../../components/table';
+import Table, { type TableColumn } from '../../../../components/Table';
 import { useHospitalAssociationController } from '../../../../hooks/associationRequest';
 import type { HospitalAssociationRequestModel } from '../../../../models/associationRequest/hospital/model';
 import { ActionButtons } from '../../../../components/TableHelpers';

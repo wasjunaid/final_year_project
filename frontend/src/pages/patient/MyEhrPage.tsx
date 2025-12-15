@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
 import { useNavbarController } from '../../hooks/ui/navbar';
 import type { NavbarConfig } from '../../models/navbar/model';
-import type { TableColumn } from '../../components/table';
-import Table from '../../components/table';
+import type { TableColumn } from '../../components/Table';
+import Table from '../../components/Table';
 import Alert from '../../components/Alert';
 import { useMedicalHistoryController } from '../../hooks/patient/useMedicalHistoryController.instance';
 import { useAllergyController } from '../../hooks/patient/useAllergyController.instance';

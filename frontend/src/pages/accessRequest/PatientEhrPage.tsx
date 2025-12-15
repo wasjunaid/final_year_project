@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import Table from '../../components/table';
+import Table from '../../components/Table';
 import Alert from '../../components/Alert';
 import { useNavbarController } from '../../hooks/ui/navbar';
 import { useSidebarController } from '../../hooks/ui/sidebar';

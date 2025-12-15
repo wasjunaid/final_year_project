@@ -1,5 +1,5 @@
 import React from 'react';
-import Table, { type TableColumn } from '../../../components/table';
+import Table, { type TableColumn } from '../../../components/Table';
 import { DocumentModel } from '../../../models/document';
 import { StackedCell, Badge, ActionButtons } from '../../../components/TableHelpers';
 import { getDocumentTypeColor, formatDocumentType } from '../../../constants/documentTypes';

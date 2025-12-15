@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import Table, { type TableColumn } from '../../components/table';
+import Table, { type TableColumn } from '../../components/Table';
 import { StackedCell, Badge, ActionButtons } from '../../components/TableHelpers';
 import Alert from '../../components/Alert';
 import { useNavbarController } from '../../hooks/ui/navbar';

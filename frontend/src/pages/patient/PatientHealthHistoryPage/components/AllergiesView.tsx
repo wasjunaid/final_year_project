@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import Table, { type TableColumn } from '../../../../components/table';
+import Table, { type TableColumn } from '../../../../components/Table';
 import { useAllergyController } from '../../../../hooks/patient';
 import type { Allergy } from '../../../../models/patient/allergy/model';
 

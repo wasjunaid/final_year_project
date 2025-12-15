@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Alert from "../../../../components/Alert";
 import Button from "../../../../components/Button";
-import Table, { type TableColumn } from "../../../../components/table";
+import Table, { type TableColumn } from "../../../../components/Table";
 import { StackedCell } from "../../../../components/TableHelpers";
 import { useLabTestController } from "../../../../hooks/labTest";
 import type { LabTest } from "../../../../models/labTest/model";

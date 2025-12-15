@@ -1,5 +1,5 @@
 import React from 'react';
-import Table, { type TableColumn } from '../../../../components/table';
+import Table, { type TableColumn } from '../../../../components/Table';
 import useAssociatedStaffController from '../../../../hooks/hospital/useAssociatedStaffController';
 import { Badge, StackedCell } from '../../../../components/TableHelpers';
 import type { AssociatedDoctorModel } from '../../../../models/associatedStaff/doctors';

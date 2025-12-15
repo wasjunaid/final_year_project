@@ -1,5 +1,5 @@
 import React from 'react';
-import Table from '../../../components/table';
+import Table from '../../../components/Table';
 import { useSystemAdminUserManagementController } from '../../../hooks/systemAdminUserManagement';
 import type { HospitalAdminModel } from '../../../models/systemAdminUserManagement';
 import Alert from '../../../components/Alert';
