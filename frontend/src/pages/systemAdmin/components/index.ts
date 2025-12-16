@@ -6,3 +6,5 @@ export { CreateUser } from './CreateUser';
 export { InsuranceCompaniesList } from './InsuranceCompaniesList';
 export { CreateOrEditInsurance } from './CreateOrEditInsurance';
 export { LogFiltersComponent } from './LogFiltersComponent';
+export { MedicinesList } from './MedicinesList';
+export { CreateMedicine } from './CreateMedicine';

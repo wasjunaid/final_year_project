@@ -10,7 +10,8 @@ import {
   FileText,
   Database,
   Wallet,
-  CreditCard
+  CreditCard,
+  Pill
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -29,6 +30,7 @@ import MyEhrPage from '../patient/MyEhrPage';
 import BlockchainHistoryPage from '../blockchainHistory/BlockchainHistoryPage';
 import WalletSettingsPage from '../wallet/WalletSettingsPage';
 import PaymentHistoryPage from '../payment/PaymentHistoryPage';
+import PrescriptionsDashboard from '../prescription/PrescriptionsDashboard';
 
 const PatientPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -40,9 +42,10 @@ const PatientPortal: React.FC = () => {
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
       // { icon: TestTube, label: 'Lab Results', route: 'lab-tests' },
       { icon: FolderOpen, label: 'My Health', route: 'health' },
-      { icon: FolderOpen, label: 'Medical Records', route: 'documents' },
-      { icon: Shield, label: 'Insurance', route: 'insurance' },
       { icon: FileText, label: 'My EHR', route: 'my-ehr' },
+      { icon: FolderOpen, label: 'Medical Records', route: 'documents' },
+      { icon: Pill, label: 'My Prescriptions', route: 'prescriptions' },
+      { icon: Shield, label: 'Insurance', route: 'insurance' },
       { icon: GitPullRequest, label: 'EHR Access Requests', route: 'access-requests' },
       { icon: Database, label: 'Blockchain History', route: 'blockchain-history' },
       { icon: Wallet, label: 'Wallet Settings', route: 'wallet-settings' },
@@ -76,6 +79,8 @@ const PatientPortal: React.FC = () => {
         return <WalletSettingsPage />;
       case 'payment-history':
         return <PaymentHistoryPage type="patient" />;
+      case 'prescriptions':
+        return <PrescriptionsDashboard />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':

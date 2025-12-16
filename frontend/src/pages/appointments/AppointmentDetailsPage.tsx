@@ -21,6 +21,8 @@ import { AppointmentStatus } from '../../models/appointment/enums';
 import type { CompleteDoctorPayload } from '../../models/appointment/payload';
 import TabbedCard from '../../components/TabbedComponent';
 import { useMedicalHistoryController, useAllergyController, useFamilyHistoryController, useSurgicalHistoryController } from '../../hooks/patient';
+import AddPrescriptionModal from '../../components/AddPrescriptionModal';
+import { usePrescriptionController } from '../../hooks/prescription';
 
 const AppointmentsDetailsPage: React.FC = () => {
   const appointmentCtrl = useAppointmentController();
@@ -54,6 +56,9 @@ const AppointmentsDetailsPage: React.FC = () => {
   const familyHistoryCtrl = useFamilyHistoryController();
   const surgicalHistoryCtrl = useSurgicalHistoryController();
 
+  // Prescription controller for loading medicines only
+  const prescriptionCtrl = usePrescriptionController();
+
   // Local state for adding new entries
   const [newMedicalHistory, setNewMedicalHistory] = useState({ condition_name: '', diagnosis_date: '' });
   const [newAllergy, setNewAllergy] = useState({ allergy_name: '' });
@@ -64,6 +69,12 @@ const AppointmentsDetailsPage: React.FC = () => {
   const [pendingAllergies, setPendingAllergies] = useState<Array<{ allergy_name: string }>>([]);
   const [pendingFamilyHistory, setPendingFamilyHistory] = useState<Array<{ condition_name: string }>>([]);
   const [pendingSurgicalHistory, setPendingSurgicalHistory] = useState<Array<{ surgery_name: string; surgery_date?: string }>>([]);
+  
+  // Local prescriptions (not saved until appointment completion)
+  const [localPrescriptions, setLocalPrescriptions] = useState<Array<{ medicine_id: number; medicine_name: string; dosage: string; instruction: string }>>([]);
+
+  // Prescription modal state
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
 
   useEffect(() => {
     if (appointment) {
@@ -535,6 +546,36 @@ const AppointmentsDetailsPage: React.FC = () => {
         setPendingSurgicalHistory([]);
       }
 
+      // If there are any local prescriptions added during this appointment, upload them first.
+      if ((localPrescriptions || []).length > 0) {
+        const prescriptionErrors: string[] = [];
+        const appointmentId = local.appointmentId;
+
+        for (const prescription of localPrescriptions) {
+          try {
+            await prescriptionCtrl.createPrescription({
+              appointment_id: appointmentId,
+              medicine_id: prescription.medicine_id,
+              dosage: prescription.dosage,
+              instruction: prescription.instruction,
+            });
+          } catch (err: any) {
+            const msg = err?.message || String(err);
+            prescriptionErrors.push(`Prescription '${prescription.medicine_name}': ${msg}`);
+            console.error('Failed to upload prescription', prescription, err);
+          }
+        }
+
+        if (prescriptionErrors.length > 0) {
+          setErrorMessage(`Failed to upload prescriptions: ${prescriptionErrors.join(' ; ')}`);
+          setSaving(false);
+          return; // abort completion
+        }
+
+        // clear local prescriptions on success
+        setLocalPrescriptions([]);
+      }
+
       // If there are selected lab tests, create placeholders first. If any placeholder creation fails,
       // abort and do not complete the appointment.
       if ((localLabTests || []).length > 0) {
@@ -759,7 +800,7 @@ const AppointmentsDetailsPage: React.FC = () => {
                   {icds.length > 0 ? (
                     <div className="space-y-4">
                       {icds.map((code, idx) => (
-                        <div key={String(idx)} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
+                        <div key={String(idx)} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
                           <div className="flex items-start justify-between mb-2">
                             <span className="font-mono font-semibold text-green-600 dark:text-green-400">{code.code}</span>
                           </div>
@@ -782,7 +823,7 @@ const AppointmentsDetailsPage: React.FC = () => {
                   {cpts.length > 0 ? (
                     <div className="space-y-4">
                       {cpts.map((code, idx) => (
-                        <div key={String(idx)} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
+                        <div key={String(idx)} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
                           <div className="flex items-start justify-between mb-2">
                             <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">{code.code}</span>
                           </div>
@@ -864,6 +905,64 @@ const AppointmentsDetailsPage: React.FC = () => {
                 ))
               )}
             </div>
+          </div>
+        )
+      },
+      {
+        id: 'prescriptions',
+        label: 'Prescriptions',
+        content: (
+          <div className="space-y-4">
+            {doctorCanComplete && (
+              <div className="flex justify-end">
+                <Button onClick={() => setShowPrescriptionModal(true)}>
+                  Add Prescription
+                </Button>
+              </div>
+            )}
+
+            {localPrescriptions.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+                No prescriptions added for this appointment yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {localPrescriptions.map((prescription, index) => (
+                  <div 
+                    key={index} 
+                    className="bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                            {prescription.medicine_name}
+                          </h4>
+                          <span className="px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded">
+                            Pending
+                          </span>
+                        </div>
+                        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                          <p><strong>Dosage:</strong> {prescription.dosage}</p>
+                          <p><strong>Instructions:</strong> {prescription.instruction}</p>
+                        </div>
+                      </div>
+                      {doctorCanComplete && (
+                        <div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setLocalPrescriptions((prev) => prev.filter((_, i) => i !== index))}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )
       },
@@ -1480,6 +1579,20 @@ const AppointmentsDetailsPage: React.FC = () => {
         </div>
       </div>
       </div>
+
+      {/* Add Prescription Modal */}
+      {local && (
+        <AddPrescriptionModal
+          isOpen={showPrescriptionModal}
+          onClose={() => setShowPrescriptionModal(false)}
+          appointmentId={local.appointmentId}
+          onSuccess={(prescription) => {
+            setLocalPrescriptions(prev => [...prev, prescription]);
+            setSuccessMessage('Prescription added successfully');
+            setTimeout(() => setSuccessMessage(''), 4000);
+          }}
+        />
+      )}
     </div>
   );
 };

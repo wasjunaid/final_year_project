@@ -14,14 +14,20 @@ import Button from '../../components/Button';
 // QuickLogins component: fills automatically when a preset is selected.
 const QuickLogins: React.FC<{ onSelect: (email: string, password: string, role: UserRole) => void; disabled?: boolean }> = ({ onSelect, disabled }) => {
   const quickLogins = [
-    { label: 'Super Admin', email: 'superadmin@example.com', password: 'Test@123', role: ROLES.SYSTEM_ADMIN as UserRole },
-    { label: 'System Sub Admin', email: 'subadmin@example.com', password: 'Test@123', role: ROLES.SYSTEM_SUB_ADMIN as UserRole },
-    { label: 'Hospital Admin', email: 'hospitaladmin@example.com', password: 'Test@123', role: ROLES.HOSPITAL_ADMIN as UserRole },
-    { label: 'Front Desk', email: 'frontdesk@example.com', password: 'Test@123', role: ROLES.HOSPITAL_FRONT_DESK as UserRole },
-    { label: 'Lab Technician', email: 'labtech@example.com', password: 'Test@123', role: ROLES.HOSPITAL_LAB_TECHNICIAN as UserRole },
-    { label: 'Doctor', email: 'doctor@example.com', password: 'Test@123', role: ROLES.DOCTOR as UserRole },
-    { label: 'Medical Coder', email: 'medicalcoder@example.com', password: 'Test@123', role: ROLES.MEDICAL_CODER as UserRole },
-    { label: 'Patient', email: 'patient@example.com', password: 'Test@123', role: ROLES.PATIENT as UserRole },
+    // PATIENTS
+    { label: 'Patient — Ahmed Khan', email: 'ahmed.khan@example.com', password: 'Test@123', role: ROLES.PATIENT as UserRole },
+    { label: 'Patient — Fatima Malik', email: 'fatima.malik@example.com', password: 'Test@123', role: ROLES.PATIENT as UserRole },
+    { label: 'Patient — Ali Raza', email: 'ali.raza@example.com', password: 'Test@123', role: ROLES.PATIENT as UserRole },
+
+    // DOCTORS
+    { label: 'Doctor — Dr. Hassan', email: 'dr.hassan@example.com', password: 'Test@123', role: ROLES.DOCTOR as UserRole },
+    { label: 'Doctor — Dr. Ayesha', email: 'dr.ayesha@example.com', password: 'Test@123', role: ROLES.DOCTOR as UserRole },
+    { label: 'Doctor — Dr. Zain', email: 'dr.zain@example.com', password: 'Test@123', role: ROLES.DOCTOR as UserRole },
+
+    // HOSPITAL STAFF
+    { label: 'Hospital Admin — Shifa', email: 'admin.shifa@example.com', password: 'Test@123', role: ROLES.HOSPITAL_ADMIN as UserRole },
+    { label: 'Lab Technician — Shifa', email: 'tech.shifa@example.com', password: 'Test@123', role: ROLES.HOSPITAL_LAB_TECHNICIAN as UserRole },
+    { label: 'Front Desk — Shifa', email: 'frontdesk.shifa@example.com', password: 'Test@123', role: ROLES.HOSPITAL_FRONT_DESK as UserRole },
   ];
 
   const options = quickLogins.map((q, i) => ({ value: String(i), label: `${q.label} — ${q.email}` }));

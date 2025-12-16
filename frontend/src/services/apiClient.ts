@@ -49,7 +49,7 @@ export const tokenManager = {
 // Create axios instance with baseURL from environment or fallback
 const apiClient: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000',
-  timeout: 10000,
+  timeout: 60000, //60 sec
   headers: {
     'Content-Type': 'application/json',
   },

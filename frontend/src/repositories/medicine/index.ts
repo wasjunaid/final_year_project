@@ -1,0 +1,1 @@
+export { medicineRepository } from './medicineRepository';
