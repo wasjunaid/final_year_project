@@ -7,7 +7,9 @@ import {
   TestTube,
   // FolderOpen, 
   Bell, 
-  User 
+  User,
+  Wallet,
+  CreditCard
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -23,6 +25,8 @@ import HospitalStaffManagementPage from '../hospitalAdmin/HospitalStaffManagemen
 import HospitalAssociationPage from '../hospitalAdmin/doctorAssociation/DoctorAssociationPage';
 import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
 import LabTestDashboard from '../hospitalAdmin/labTest/LabTestDashboard';
+import WalletSettingsPage from '../wallet/WalletSettingsPage';
+import PaymentHistoryPage from '../payment/PaymentHistoryPage';
 
 const HospitalAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -36,6 +40,8 @@ const HospitalAdminPortal: React.FC = () => {
       { icon: TestTube, label: 'Lab Tests', route: 'lab-tests' },
       { icon: Users, label: 'Staff Management', route: 'staff' },
       { icon: UserCog, label: 'Association', route: 'association' },
+      { icon: Wallet, label: 'Wallet Settings', route: 'wallet-settings' },
+      { icon: CreditCard, label: 'Payment History', route: 'payment-history' },
       // { icon: FolderOpen, label: 'Documents', route: 'documents' },
     ],
     bottomNavItems: [
@@ -49,13 +55,17 @@ const HospitalAdminPortal: React.FC = () => {
       case 'dashboard':
         return <HospitalDashboard />;
       case 'appointments':
-        return <AppointmentsDashboard />
+        return <AppointmentsDashboard />;
       case 'lab-tests':
         return <LabTestDashboard />;
       case 'staff':
         return <HospitalStaffManagementPage />;
       case 'association':
         return <HospitalAssociationPage />;
+      case 'wallet-settings':
+        return <WalletSettingsPage />;
+      case 'payment-history':
+        return <PaymentHistoryPage type="hospital" />;
       // case 'documents':
       //   return <DocumentUploadDashboard />;
       case 'notifications':

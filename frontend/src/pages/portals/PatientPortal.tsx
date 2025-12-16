@@ -8,7 +8,9 @@ import {
   User, 
   GitPullRequest,
   FileText,
-  Database
+  Database,
+  Wallet,
+  CreditCard
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -25,6 +27,8 @@ import { AccessRequestsPage } from '../accessRequest';
 import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
 import MyEhrPage from '../patient/MyEhrPage';
 import BlockchainHistoryPage from '../blockchainHistory/BlockchainHistoryPage';
+import WalletSettingsPage from '../wallet/WalletSettingsPage';
+import PaymentHistoryPage from '../payment/PaymentHistoryPage';
 
 const PatientPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -41,6 +45,8 @@ const PatientPortal: React.FC = () => {
       { icon: FileText, label: 'My EHR', route: 'my-ehr' },
       { icon: GitPullRequest, label: 'EHR Access Requests', route: 'access-requests' },
       { icon: Database, label: 'Blockchain History', route: 'blockchain-history' },
+      { icon: Wallet, label: 'Wallet Settings', route: 'wallet-settings' },
+      { icon: CreditCard, label: 'Payment History', route: 'payment-history' },
     ],
     bottomNavItems: [
       { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -59,13 +65,17 @@ const PatientPortal: React.FC = () => {
       case 'insurance':
         return <PatientInsurancePage />;
       case 'documents':
-        return <PatientDocumentsPage />
+        return <PatientDocumentsPage />;
       case 'health':
         return <HealthHistoryDashboard />;
       case 'access-requests':
         return <AccessRequestsPage />;
       case 'blockchain-history':
         return <BlockchainHistoryPage />;
+      case 'wallet-settings':
+        return <WalletSettingsPage />;
+      case 'payment-history':
+        return <PaymentHistoryPage type="patient" />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':

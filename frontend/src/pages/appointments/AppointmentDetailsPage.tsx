@@ -724,68 +724,6 @@ const AppointmentsDetailsPage: React.FC = () => {
       )
     },
     {
-      id: 'lab-tests',
-      label: 'Lab Tests',
-      content: (
-        <div className="space-y-4">
-          <div className="flex gap-2 items-end">
-            <div className="flex-1">
-              <Dropdown
-                label="Add Lab Test"
-                options={(labTests || []).map((lt) => ({ value: String(lt.labTestId), label: `${lt.name} ${lt.cost != null ? `— ${lt.cost}` : ''}` }))}
-                value={selectedLabTestId}
-                onChange={(v) => setSelectedLabTestId(v)}
-                searchable
-                searchPlaceholder="Search lab tests..."
-                placeholder="Select a lab test"
-              />
-            </div>
-            <div>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  if (!selectedLabTestId) return;
-                  const lt = (labTests || []).find((x) => String(x.labTestId) === String(selectedLabTestId));
-                  if (!lt) return;
-                  setLocalLabTests((prev) => (prev.find((p) => p.labTestId === lt.labTestId) ? prev : [...prev, lt]));
-                  setSelectedLabTestId('');
-                }}
-                disabled={!doctorCanComplete || !selectedLabTestId}
-              >
-                Add
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {(localLabTests || []).length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No lab tests added yet.</p>
-            ) : (
-              (localLabTests || []).map((lt) => (
-                <div key={lt.labTestId} className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded">
-                  <div>
-                    <div className="font-medium text-gray-800 dark:text-gray-200">{lt.name}</div>
-                    <div className="text-sm text-gray-500">{lt.description ?? ''} {lt.cost != null ? `• Cost: ${lt.cost}` : ''}</div>
-                  </div>
-                  {doctorCanComplete && (
-                    <div>
-                      <Button
-                        variant="outline"
-                        onClick={() => setLocalLabTests((prev) => prev.filter((p) => p.labTestId !== lt.labTestId))}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )
-    }
-    ,
-    {
       id: 'codes',
       label: 'Codes',
       content: (
@@ -868,6 +806,67 @@ const AppointmentsDetailsPage: React.FC = () => {
   // Add patient health history tabs only if doctor and appointment is in progress
   if (isDoctor && (local.status === AppointmentStatus.in_progress || local.status === 'in progress')) {
     clinicalTabs.push(
+      {
+        id: 'lab-tests',
+        label: 'Lab Tests',
+        content: (
+          <div className="space-y-4">
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Dropdown
+                  label="Add Lab Test"
+                  options={(labTests || []).map((lt) => ({ value: String(lt.labTestId), label: `${lt.name} ${lt.cost != null ? `— ${lt.cost}` : ''}` }))}
+                  value={selectedLabTestId}
+                  onChange={(v) => setSelectedLabTestId(v)}
+                  searchable
+                  searchPlaceholder="Search lab tests..."
+                  placeholder="Select a lab test"
+                />
+              </div>
+              <div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (!selectedLabTestId) return;
+                    const lt = (labTests || []).find((x) => String(x.labTestId) === String(selectedLabTestId));
+                    if (!lt) return;
+                    setLocalLabTests((prev) => (prev.find((p) => p.labTestId === lt.labTestId) ? prev : [...prev, lt]));
+                    setSelectedLabTestId('');
+                  }}
+                  disabled={!doctorCanComplete || !selectedLabTestId}
+                >
+                  Add
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {(localLabTests || []).length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No lab tests added yet.</p>
+              ) : (
+                (localLabTests || []).map((lt) => (
+                  <div key={lt.labTestId} className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded">
+                    <div>
+                      <div className="font-medium text-gray-800 dark:text-gray-200">{lt.name}</div>
+                      <div className="text-sm text-gray-500">{lt.description ?? ''} {lt.cost != null ? `• Cost: ${lt.cost}` : ''}</div>
+                    </div>
+                    {doctorCanComplete && (
+                      <div>
+                        <Button
+                          variant="outline"
+                          onClick={() => setLocalLabTests((prev) => prev.filter((p) => p.labTestId !== lt.labTestId))}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )
+      },
       {
         id: 'medical-history',
         label: 'Medical History',
