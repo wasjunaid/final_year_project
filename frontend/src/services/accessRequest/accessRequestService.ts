@@ -42,8 +42,8 @@ export const accessRequestService = {
 
   async getPatientEhr(patientId: number): Promise<any> {
     // send patient_id in the request body
-    const resp = await apiClient.post<ApiResponse<any>>('/ehr-access/patient-data', { patient_id: patientId });
-    return resp.data;
+    const response = await apiClient.post<any>('/ehr-access/patient-data', { patient_id: patientId });
+    return response.data;
   },
 };
 

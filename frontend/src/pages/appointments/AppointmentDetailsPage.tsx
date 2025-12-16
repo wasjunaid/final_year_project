@@ -19,7 +19,7 @@ import useAppointmentCodingController from '../../hooks/medicalCoding/useAppoint
 // import { DocumentDetailsView } from '../documents/components/DocumentDetailsView';
 import { AppointmentStatus } from '../../models/appointment/enums';
 import type { CompleteDoctorPayload } from '../../models/appointment/payload';
-import TabbedCard from './components/TabbedComponent';
+import TabbedCard from '../../components/TabbedComponent';
 import { useMedicalHistoryController, useAllergyController, useFamilyHistoryController, useSurgicalHistoryController } from '../../hooks/patient';
 
 const AppointmentsDetailsPage: React.FC = () => {

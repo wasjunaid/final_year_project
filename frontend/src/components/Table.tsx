@@ -10,7 +10,7 @@ export interface TableColumn<T = any> {
   hideOnMobile?: boolean;
   hideOnTablet?: boolean;
   hideOnDesktop?: boolean;
-  render?: (row: T, index: number) => React.ReactNode;
+  render?: (row: T, index: number, currentTab?: string) => React.ReactNode;
 }
 
 export interface TableProps<T = any> {
@@ -21,6 +21,12 @@ export interface TableProps<T = any> {
   emptyIcon?: React.ReactNode;
   emptyComponent?: React.ReactNode;
   loading?: boolean;
+  /**
+   * Whether the table container should render with elevation (shadow).
+   * Set to false to render a flat table (no shadow).
+   * Default: true
+   */
+  elevated?: boolean;
   // Simple pagination - just specify items per page
   itemsPerPage?: number;
   // Progressive loading pagination - for API-driven data that accumulates
@@ -30,6 +36,8 @@ export interface TableProps<T = any> {
     pagesPerLoad?: number; // How many pages to load at once (default: 1)
     onLoadMore: (page: number) => void | Promise<void>; // Called when next page needs loading
   };
+  // Current tab identifier to pass to render functions
+  currentTab?: string;
 }
 
 const Table = <T extends Record<string, any>>({
@@ -40,8 +48,10 @@ const Table = <T extends Record<string, any>>({
   emptyIcon,
   emptyComponent,
   loading = false,
+  elevated = true,
   itemsPerPage,
   progressivePagination,
+  currentTab,
 }: TableProps<T>) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -77,7 +87,7 @@ const Table = <T extends Record<string, any>>({
 
   const renderCell = (column: TableColumn<T>, row: T, index: number) => {
     if (column.render) {
-      return column.render(row, index);
+      return column.render(row, index, currentTab);
     }
     return row[column.key];
   };
@@ -198,8 +208,10 @@ const Table = <T extends Record<string, any>>({
     </tr>
   );
 
+  const containerClass = `bg-white dark:bg-[#2d2d2d] rounded-lg ${elevated ? 'shadow-lg' : ''} overflow-hidden flex flex-col flex-1 min-h-full`;
+
   return (
-    <div className="bg-white dark:bg-[#2d2d2d] rounded-lg shadow-lg overflow-hidden flex flex-col flex-1 min-h-full">
+    <div className={containerClass}>
       {/* Table Container */}
       <div className="overflow-x-auto flex-1">
         <table className="min-w-full">

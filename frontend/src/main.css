@@ -112,6 +112,16 @@ input[type='checkbox'] {
   @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary;
 }
 
+/* Hide scrollbar utility */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

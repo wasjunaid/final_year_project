@@ -89,9 +89,15 @@ export const accessRequestRepository = {
   async fetchPatientEhr(patientId: number) {
     try {
       const resp = await accessRequestService.getPatientEhr(patientId);
-      if (!resp || !resp.success) return null;
-      return resp.data;
+      if (!resp || !resp.success) {
+        console.error("Repository - returning null, resp or resp.success is falsy");
+        return null;
+      }
+      // console.log("Repository - returning resp (full object with data and verification):", resp);
+      // Return the full response object which contains data and verification
+      return resp;
     } catch (error: any) {
+      console.error("Repository - fetchPatientEhr error:", error);
       if (error?.response?.status === 404) return null;
       throw error;
     }
