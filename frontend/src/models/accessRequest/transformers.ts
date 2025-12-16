@@ -1,5 +1,5 @@
-import type { AccessRequestDto } from './dto';
-import type { AccessRequestModel } from './model';
+import type { AccessRequestDto, BlockchainHistoryRecordDto } from './dto';
+import type { AccessRequestModel, BlockchainHistoryRecordModel } from './model';
 
 export const toAccessRequestModel = (dto: AccessRequestDto): AccessRequestModel => ({
   accessRequestId: dto.ehr_access_id,
@@ -15,3 +15,14 @@ export const toAccessRequestModel = (dto: AccessRequestDto): AccessRequestModel 
 });
 
 export const toAccessRequestModels = (dtos: AccessRequestDto[]): AccessRequestModel[] => dtos.map(toAccessRequestModel);
+
+export const toBlockchainHistoryRecordModel = (dto: BlockchainHistoryRecordDto): BlockchainHistoryRecordModel => ({
+  patientId: dto.patientId,
+  doctorId: dto.doctorId,
+  status: dto.status,
+  timestamp: dto.timestamp,
+  ipfsCID: dto.ipfsCID,
+  dataHash: dto.dataHash,
+});
+
+export const toBlockchainHistoryRecordModels = (dtos: BlockchainHistoryRecordDto[]): BlockchainHistoryRecordModel[] => dtos.map(toBlockchainHistoryRecordModel);

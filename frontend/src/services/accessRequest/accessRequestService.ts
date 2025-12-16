@@ -45,6 +45,11 @@ export const accessRequestService = {
     const response = await apiClient.post<any>('/ehr-access/patient-data', { patient_id: patientId });
     return response.data;
   },
+
+  async getBlockchainHistory(): Promise<ApiResponse<any[]>> {
+    const response = await apiClient.get<ApiResponse<any[]>>('/ehr-access/history_from_blockchain');
+    return response.data;
+  },
 };
 
 export default accessRequestService;

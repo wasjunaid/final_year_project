@@ -5,7 +5,8 @@ import {
   FolderOpen, 
   BarChart3,
   Bell, 
-  User, 
+  User,
+  Database
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -19,6 +20,7 @@ import { HospitalManagementDashboard } from '../systemAdmin/HospitalManagementDa
 import { UserManagementDashboard } from '../systemAdmin/UserManagementDashboard';
 import { InsuranceManagementDashboard } from '../systemAdmin/InsuranceManagementDashboard';
 import { LogsManagementDashboard } from '../systemAdmin/LogsManagementDashboard';
+import BlockchainHistoryPage from '../blockchainHistory/BlockchainHistoryPage';
 
 const SystemAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -31,6 +33,7 @@ const SystemAdminPortal: React.FC = () => {
       { icon: Building2, label: 'Hospitals Management', route: 'hospitals' },
       { icon: Users, label: 'Users Management', route: 'users' },
       { icon: FolderOpen, label: 'Insurances', route: 'insurances' },
+      { icon: Database, label: 'Blockchain History', route: 'blockchain-history' },
     ],
     bottomNavItems: [
       { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -48,6 +51,8 @@ const SystemAdminPortal: React.FC = () => {
         return <HospitalManagementDashboard />;
       case 'insurances':
         return <InsuranceManagementDashboard />;
+      case 'blockchain-history':
+        return <BlockchainHistoryPage />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':

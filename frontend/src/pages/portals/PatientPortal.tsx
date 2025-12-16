@@ -6,8 +6,9 @@ import {
   Shield, 
   Bell, 
   User, 
-  LucideGitPullRequestArrow,
-  FileText
+  GitPullRequest,
+  FileText,
+  Database
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -23,6 +24,7 @@ import { PatientInsurancePage } from '../patient/PatientInsurancePage';
 import { AccessRequestsPage } from '../accessRequest';
 import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
 import MyEhrPage from '../patient/MyEhrPage';
+import BlockchainHistoryPage from '../blockchainHistory/BlockchainHistoryPage';
 
 const PatientPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -37,7 +39,8 @@ const PatientPortal: React.FC = () => {
       { icon: FolderOpen, label: 'Medical Records', route: 'documents' },
       { icon: Shield, label: 'Insurance', route: 'insurance' },
       { icon: FileText, label: 'My EHR', route: 'my-ehr' },
-      { icon: LucideGitPullRequestArrow, label: 'EHR Access Requests', route: 'access-requests' },
+      { icon: GitPullRequest, label: 'EHR Access Requests', route: 'access-requests' },
+      { icon: Database, label: 'Blockchain History', route: 'blockchain-history' },
     ],
     bottomNavItems: [
       { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -61,6 +64,8 @@ const PatientPortal: React.FC = () => {
         return <HealthHistoryDashboard />;
       case 'access-requests':
         return <AccessRequestsPage />;
+      case 'blockchain-history':
+        return <BlockchainHistoryPage />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':

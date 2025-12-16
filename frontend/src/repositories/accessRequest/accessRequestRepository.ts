@@ -1,6 +1,6 @@
 import accessRequestService from '../../services/accessRequest/accessRequestService';
-import type { AccessRequestModel } from '../../models/accessRequest/model';
-import { toAccessRequestModels } from '../../models/accessRequest/transformers';
+import type { AccessRequestModel, BlockchainHistoryRecordModel } from '../../models/accessRequest/model';
+import { toAccessRequestModels, toBlockchainHistoryRecordModels } from '../../models/accessRequest/transformers';
 import { AppError } from '../../utils/appError';
 
 export const accessRequestRepository = {
@@ -100,6 +100,19 @@ export const accessRequestRepository = {
       console.error("Repository - fetchPatientEhr error:", error);
       if (error?.response?.status === 404) return null;
       throw error;
+    }
+  },
+
+  async fetchBlockchainHistory(): Promise<BlockchainHistoryRecordModel[]> {
+    try {
+      const resp = await accessRequestService.getBlockchainHistory();
+      if (!resp.success) throw new AppError({ message: resp.message || 'Failed to fetch blockchain history', title: 'Fetch Failed' });
+      return toBlockchainHistoryRecordModels(resp.data || []);
+    } catch (error: any) {
+      if (error?.response?.status === 404) return [];
+      if (error instanceof AppError) throw error;
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch blockchain history';
+      throw new AppError({ message: errorMessage, title: 'Fetch Failed' });
     }
   },
 };

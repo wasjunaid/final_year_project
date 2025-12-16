@@ -13,3 +13,12 @@ export interface AccessRequestModel {
   createdAt?: string;
 }
 
+export interface BlockchainHistoryRecordModel {
+  patientId: number;
+  doctorId: number;
+  status: string;
+  timestamp: string;
+  ipfsCID: string | null;
+  dataHash: string | null;
+}
+

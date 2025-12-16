@@ -4,7 +4,8 @@ import {
   Bell, 
   User, 
   UserCog,
-  LucideGitPullRequestArrow
+  GitPullRequest,
+  Database
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -18,6 +19,7 @@ import PersonAssociationRequestsPage from '../associationRequest/PersonAssociati
 import { AccessRequestDashboard } from '../accessRequest';
 import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
 import PatientEhrPage from '../accessRequest/PatientEhrPage';
+import BlockchainHistoryPage from '../blockchainHistory/BlockchainHistoryPage';
 
 const DoctorPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -28,7 +30,8 @@ const DoctorPortal: React.FC = () => {
     mainNavItems: [
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
       { icon: UserCog, label: 'Association', route: 'association' },
-      { icon: LucideGitPullRequestArrow, label: 'Access Requests', route: 'access-requests' },
+      { icon: GitPullRequest, label: 'Access Requests', route: 'access-requests' },
+      { icon: Database, label: 'Blockchain History', route: 'blockchain-history' },
     ],
     bottomNavItems: [
       { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -47,6 +50,8 @@ const DoctorPortal: React.FC = () => {
         return <AccessRequestDashboard />;
       case 'ehr':
         return <PatientEhrPage />;
+      case 'blockchain-history':
+        return <BlockchainHistoryPage />;
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':

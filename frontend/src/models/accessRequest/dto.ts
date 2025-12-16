@@ -16,3 +16,14 @@ export interface AccessRequestDto {
 }
 
 export type AccessRequestListDto = AccessRequestDto[];
+
+export interface BlockchainHistoryRecordDto {
+  patientId: number;
+  doctorId: number;
+  status: string; // REQUESTED, GRANTED, DENIED, REVOKED
+  timestamp: string;
+  ipfsCID: string | null;
+  dataHash: string | null;
+}
+
+export type BlockchainHistoryListDto = BlockchainHistoryRecordDto[];
