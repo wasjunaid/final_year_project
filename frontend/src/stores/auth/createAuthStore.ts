@@ -23,6 +23,7 @@ const clearAuthStorage = () => {
     sessionStorage.removeItem('auth-storage');
     localStorage.removeItem('auth-storage');
     localStorage.removeItem('auth-remember-me');
+    localStorage.removeItem('wallet-storage');
   } catch (error) {
     console.error('[Auth Store] Failed to clear storage:', error);
   }
