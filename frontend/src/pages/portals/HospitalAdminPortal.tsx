@@ -9,7 +9,8 @@ import {
   Bell, 
   User,
   Wallet,
-  CreditCard
+  CreditCard,
+  Shield
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -27,6 +28,7 @@ import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
 import LabTestDashboard from '../hospitalAdmin/labTest/LabTestDashboard';
 import WalletSettingsPage from '../wallet/WalletSettingsPage';
 import PaymentHistoryPage from '../payment/PaymentHistoryPage';
+import HospitalInsuranceManagementPage from '../hospitalAdmin/HospitalInsuranceManagementPage';
 
 const HospitalAdminPortal: React.FC = () => {
   const { currentPage } = useSidebarController();
@@ -40,6 +42,7 @@ const HospitalAdminPortal: React.FC = () => {
       { icon: TestTube, label: 'Lab Tests', route: 'lab-tests' },
       { icon: Users, label: 'Staff Management', route: 'staff' },
       { icon: UserCog, label: 'Association', route: 'association' },
+      { icon: Shield, label: 'Insurance Panel', route: 'insurance-panel' },
       { icon: Wallet, label: 'Wallet Settings', route: 'wallet-settings' },
       { icon: CreditCard, label: 'Payment History', route: 'payment-history' },
       // { icon: FolderOpen, label: 'Documents', route: 'documents' },
@@ -62,6 +65,8 @@ const HospitalAdminPortal: React.FC = () => {
         return <HospitalStaffManagementPage />;
       case 'association':
         return <HospitalAssociationPage />;
+      case 'insurance-panel':
+        return <HospitalInsuranceManagementPage />;
       case 'wallet-settings':
         return <WalletSettingsPage />;
       case 'payment-history':
