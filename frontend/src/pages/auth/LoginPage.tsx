@@ -158,12 +158,12 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative p-8" style={{ backgroundImage: `url(${bgImg})` }}>
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/50"></div>
-      <div className="relative z-10 bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-xl">
+      <div className="relative z-10 bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl border border-gray-200 dark:border-dark-border p-8 md:p-12 w-full max-w-xl">
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <img src={logo} alt="Logo" className="h-16 w-auto mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-[#e5e5e5] mb-2">Welcome Back</h1>
-          <p className="text-gray-500 dark:text-[#a0a0a0]">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-dark-text mb-2">Welcome Back</h1>
+          <p className="text-gray-500 dark:text-dark-text-secondary">Sign in to your account</p>
         </div>
 
         {/* Success Alert */}
@@ -275,7 +275,7 @@ const LoginPage: React.FC = () => {
                 onChange={handleChange}
                 className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
               />
-              <label htmlFor="remember" className="ml-2 text-sm text-gray-600 dark:text-[#a0a0a0]">
+              <label htmlFor="remember" className="ml-2 text-sm text-gray-600 dark:text-dark-text-secondary">
                 Remember me
               </label>
             </div>
@@ -298,7 +298,7 @@ const LoginPage: React.FC = () => {
               <span className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white dark:bg-[#2d2d2d] px-4 text-gray-500 dark:text-gray-400">
+              <span className="bg-white dark:bg-dark-bg-secondary px-4 text-gray-500 dark:text-gray-400">
                 Or continue with
               </span>
             </div>
@@ -314,7 +314,7 @@ const LoginPage: React.FC = () => {
 
         {/* Signup Link */}
         <div className="mt-6 text-center">
-          <p className="text-gray-600 dark:text-[#a0a0a0]">
+          <p className="text-gray-600 dark:text-dark-text-secondary">
             Don't have an account?{' '}
             <Button variant="link" onClick={() => navigate(ROUTES.AUTH.SIGN_UP)}>Sign up</Button>
           </p>

@@ -53,13 +53,13 @@ const GoogleAuthCallbackPage: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative p-8" style={{ backgroundImage: `url(${bgImg})` }}>
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/50"></div>
-        <div className="relative z-10 bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-md text-center">
+        <div className="relative z-10 bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl border border-gray-200 dark:border-dark-border p-8 md:p-12 w-full max-w-md text-center">
           <img src={logo} alt="Logo" className="h-16 w-auto mx-auto mb-6" />
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-6"></div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-[#e5e5e5] mb-2">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-2">
             Completing Sign In
           </h1>
-          <p className="text-gray-600 dark:text-[#a0a0a0]">
+          <p className="text-gray-600 dark:text-dark-text-secondary">
             Please wait while we complete your Google authentication...
           </p>
         </div>
@@ -72,10 +72,10 @@ const GoogleAuthCallbackPage: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative p-8" style={{ backgroundImage: `url(${bgImg})` }}>
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/50"></div>
-        <div className="relative z-10 bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-md">
+        <div className="relative z-10 bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl border border-gray-200 dark:border-dark-border p-8 md:p-12 w-full max-w-md">
           <div className="text-center mb-6">
             <img src={logo} alt="Logo" className="h-16 w-auto mx-auto mb-6" />
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-[#e5e5e5] mb-2">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-2">
               Authentication Failed
             </h1>
           </div>

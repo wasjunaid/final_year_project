@@ -42,12 +42,12 @@ const EmailVerificationPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative" style={{ backgroundImage: `url(${bgImg})` }}>
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/50"></div>
-      <div className="relative z-10 bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-md">
+      <div className="relative z-10 bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl border border-gray-200 dark:border-dark-border p-8 md:p-12 w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <img src={logo} alt="Logo" className="h-16 w-auto mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-[#e5e5e5] mb-2">Email Verification</h1>
-          <p className="text-gray-500 dark:text-[#a0a0a0]">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-dark-text mb-2">Email Verification</h1>
+          <p className="text-gray-500 dark:text-dark-text-secondary">
             {loading ? 'Verifying your email...' : 
              success ? 'Verification successful!' : 
              'Click below to verify your email'}
@@ -58,7 +58,7 @@ const EmailVerificationPage: React.FC = () => {
         {loading && (
           <div className="flex flex-col items-center py-8 mb-6">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-            <p className="text-gray-600 dark:text-[#a0a0a0]">Please wait while we verify your email...</p>
+            <p className="text-gray-600 dark:text-dark-text-secondary">Please wait while we verify your email...</p>
           </div>
         )}
 

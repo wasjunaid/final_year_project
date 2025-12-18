@@ -16,6 +16,12 @@ export const prescriptionService = {
   },
 
   async createPrescription(payload: CreatePrescriptionPayload): Promise<ApiResponse<PrescriptionDto>> {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    payload.prescription_date = `${yyyy}-${mm}-${dd}`;
+    console.log("Payload in prescription service: ", payload);
     const response = await apiClient.post<ApiResponse<PrescriptionDto>>('/prescription', payload);
     return response.data;
   },
