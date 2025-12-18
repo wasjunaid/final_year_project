@@ -23,8 +23,10 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${bgImg})` }}>
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative" style={{ backgroundImage: `url(${bgImg})` }}>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/50"></div>
+      <div className="relative z-10 bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-4">
           <img src={logo} alt="Logo" className="h-16 w-auto mx-auto mb-4" />

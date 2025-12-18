@@ -11,6 +11,7 @@ import SignupPage from './pages/auth/SignupPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import EmailVerificationPage from './pages/auth/EmailVerificationPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import GoogleAuthCallbackPage from './pages/auth/GoogleAuthCallbackPage';
 
 // portal imports
 import DoctorPortal from './pages/portals/DoctorPortal';
@@ -47,6 +48,7 @@ function App() {
         <Route path={ROUTES.AUTH.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
         <Route path={ROUTES.AUTH.VERIFY_EMAIL} element={<EmailVerificationPage />} />
         <Route path={ROUTES.AUTH.RESET_PASSWORD} element={<ResetPasswordPage />} />
+        <Route path={ROUTES.AUTH.GOOGLE_AUTH_SUCCESS} element={<GoogleAuthCallbackPage />} />
         
         {/* Protected portal routes with role-based access */}
         <Route

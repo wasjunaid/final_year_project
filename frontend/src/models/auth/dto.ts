@@ -22,3 +22,7 @@ export interface RefreshJwtDto {
   accessToken: string;
   refreshToken: string;
 }
+
+export interface GoogleAuthDto {
+  authUrl: string;
+}

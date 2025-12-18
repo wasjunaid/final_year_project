@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import { useAuthController } from '../../hooks/auth';
+import { useAuthController, useGoogleAuthController } from '../../hooks/auth';
 import { ROLES, type UserRole } from '../../constants/profile';
 import ROUTES from '../../constants/routes';
 import logo from '../../assets/logo.png';
@@ -10,6 +10,8 @@ import Alert from '../../components/Alert';
 import TextInput from '../../components/TextInput';
 import Dropdown from '../../components/Dropdown';
 import Button from '../../components/Button';
+import GoogleAuthButton from '../../components/GoogleAuthButton';
+import GoogleAuthRoleModal from '../../components/GoogleAuthRoleModal';
 
 // QuickLogins component: fills automatically when a preset is selected.
 const QuickLogins: React.FC<{ onSelect: (email: string, password: string, role: UserRole) => void; disabled?: boolean }> = ({ onSelect, disabled }) => {
@@ -66,6 +68,13 @@ const LoginPage: React.FC = () => {
     clearMessages,
     navigateToPortal,
   } = useAuthController();
+
+  const {
+    loading: googleLoading,
+    error: googleError,
+    initiateGoogleAuth,
+    clearMessages: clearGoogleMessages,
+  } = useGoogleAuthController();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -76,6 +85,7 @@ const LoginPage: React.FC = () => {
 
   const [resendLoading, setResendLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showGoogleRoleModal, setShowGoogleRoleModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -88,8 +98,11 @@ const LoginPage: React.FC = () => {
 
   // Clear messages when component unmounts
   useEffect(() => {
-    return () => clearMessages();
-  }, [clearMessages]);
+    return () => {
+      clearMessages();
+      clearGoogleMessages();
+    };
+  }, [clearMessages, clearGoogleMessages]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -104,9 +117,27 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearMessages();
+    clearGoogleMessages();
     
     await signIn(formData, formData.rememberMe);
     // Navigation will happen via useEffect watching isAuthenticated
+  };
+
+  const handleGoogleAuth = () => {
+    clearMessages();
+    clearGoogleMessages();
+    setShowGoogleRoleModal(true);
+  };
+
+  const handleGoogleRoleContinue = async (role: UserRole) => {
+    await initiateGoogleAuth({ role });
+    // If successful, user will be redirected to Google
+    setShowGoogleRoleModal(false);
+  };
+
+  const handleGoogleRoleModalClose = () => {
+    setShowGoogleRoleModal(false);
+    clearGoogleMessages();
   };
 
   const handleResendVerification = async () => {
@@ -124,8 +155,10 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat p-8" style={{ backgroundImage: `url(${bgImg})` }}>
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-xl">
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative p-8" style={{ backgroundImage: `url(${bgImg})` }}>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/50"></div>
+      <div className="relative z-10 bg-white dark:bg-[#2d2d2d] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#404040] p-8 md:p-12 w-full max-w-xl">
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <img src={logo} alt="Logo" className="h-16 w-auto mx-auto mb-4" />
@@ -153,6 +186,18 @@ const LoginPage: React.FC = () => {
             message={error.message}
             subtitle={error.subtitle}
             onClose={clearMessages}
+            className="mb-6"
+          />
+        )}
+
+        {/* Google Error Alert */}
+        {googleError && (
+          <Alert 
+            type="error"
+            title={googleError.title}
+            message={googleError.message}
+            subtitle={googleError.subtitle}
+            onClose={clearGoogleMessages}
             className="mb-6"
           />
         )}
@@ -242,11 +287,29 @@ const LoginPage: React.FC = () => {
           <Button 
             type="submit"
             variant="primary"
-            disabled={loading}
+            disabled={loading || googleLoading}
             fullWidth
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white dark:bg-[#2d2d2d] px-4 text-gray-500 dark:text-gray-400">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <GoogleAuthButton
+            onClick={handleGoogleAuth}
+            disabled={loading || googleLoading}
+            loading={googleLoading}
+            variant="login"
+          />
         </form>
 
         {/* Signup Link */}
@@ -256,6 +319,15 @@ const LoginPage: React.FC = () => {
             <Button variant="link" onClick={() => navigate(ROUTES.AUTH.SIGN_UP)}>Sign up</Button>
           </p>
         </div>
+
+        {/* Google Auth Role Modal */}
+        <GoogleAuthRoleModal
+          isOpen={showGoogleRoleModal}
+          onClose={handleGoogleRoleModalClose}
+          onContinue={handleGoogleRoleContinue}
+          loading={googleLoading}
+          isSignUp={false}
+        />
       </div>
     </div>
   );

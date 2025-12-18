@@ -6,7 +6,7 @@ const ROUTES = {
     RESET_PASSWORD: "/reset-password",
     SIGN_IN: "/sign-in",
     SIGN_UP: "/sign-up",
-    GOOGLE_AUTH_SUCCESS: "/google/success",
+    GOOGLE_AUTH_SUCCESS: "/auth/google/success",
   },
 
   //landing page
