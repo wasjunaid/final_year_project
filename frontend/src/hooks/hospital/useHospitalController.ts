@@ -5,6 +5,7 @@ import { AppError } from '../../utils/appError';
 
 export const useHospitalController = () => {
   const [hospitals, setHospitals] = useState<HospitalModel[]>([]);
+  const [hospitalById, setHospitalById] = useState<HospitalModel>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
@@ -17,6 +18,23 @@ export const useHospitalController = () => {
 
       const hospitalsList = await hospitalRepository.getAllHospitals();
       setHospitals(hospitalsList);
+    } catch (err) {
+      const errorMessage = err instanceof AppError ? err.message : 'Failed to fetch hospitals';
+      setError(errorMessage);
+      console.error('Error fetching hospitals:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch all hospitals
+  const fetchHospitalById = useCallback(async (hospitalId: string) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const res = await hospitalRepository.getHospitalById(hospitalId);
+      setHospitalById(res);
     } catch (err) {
       const errorMessage = err instanceof AppError ? err.message : 'Failed to fetch hospitals';
       setError(errorMessage);
@@ -46,19 +64,16 @@ export const useHospitalController = () => {
       } finally {
         setLoading(false);
       }
-    },
-    []
-  );
+  }, []);
 
   // Update hospital
-  const updateHospital = useCallback(
-    async (hospitalId: number, name: string): Promise<HospitalModel | null> => {
+  const updateHospital = useCallback(async (hospitalId: number, name: string, walletAddress: string): Promise<HospitalModel | null> => {
       try {
         setLoading(true);
         setError('');
         setSuccess('');
 
-        const updatedHospital = await hospitalRepository.updateHospital(hospitalId, name);
+        const updatedHospital = await hospitalRepository.updateHospital(hospitalId, name, walletAddress);
         setHospitals((prev) =>
           prev.map((h) => (h.hospital_id === hospitalId ? updatedHospital : h))
         );
@@ -72,9 +87,7 @@ export const useHospitalController = () => {
       } finally {
         setLoading(false);
       }
-    },
-    []
-  );
+  }, []);
 
   // Clear messages
   const clearMessages = useCallback(() => {
@@ -89,10 +102,12 @@ export const useHospitalController = () => {
 
   return {
     hospitals,
+    hospitalById,
     loading,
     error,
     success,
     fetchHospitals,
+    fetchHospitalById,
     createHospital,
     updateHospital,
     clearMessages,

@@ -7,7 +7,7 @@ import {
   Bell, 
   User,
   Database,
-  Pill
+  // Pill
 } from 'lucide-react';
 import BasePortal from '../../components/BasePortal';
 import { useSidebarController } from '../../hooks/ui/sidebar';
@@ -35,7 +35,7 @@ const SystemAdminPortal: React.FC = () => {
       { icon: Building2, label: 'Hospitals Management', route: 'hospitals' },
       { icon: Users, label: 'Users Management', route: 'users' },
       { icon: FolderOpen, label: 'Insurances', route: 'insurances' },
-      { icon: Pill, label: 'Medicine Management', route: 'medicines' },
+      // { icon: Pill, label: 'Medicine Management', route: 'medicines' },
       { icon: Database, label: 'Blockchain History', route: 'blockchain-history' },
     ],
     bottomNavItems: [

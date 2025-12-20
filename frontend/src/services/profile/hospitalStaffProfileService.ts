@@ -7,6 +7,7 @@ export const hospitalStaffProfileService = {
   // Get - fetch hospital staff profile
   async getHospitalStaff(): Promise<ApiResponse<HospitalStaffDTO>> {
     const response = await apiClient.get<ApiResponse<HospitalStaffDTO>>('/hospital-staff');
+    console.log('Fetching hospital staff profile from API', response);
     return response.data;
   },
 

@@ -67,6 +67,7 @@ export const createPatientProfileRepository = () => {
         if (data.emergencyContactCountryCode !== undefined) patientFields.emergencyContactCountryCode = data.emergencyContactCountryCode;
         if (data.emergencyContactNumber !== undefined) patientFields.emergencyContactNumber = data.emergencyContactNumber;
         if (data.bloodGroup !== undefined) patientFields.bloodGroup = data.bloodGroup;
+        if (data.walletAddress !== undefined) patientFields.walletAddress = data.walletAddress;
 
         // Validate patient-specific fields
         if (patientFields.emergencyContactCountryCode && patientFields.emergencyContactNumber) {

@@ -86,8 +86,8 @@ const GenericProfilePage: React.FC = () => {
 
   if (!profile || !formData) {
     return (
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md border border-gray-200 dark:border-[#404040] p-6">
-        <p className="text-gray-500 dark:text-[#a0a0a0]">Unable to load profile</p>
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md border border-gray-200 dark:border-dark-border p-6">
+        <p className="text-gray-500 dark:text-dark-text-secondary">Unable to load profile</p>
       </div>
     );
   }

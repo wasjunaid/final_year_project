@@ -6,4 +6,5 @@ export interface CreateHospitalPayload {
 
 export interface UpdateHospitalPayload {
   name: string;
+  wallet_address: string;
 }

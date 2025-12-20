@@ -26,6 +26,26 @@ export class HospitalRepository {
     }
   }
 
+  // Get hospital by id
+  async getHospitalById(hospitalId: string): Promise<HospitalModel> {
+    try {
+      const response = await hospitalService.getHospitalById(hospitalId);
+      
+      if (!response.success || !response.data) {
+        throw new AppError({ message: response.message || 'Failed to fetch hospital by id' });
+      }
+
+      return toHospitalModel(response.data);
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError({
+        message: error instanceof Error ? error.message : 'Failed to fetch hospital by id',
+      });
+    }
+  }
+
   // Create new hospital
   async createHospital(name: string): Promise<HospitalModel> {
     try {
@@ -66,7 +86,7 @@ export class HospitalRepository {
   }
 
   // Update hospital
-  async updateHospital(hospitalId: number, name: string): Promise<HospitalModel> {
+  async updateHospital(hospitalId: number, name: string, walletAddress: string): Promise<HospitalModel> {
     try {
       // Validation
       if (!hospitalId || typeof hospitalId !== 'number') {
@@ -87,8 +107,19 @@ export class HospitalRepository {
         throw new AppError({ message: 'Hospital name must be less than 100 characters' });
       }
 
+      if (!walletAddress || typeof walletAddress !== 'string') {
+        throw new AppError({ message: 'Wallet address is required' });
+      }
+
+      const trimmedWalletAddress = walletAddress.trim();
+
+      if (trimmedWalletAddress.length === 0) {
+        throw new AppError({ message: 'Wallet address cannot be empty' });
+      }
+
       const payload: UpdateHospitalPayload = {
         name: trimmedName,
+        wallet_address: trimmedWalletAddress,
       };
 
       const response = await hospitalService.updateHospital(hospitalId, payload);

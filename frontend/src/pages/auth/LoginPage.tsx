@@ -16,6 +16,8 @@ import GoogleAuthRoleModal from '../../components/GoogleAuthRoleModal';
 // QuickLogins component: fills automatically when a preset is selected.
 const QuickLogins: React.FC<{ onSelect: (email: string, password: string, role: UserRole) => void; disabled?: boolean }> = ({ onSelect, disabled }) => {
   const quickLogins = [
+    { label: 'Super Admin', email: 'superadmin@example.com', password: 'Test@123', role: ROLES.SYSTEM_ADMIN as UserRole },
+    
     // PATIENTS
     { label: 'Patient — Ahmed Khan', email: 'ahmed.khan@example.com', password: 'Test@123', role: ROLES.PATIENT as UserRole },
     { label: 'Patient — Fatima Malik', email: 'fatima.malik@example.com', password: 'Test@123', role: ROLES.PATIENT as UserRole },

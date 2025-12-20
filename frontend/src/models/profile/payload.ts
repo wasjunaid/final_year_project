@@ -15,6 +15,7 @@ export interface UpdatePatientRequest {
   emergency_contact_country_code?: string;
   emergency_contact_number?: string;
   blood_group?: BloodGroup;
+  wallet_address?: string;
 }
 
 export interface UpdateDoctorRequest {

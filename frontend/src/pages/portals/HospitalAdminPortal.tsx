@@ -19,7 +19,7 @@ import type { SidebarConfig } from '../../models/sidebar/model';
 
 // Import pages
 import NotificationsPage from '../notifications/NotificationsPage';
-import GenericProfilePage from '../profile/GenericProfilePage';
+import HospitalAdminProfilePage from '../hospitalAdmin/HospitalAdminProfilePage';
 import HospitalDashboard from '../hospitalAdmin/HospitalDashboard';
 import HospitalStaffManagementPage from '../hospitalAdmin/HospitalStaffManagementPage';
 // import DocumentUploadDashboard from '../documents/DocumentUploadDashboard';
@@ -76,7 +76,7 @@ const HospitalAdminPortal: React.FC = () => {
       case 'notifications':
         return <NotificationsPage />;
       case 'profile':
-        return <GenericProfilePage />;
+        return <HospitalAdminProfilePage />;
       default:
         return (
           <div className="flex items-center justify-center h-full">

@@ -93,8 +93,8 @@ const PatientProfilePage: React.FC = () => {
 
   if (!profile || !formData) {
     return (
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md border border-gray-200 dark:border-[#404040] p-6">
-        <p className="text-gray-500 dark:text-[#a0a0a0]">Unable to load profile</p>
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md border border-gray-200 dark:border-dark-border p-6">
+        <p className="text-gray-500 dark:text-dark-text-secondary">Unable to load profile</p>
       </div>
     );
   }
@@ -149,8 +149,8 @@ const PatientProfilePage: React.FC = () => {
       />
 
       {/* Medical Information */}
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md border border-gray-200 dark:border-[#404040] p-4 md:p-6">
-        <h3 className="text-lg font-bold text-gray-800 dark:text-[#e5e5e5] mb-4">
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md border border-gray-200 dark:border-dark-border p-4 md:p-6">
+        <h3 className="text-lg font-bold text-gray-800 dark:text-dark-text mb-4">
           Medical Information
         </h3>
 
@@ -171,6 +171,16 @@ const PatientProfilePage: React.FC = () => {
             value={formData.bloodGroup || ''}
             onChange={(value) => handleChange('bloodGroup', value)}
             disabled={!isEditing}
+            containerClassName="w-full md:w-[calc(50%-0.5rem)]"
+          />
+
+          <TextInput
+            label="Wallet Address"
+            name="walletAddress"
+            value={formData.walletAddress || ''}
+            onChange={(e) => handleChange('walletAddress', e.target.value)}
+            disabled={!isEditing}
+            placeholder="0x..."
             containerClassName="w-full md:w-[calc(50%-0.5rem)]"
           />
 

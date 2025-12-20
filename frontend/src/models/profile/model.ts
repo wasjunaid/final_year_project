@@ -28,6 +28,7 @@ export interface PatientProfileModel extends PersonProfileModel {
   emergencyContactCountryCode?: CountryCodeValue;
   emergencyContactNumber?: string;
   bloodGroup?: BloodGroup;
+  walletAddress?: string;
   isPatientProfileComplete: boolean;
 }
 

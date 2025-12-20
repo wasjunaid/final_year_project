@@ -6,9 +6,7 @@ import type { CreateHospitalStaffPayload } from '../../models/hospitalStaff/payl
 export const hospitalStaffService = {
   // Get all staff for the current hospital
   async getAllHospitalStaff(): Promise<ApiResponse<HospitalStaffDto[]>> {
-    console.log('Fetching all hospital staff from API');
     const response = await apiClient.get<ApiResponse<HospitalStaffDto[]>>('/hospital-staff/all');
-    console.log('Received response:', response.data);
     return response.data;
   },
 

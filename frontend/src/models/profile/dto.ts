@@ -26,6 +26,7 @@ export interface PatientDTO {
   emergency_contact_country_code?: string;
   emergency_contact_number?: string;
   blood_group?: BloodGroup;
+  wallet_address?: string;
   is_patient_profile_complete: boolean;
 }
 

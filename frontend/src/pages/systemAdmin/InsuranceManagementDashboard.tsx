@@ -14,7 +14,7 @@ export const InsuranceManagementDashboard: React.FC = () => {
       title: 'Insurance Management Dashboard',
       tabs: [
         { label: 'Insurance Companies', value: 'list' },
-        { label: 'Create Company', value: 'create' },
+        // { label: 'Create Company', value: 'create' },
       ],
     }),
     []

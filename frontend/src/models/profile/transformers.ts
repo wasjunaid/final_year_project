@@ -47,6 +47,7 @@ export function transformPatientDto(personDto: PersonDTO, patientDto: PatientDTO
     emergencyContactCountryCode: patientDto.emergency_contact_country_code as CountryCodeValue,
     emergencyContactNumber: patientDto.emergency_contact_number,
     bloodGroup: patientDto.blood_group,
+    walletAddress: patientDto.wallet_address,
     isPatientProfileComplete: patientDto.is_patient_profile_complete,
   };
 }
@@ -113,6 +114,7 @@ export function toUpdatePatientRequest(data: Partial<PatientProfileModel>): Upda
     emergency_contact_country_code: data.emergencyContactCountryCode,
     emergency_contact_number: data.emergencyContactNumber,
     blood_group: data.bloodGroup,
+    wallet_address: data.walletAddress,
   };
 }
 
