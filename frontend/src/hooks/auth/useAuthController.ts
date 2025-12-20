@@ -27,6 +27,7 @@ export const createAuthController = ({ repository }: { repository: AuthRepositor
   } = useAuthStore();
 
   // Profile store
+  const profileData = useProfileStore((state) => state.profile);
   const clearProfile = useProfileStore((state) => state.clearProfile);
 
   // Local state
@@ -345,7 +346,6 @@ export const createAuthController = ({ repository }: { repository: AuthRepositor
   //     return () => clearTimeout(timer);
   //   }
   // }, [success, error]);
-
   return {
     // State
     isAuthenticated,
@@ -358,6 +358,7 @@ export const createAuthController = ({ repository }: { repository: AuthRepositor
     error,
     success,
     emailVerificationNeeded,
+    profileData,
 
     // Actions
     signIn,
@@ -374,5 +375,5 @@ export const createAuthController = ({ repository }: { repository: AuthRepositor
     hasAnyRole,
     navigateToPortal,
   };
-  };
-};
+}
+}

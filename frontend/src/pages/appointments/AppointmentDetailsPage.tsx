@@ -23,6 +23,7 @@ import TabbedCard from '../../components/TabbedComponent';
 import { useMedicalHistoryController, useAllergyController, useFamilyHistoryController, useSurgicalHistoryController } from '../../hooks/patient';
 import AddPrescriptionModal from '../../components/AddPrescriptionModal';
 import { usePrescriptionController } from '../../hooks/prescription';
+import BillSection from './components/BillSection';
 
 const AppointmentsDetailsPage: React.FC = () => {
   const appointmentCtrl = useAppointmentController();
@@ -1246,6 +1247,21 @@ const AppointmentsDetailsPage: React.FC = () => {
         )
       }
     );
+  }
+
+  // Add bill tab for completed appointments
+  if (local.status === AppointmentStatus.completed || local.status === 'completed') {
+    clinicalTabs.push({
+      id: 'bill',
+      label: 'Bill & Payment',
+      content: (
+        <BillSection 
+          appointmentId={local.appointmentId} 
+          appointmentStatus={local.status}
+          hospitalId={local.hospitalId ?? undefined}
+        />
+      )
+    });
   }
 
   const showClinicalDetails = (

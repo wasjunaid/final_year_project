@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useWalletStore } from '../../stores/wallet';
+import { useAuthController } from '../auth';
 import { paymentRepository } from '../../repositories/payment';
 import type { PaymentHistoryModel } from '../../models/payment';
+import type { PatientProfileModel } from '../../models/profile';
 
 interface UsePaymentHistoryControllerProps {
   type: 'patient' | 'hospital';
 }
 
 export const usePaymentHistoryController = ({ type }: UsePaymentHistoryControllerProps) => {
-  const { walletAddress } = useWalletStore();
+  const { profileData } = useAuthController();
+  
+  // Get wallet address from patient profile
+  // Note: For hospital type, wallet address needs to come from hospital entity, not profile
+  const walletAddress = type === 'patient' 
+    ? (profileData as PatientProfileModel)?.walletAddress
+    : null; // TODO: Implement hospital wallet fetching from hospital entity
+    
   const [history, setHistory] = useState<PaymentHistoryModel | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

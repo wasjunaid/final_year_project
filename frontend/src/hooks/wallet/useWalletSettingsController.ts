@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useWalletStore } from '../../stores/wallet';
+import { useAuthController } from '../auth';
 import { paymentRepository } from '../../repositories/payment';
 import type { WalletBalanceModel } from '../../models/payment';
+import type { PatientProfileModel } from '../../models/profile';
 
 export const useWalletSettingsController = () => {
-  const { walletAddress, setWalletAddress, clearWalletAddress } = useWalletStore();
+  const { profileData } = useAuthController();
+  const patientProfile = profileData as PatientProfileModel;
+  const walletAddress = patientProfile?.walletAddress || null;
+  
   const [balance, setBalance] = useState<WalletBalanceModel | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [tempAddress, setTempAddress] = useState(walletAddress || '');
 
   // Fetch balance when wallet address changes
   useEffect(() => {
@@ -34,30 +36,6 @@ export const useWalletSettingsController = () => {
     }
   };
 
-  const saveWalletAddress = () => {
-    if (tempAddress.trim()) {
-      setWalletAddress(tempAddress.trim());
-      setIsEditing(false);
-    }
-  };
-
-  const startEditing = () => {
-    setTempAddress(walletAddress || '');
-    setIsEditing(true);
-  };
-
-  const cancelEditing = () => {
-    setTempAddress(walletAddress || '');
-    setIsEditing(false);
-  };
-
-  const removeWalletAddress = () => {
-    clearWalletAddress();
-    setTempAddress('');
-    setBalance(null);
-    setIsEditing(false);
-  };
-
   const refreshBalance = () => {
     if (walletAddress) {
       fetchBalance(walletAddress);
@@ -71,13 +49,6 @@ export const useWalletSettingsController = () => {
     balance,
     loading,
     error,
-    isEditing,
-    tempAddress,
-    setTempAddress,
-    saveWalletAddress,
-    startEditing,
-    cancelEditing,
-    removeWalletAddress,
     refreshBalance,
     clearError,
   };
