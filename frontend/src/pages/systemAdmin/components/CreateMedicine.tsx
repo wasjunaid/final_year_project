@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pill, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useMedicineController } from '../../../hooks/medicine';
 import TextInput from '../../../components/TextInput';
 import Button from '../../../components/Button';
@@ -27,21 +27,12 @@ export const CreateMedicine: React.FC = () => {
     }
   };
 
-  const handleReset = () => {
-    setName('');
-    clearError();
-    setSuccessMessage('');
-  };
-
   return (
     <div className="flex-1 flex items-center justify-center p-6">
       <div className="w-full max-w-2xl">
         <div className="bg-white dark:bg-[#2b2b2b] rounded-lg shadow-lg p-8">
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-              <Pill className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Add New Medicine
@@ -79,15 +70,6 @@ export const CreateMedicine: React.FC = () => {
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                onClick={handleReset}
-                disabled={loading}
-                variant="outline"
-                fullWidth
-              >
-                Reset
-              </Button>
               <Button
                 type="submit"
                 disabled={loading || !name.trim()}

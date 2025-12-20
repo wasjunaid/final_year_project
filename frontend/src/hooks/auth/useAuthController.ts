@@ -321,6 +321,7 @@ export const createAuthController = ({ repository }: { repository: AuthRepositor
       [ROLES.HOSPITAL_SUB_ADMIN]: ROUTES.HOSPITAL_PORTAL,
       [ROLES.HOSPITAL_FRONT_DESK]: ROUTES.FRONT_DESK_PORTAL,
       [ROLES.HOSPITAL_LAB_TECHNICIAN]: ROUTES.LAB_TECHNICIAN_PORTAL,
+      [ROLES.HOSPITAL_PHARMACIST]: ROUTES.PHARMACIST_PORTAL,
     };
 
     const route = portalRoutes[role];

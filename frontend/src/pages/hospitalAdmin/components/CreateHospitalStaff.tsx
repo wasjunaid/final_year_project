@@ -23,6 +23,7 @@ export const CreateHospitalStaff: React.FC<CreateHospitalStaffProps> = ({ onSucc
     { value: ROLES.HOSPITAL_SUB_ADMIN, label: 'Sub Admin' },
     { value: ROLES.HOSPITAL_FRONT_DESK, label: 'Front Desk' },
     { value: ROLES.HOSPITAL_LAB_TECHNICIAN, label: 'Lab Technician' },
+    { value: ROLES.HOSPITAL_PHARMACIST, label: 'Pharmacist' },
   ];
   
   const handleSubmit = async (e: React.FormEvent) => {

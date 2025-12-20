@@ -20,6 +20,7 @@ const ROUTES = {
   HOSPITAL_PORTAL: "/hospital",
   FRONT_DESK_PORTAL: "/front-desk",
   LAB_TECHNICIAN_PORTAL: "/lab-technician",
+  PHARMACIST_PORTAL: "/pharmacist",
 } as const;
 
 export default ROUTES;

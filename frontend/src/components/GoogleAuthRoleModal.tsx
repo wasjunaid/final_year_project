@@ -37,6 +37,7 @@ const GoogleAuthRoleModal: React.FC<GoogleAuthRoleModalProps> = ({
         { value: ROLES.HOSPITAL_SUB_ADMIN, label: 'Hospital Sub Admin' },
         { value: ROLES.HOSPITAL_FRONT_DESK, label: 'Front Desk' },
         { value: ROLES.HOSPITAL_LAB_TECHNICIAN, label: 'Lab Technician' },
+        { value: ROLES.HOSPITAL_PHARMACIST, label: 'Pharmacist' },
       ];
 
   const handleContinue = () => {

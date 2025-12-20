@@ -32,6 +32,7 @@ const QuickLogins: React.FC<{ onSelect: (email: string, password: string, role: 
     { label: 'Hospital Admin — Shifa', email: 'admin.shifa@example.com', password: 'Test@123', role: ROLES.HOSPITAL_ADMIN as UserRole },
     { label: 'Lab Technician — Shifa', email: 'tech.shifa@example.com', password: 'Test@123', role: ROLES.HOSPITAL_LAB_TECHNICIAN as UserRole },
     { label: 'Front Desk — Shifa', email: 'frontdesk.shifa@example.com', password: 'Test@123', role: ROLES.HOSPITAL_FRONT_DESK as UserRole },
+    { label: 'Pharmacist — Shifa', email: 'pharmacist.shifa@example.com', password: 'Test@123', role: ROLES.HOSPITAL_PHARMACIST as UserRole },
   ];
 
   const options = quickLogins.map((q, i) => ({ value: String(i), label: `${q.label} — ${q.email}` }));
@@ -260,6 +261,7 @@ const LoginPage: React.FC = () => {
               { value: ROLES.HOSPITAL_SUB_ADMIN, label: 'Hospital Sub Admin' },
               { value: ROLES.HOSPITAL_FRONT_DESK, label: 'Front Desk' },
               { value: ROLES.HOSPITAL_LAB_TECHNICIAN, label: 'Lab Technician' },
+              { value: ROLES.HOSPITAL_PHARMACIST, label: 'Pharmacist' },
             ]}
             value={formData.role}
              onChange={(value) => setFormData((prev) => ({ ...prev, role: value as UserRole }))} 

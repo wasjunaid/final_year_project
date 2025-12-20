@@ -21,6 +21,7 @@ import MedicalCoderPortal from './pages/portals/MedicalCoderPortal';
 import HospitalAdminPortal from './pages/portals/HospitalAdminPortal';
 import HospitalFrontDeskPortal from './pages/portals/HospitalFrontDeskPortal';
 import HospitalLabTechnicianPortal from './pages/portals/HospitalLabTechnicianPortal';
+import PharmacistPortal from './pages/portals/PharmacistPortal';
 
 function App() {
   // Initialize theme controller to apply saved theme on mount
@@ -110,6 +111,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[ROLES.HOSPITAL_LAB_TECHNICIAN]}>
               <HospitalLabTechnicianPortal />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path={`${ROUTES.PHARMACIST_PORTAL}/*`}
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.HOSPITAL_PHARMACIST]}>
+              <PharmacistPortal />
             </ProtectedRoute>
           }
         />
