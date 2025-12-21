@@ -147,7 +147,7 @@ const BillSection: React.FC<BillSectionProps> = ({ appointmentId, appointmentSta
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Amount</p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                ${bill.amount.toFixed(2)}
+                ${bill.amount.toFixed(9)}
               </p>
             </div>
             {bill.isPaid && (
@@ -247,7 +247,7 @@ const BillSection: React.FC<BillSectionProps> = ({ appointmentId, appointmentSta
               className="w-full"
               icon={CreditCard}
             >
-              Pay ${bill.amount.toFixed(2)} Now
+              Pay Now
             </Button>
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
               Payment will be processed securely via blockchain

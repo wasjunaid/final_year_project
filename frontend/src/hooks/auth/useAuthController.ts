@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/auth';
-import { useProfileStore } from '../../stores/profile';
+import { useProfileStore, type ProfileState } from '../../stores/profile';
 import type { AuthRepository } from '../../repositories/auth';
 import { ValidationError } from '../../utils/validations';
 import { AppError } from '../../utils/appError';
@@ -27,8 +27,8 @@ export const createAuthController = ({ repository }: { repository: AuthRepositor
   } = useAuthStore();
 
   // Profile store
-  const profileData = useProfileStore((state) => state.profile);
-  const clearProfile = useProfileStore((state) => state.clearProfile);
+  const profileData = useProfileStore((state: ProfileState) => state.profile);
+  const clearProfile = useProfileStore((state: ProfileState) => state.clearProfile);
 
   // Local state
   const [loading, setLoading] = useState(false);

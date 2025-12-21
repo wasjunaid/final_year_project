@@ -7,7 +7,7 @@ import { useThemeController } from './hooks/ui/theme';
 
 // auth imports
 import LoginPage from './pages/auth/LoginPage';
-import SignupPage from './pages/auth/SignupPage';
+import SignupPage from './pages/auth/SignUpPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import EmailVerificationPage from './pages/auth/EmailVerificationPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
