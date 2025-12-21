@@ -7,6 +7,8 @@ export interface HospitalAssociationRequestDto {
   person_last_name?: string;
   person_name?: string;
   person_email?: string;
+  person_full_name?: string;
+  hospital_name?: string;
   role: string;
   created_at?: string;
   updated_at?: string;

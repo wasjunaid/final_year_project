@@ -215,7 +215,7 @@ const Table = <T extends Record<string, any>>({
       {/* Table Container */}
       <div className="overflow-x-auto flex-1">
         <table className="min-w-full">
-          <thead className="bg-gray-200 dark:bg-[#252525] border-b-2 border-gray-200 dark:border-[#404040]">
+          <thead className="bg-gray-200 dark:bg-[#252525] border-b-2 border-gray-200 dark:border-dark-border">
             <tr>
               {columns.map((column, index) => (
                 <th
@@ -254,7 +254,7 @@ const Table = <T extends Record<string, any>>({
                     {emptyComponent || (
                       <div className="flex flex-col items-center justify-center py-12">
                         {emptyIcon && <div className="mb-3">{emptyIcon}</div>}
-                        <p className="text-gray-500 dark:text-[#a0a0a0]">{emptyMessage}</p>
+                        <p className="text-gray-500 dark:text-dark-text-secondary">{emptyMessage}</p>
                       </div>
                     )}
                   </td>
@@ -266,7 +266,7 @@ const Table = <T extends Record<string, any>>({
                   <tr
                     key={rowIndex}
                     className={`${
-                      rowIndex % 2 === 0 ? 'bg-white dark:bg-[#2d2d2d]' : 'bg-gray-50 dark:bg-[#3a3a3a]'
+                      rowIndex % 2 === 0 ? 'bg-white dark:bg-dark-bg-secondary' : 'bg-gray-50 dark:bg-dark-bg-tertiary'
                     } hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors ${
                       onRowClick ? 'cursor-pointer' : ''
                     }`}
@@ -277,7 +277,7 @@ const Table = <T extends Record<string, any>>({
                         key={column.key}
                         className={`p-3 md:p-4 ${getAlignmentClass(
                           column.align
-                        )} ${getResponsiveClass(column)} text-gray-900 dark:text-[#e5e5e5]`}
+                        )} ${getResponsiveClass(column)} text-gray-900 dark:text-dark-text`}
                       >
                         {renderCell(column, row, rowIndex)}
                       </td>
@@ -292,9 +292,9 @@ const Table = <T extends Record<string, any>>({
 
       {/* Pagination Controls - Always show when pagination is enabled */}
       {paginationData && (
-        <div className="px-4 py-3 bg-gray-50 dark:bg-[#252424] border-t border-gray-200 dark:border-[#404040]">
+        <div className="px-4 py-3 bg-gray-50 dark:bg-[#252424] border-t border-gray-200 dark:border-dark-border">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="text-sm text-gray-600 dark:text-[#a0a0a0]">
+            <div className="text-sm text-gray-600 dark:text-dark-text-secondary">
               {paginationData.loadedPages !== undefined ? (
                 // Progressive pagination - show loaded count
                 <>
@@ -319,7 +319,7 @@ const Table = <T extends Record<string, any>>({
                 <button
                   onClick={() => paginationData.onPageChange(paginationData.currentPage - 1)}
                   disabled={paginationData.currentPage === 1 || loading || isLoadingMore}
-                  className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-dark-bg text-gray-700 dark:text-dark-text rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                   title="Previous page"
                 >
                   <ChevronLeft size={18} />
@@ -337,7 +337,7 @@ const Table = <T extends Record<string, any>>({
                         className={`px-2 md:px-3 py-1 rounded-lg text-sm transition-colors disabled:cursor-not-allowed ${
                           page === paginationData.currentPage
                             ? 'bg-primary text-white'
-                            : 'bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-300 dark:hover:bg-gray-600'
+                            : 'bg-gray-200 dark:bg-dark-bg text-gray-700 dark:text-dark-text hover:bg-gray-300 dark:hover:bg-gray-600'
                         }`}
                       >
                         {page}
@@ -348,7 +348,7 @@ const Table = <T extends Record<string, any>>({
                 <button
                   onClick={() => paginationData.onPageChange(paginationData.currentPage + 1)}
                   disabled={paginationData.currentPage === paginationData.totalPages || loading || isLoadingMore}
-                  className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-dark-bg text-gray-700 dark:text-dark-text rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                   title="Next page"
                 >
                   <ChevronRight size={18} />

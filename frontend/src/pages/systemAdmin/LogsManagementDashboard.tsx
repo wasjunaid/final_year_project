@@ -12,7 +12,7 @@ export const LogsManagementDashboard: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const navbarConfig: NavbarConfig = useMemo(() => ({
-    title: 'Logs & Audit Trail',
+    title: 'Logs',
     tabs: [],
     actions: [
       {

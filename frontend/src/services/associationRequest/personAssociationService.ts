@@ -4,7 +4,8 @@ import type { PersonAssociationRequestDto } from '../../models/associationReques
 
 export const personAssociationService = {
   async getRequestsForPerson(): Promise<ApiResponse<PersonAssociationRequestDto[]>> {
-    const response = await apiClient.get<ApiResponse<PersonAssociationRequestDto[]>>('/hospital-association-request/person');
+    const response = await apiClient.get<ApiResponse<PersonAssociationRequestDto[]>>('/hospital-association-request/frontend/person');
+    console.log("[PersonAssocation service] get requests for person", response)
     return response.data;
   },
 

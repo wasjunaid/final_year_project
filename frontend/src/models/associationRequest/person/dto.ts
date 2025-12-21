@@ -2,6 +2,7 @@
 export interface PersonAssociationRequestDto {
   hospital_association_request_id: number;
   hospital_id: number;
+  hospital_name: string;
   person_id: number;
   created_at?: string;
 }

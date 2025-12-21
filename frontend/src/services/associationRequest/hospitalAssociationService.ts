@@ -5,7 +5,8 @@ import type { CreateHospitalAssociationRequestPayload } from '../../models/assoc
 
 export const hospitalAssociationService = {
   async getRequestsForHospitalStaff(): Promise<ApiResponse<HospitalAssociationRequestDto[]>> {
-    const response = await apiClient.get<ApiResponse<HospitalAssociationRequestDto[]>>('/hospital-association-request/hospital-staff');
+    const response = await apiClient.get<ApiResponse<HospitalAssociationRequestDto[]>>('/hospital-association-request/frontend/hospital-staff');
+    // console.log("[HospitalAssocation service] get requests for hospitalStaff", response)
     return response.data;
   },
 

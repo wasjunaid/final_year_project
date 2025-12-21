@@ -13,9 +13,7 @@ export const hospitalService = {
 
   // Get hospital by id - GET /hospital
   async getHospitalById(hospitalId: string): Promise<ApiResponse<HospitalDto>> {
-    console.log('hospitalService.getHospitalById called with id:', hospitalId);
-    const response = await apiClient.get<ApiResponse<HospitalDto>>(`/hospital/${hospitalId}`);
-    console.log("Get Hospital by id response (service): ", response)
+    const response = await apiClient.get<ApiResponse<HospitalDto>>(`get/hospital/${hospitalId}`);
     return response.data;
   },
 

@@ -5,13 +5,14 @@ import type { CreateAccessRequestPayload } from '../../models/accessRequest/payl
 
 export const accessRequestService = {
   async getRequestsForPatient(): Promise<ApiResponse<AccessRequestDto[]>> {
-    const response = await apiClient.get<ApiResponse<AccessRequestDto[]>>('/ehr-access/patient');
-    console.log(`Response of GetRequestsForPatient: `, response)
+    const response = await apiClient.get<ApiResponse<AccessRequestDto[]>>('/ehr-access/frontend/patient');
+    // console.log(`Response of GetRequestsForPatient: `, response)
     return response.data;
   },
 
   async getRequestsForDoctor(): Promise<ApiResponse<AccessRequestDto[]>> {
-    const response = await apiClient.get<ApiResponse<AccessRequestDto[]>>('/ehr-access/doctor');
+    const response = await apiClient.get<ApiResponse<AccessRequestDto[]>>('/ehr-access/frontend/doctor');
+    // console.log(`Response of GetRequestsForDoctor: `, response)
     return response.data;
   },
 
