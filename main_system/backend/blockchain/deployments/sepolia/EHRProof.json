@@ -1,0 +1,10 @@
+{
+  "contract": "EHRProof",
+  "network": "sepolia",
+  "address": "0xa4A13E1a64118516EA6E4E12158BEe2AaAB4F1A3",
+  "txHash": "0x1e4b930fb01b620973a50611ecb26fe852ea3cbbf9e9603717e9609f46aea4c5",
+  "constructorArgs": [
+    "0xfD60168C6FCB444c848b0346412DB5C72Be39EC9"
+  ],
+  "deployedAt": "2025-11-30T07:11:15.608Z"
+}

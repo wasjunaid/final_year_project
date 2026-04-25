@@ -1,0 +1,12 @@
+{
+  "contract": "EHRAccessControl",
+  "network": "sepolia",
+  "address": "0xAd74223226EB93029aA19caFD39bf84807E32D99",
+  "txHash": "0x331908f0b200d8616916a7cf6e22d97ec4e6981577190e5d5d9c6ba486266da9",
+  "constructorArgs": [
+    "0xfD60168C6FCB444c848b0346412DB5C72Be39EC9"
+  ],
+  "deployedAt": "2025-12-11T17:53:37.065Z",
+  "blockNumber": 9818764,
+  "gasUsed": "2173543"
+}

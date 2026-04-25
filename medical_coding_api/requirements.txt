@@ -1,0 +1,23 @@
+# Web Framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+
+# Machine Learning - COMPATIBLE VERSIONS
+transformers==4.45.2
+torch==2.4.1
+accelerate==0.34.2
+safetensors==0.4.3
+sentencepiece==0.2.0
+tokenizers==0.20.1
+
+# Utilities
+pydantic==2.9.2
+pydantic-settings==2.5.2
+python-dotenv==1.0.1
+protobuf==5.28.2
+einops==0.8.0
+huggingface-hub==0.25.1
+
+# Monitoring
+psutil==6.0.0

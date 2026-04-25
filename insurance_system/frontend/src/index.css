@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #24355d;
+  --color-primary-dark: #1a2744;
+  --color-primary-light: #2e4575;
+
+  --color-dark-bg: #1a1a1a;
+  --color-dark-bg-secondary: #2d2d2d;
+  --color-dark-bg-tertiary: #3a3a3a;
+  --color-dark-text: #e5e5e5;
+  --color-dark-text-secondary: #a0a0a0;
+  --color-dark-border: #404040;
+}
+
+:root {
+  --dark-bg: #1a1a1a;
+  --dark-bg-secondary: #2d2d2d;
+  --dark-bg-tertiary: #3a3a3a;
+  --dark-text: #e5e5e5;
+  --dark-text-secondary: #a0a0a0;
+  --dark-border: #404040;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full w-full;
+  }
+
+  body {
+    @apply m-0 font-sans antialiased bg-gray-50 text-gray-900;
+  }
+
+  .dark body {
+    background-color: #1a1a1a;
+    color: #e5e5e5;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background-color: #3a3a3a;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600;
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ehr-proof-chain",
+  "private": true,
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.0.2",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.26.3"
+  },
+  "scripts": {
+    "deploy":"npx hardhat run scripts/deploy-ehr-access.js --network sepolia",
+    "compile": "hardhat compile",
+    "deploy:ehr-access": "hardhat run scripts/deploy-ehr-access.js --network sepolia",
+    "payment-contract":"npx hardhat run scripts/deploy-payment.js --network sepolia",
+    "register-hospital":"npx hardhat run scripts/register-hospital.js --network sepolia"
+  }
+}

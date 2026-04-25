@@ -1,0 +1,75 @@
+import React from 'react';
+import { 
+  LayoutDashboard,
+  Calendar, 
+  Bell, 
+  User, 
+  UserCog,
+  GitPullRequest
+} from 'lucide-react';
+import BasePortal from '../../components/BasePortal';
+import { useSidebarController } from '../../hooks/ui/sidebar';
+import { useNotificationController } from '../../hooks/notification';
+import type { SidebarConfig } from '../../models/sidebar/model';
+
+// Import doctor pages
+import NotificationsPage from '../notifications/NotificationsPage';
+import DoctorProfilePage from '../doctor/DoctorProfilePage';
+import DoctorDashboard from '../doctor/DoctorDashboard';
+import PersonAssociationRequestsPage from '../associationRequest/PersonAssociationRequestsPage';
+import { AccessRequestDashboard } from '../accessRequest';
+import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
+import PatientEhrPage from '../accessRequest/PatientEhrPage';
+
+const DoctorPortal: React.FC = () => {
+  const { currentPage } = useSidebarController();
+  const { unreadCount } = useNotificationController();
+
+  const doctorSidebarConfig: SidebarConfig = {
+    portalName: 'Doctor Portal',
+    mainNavItems: [
+      { icon: LayoutDashboard, label: 'Dashboard', route: 'dashboard' },
+      { icon: Calendar, label: 'Appointments', route: 'appointments' },
+      { icon: UserCog, label: 'Association', route: 'association' },
+      { icon: GitPullRequest, label: 'Access Requests', route: 'access-requests' },
+    ],
+    bottomNavItems: [
+      { icon: Bell, label: 'Notifications', route: 'notifications', badge: unreadCount > 0 ? unreadCount : undefined },
+      { icon: User, label: 'Profile', route: 'profile' },
+    ],
+  };
+
+  // Render the appropriate page based on current route
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <DoctorDashboard />;
+      case 'appointments':
+        return <AppointmentsDashboard />
+      case 'association':
+        return <PersonAssociationRequestsPage />;
+      case 'access-requests':
+        return <AccessRequestDashboard />;
+      case 'ehr':
+        return <PatientEhrPage />;
+      case 'notifications':
+        return <NotificationsPage />;
+      case 'profile':
+        return <DoctorProfilePage />;
+      default:
+        return (
+          <div className="flex items-center justify-center h-full">
+            <h1 className="text-2xl font-bold">Doctor Portal</h1>
+          </div>
+        )
+    }
+  };
+
+  return (
+    <BasePortal sidebarConfig={doctorSidebarConfig}>
+      {renderPage()}
+    </BasePortal>
+  );
+};
+
+export default DoctorPortal;

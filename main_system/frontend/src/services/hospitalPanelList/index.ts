@@ -1,0 +1,1 @@
+export { hospitalPanelListService } from './hospitalPanelListService';

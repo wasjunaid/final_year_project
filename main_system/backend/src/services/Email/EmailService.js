@@ -1,0 +1,375 @@
+const { STATUS_CODES } = require("../../utils/statusCodesUtil");
+const { AppError } = require("../../classes/AppErrorClass");
+const { transport, EMAIL_USER } = require("../../config/emailConfig");
+const { FRONTEND_URL } = require("../../config/frontendConfig");
+const { TOKEN_CONFIG } = require("../../utils/tokenUtil");
+const { VALID_NOTIFICATION_TYPES } = require("../../validations/notification/notificationValidations");
+
+class EmailService {
+  /**
+     * Sends a verification email with the provided token
+     * @param {string} email - recipient email address
+     * @param {string} token - token to verify
+     * @returns {Promise<boolean>} true if successful
+     * @throws {AppError} if any issue occurs
+     */
+  static async sendVerificationEmail(email, token) {
+    try {
+      if (!email) {
+        throw new AppError("email is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (typeof email !== 'string') {
+        throw new AppError("email must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (!token) {
+        throw new AppError("token is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (typeof token !== 'string') {
+        throw new AppError("token must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      const verificationURL = `${FRONTEND_URL}/verify-email?token=${token}`;
+
+      const mailOptions = {
+        from: EMAIL_USER,
+        to: email,
+        subject: 'Verify Your Email Address',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #129990; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Welcome!</h1>
+            </div>
+            <div style="padding: 30px; background-color: #f9f9f9;">
+              <h2 style="color: #333;">Please verify your email address</h2>
+              <p style="color: #666; line-height: 1.6;">
+                Thank you for signing up! To complete your registration and start using our platform, 
+                please click the button below to verify your email address.
+              </p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${verificationURL}" 
+                  style="background-color: #129990; color: white; padding: 12px 30px; 
+                          text-decoration: none; border-radius: 5px; display: inline-block;">
+                  Verify Email Address
+                </a>
+              </div>
+              <p style="color: #999; font-size: 14px;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="${verificationURL}">${verificationURL}</a>
+              </p>
+              <p style="color: #999; font-size: 12px;">
+                This verification link will expire in ${TOKEN_CONFIG.TOKEN_EXPIRY.email_verification / 3600} hours.
+              </p>
+            </div>
+          </div>
+        `
+      };
+
+      await transport.sendMail(mailOptions);
+
+      return true;
+    } catch (error) {
+      console.error(`Error in EmailService.sendVerificationEmail: ${error.message} ${error.status}`);
+      throw error;
+    }
+  }
+
+  /**
+     * Sends a password reset email with the provided token
+     * @param {string} email - recipient email address
+     * @param {string} token - token to verify
+     * @returns {Promise<boolean>} true if successful
+     * @throws {AppError} if any issue occurs
+     */
+  static async sendPasswordResetEmail(email, token) {
+    try {
+      if (!email) {
+        throw new AppError("email is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (typeof email !== 'string') {
+        throw new AppError("email must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (!token) {
+        throw new AppError("token is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (typeof token !== 'string') {
+        throw new AppError("token must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      const resetURL = `${FRONTEND_URL}/reset-password?token=${token}`;
+
+      const mailOptions = {
+        from: EMAIL_USER,
+        to: email,
+        subject: 'Reset Your Password - HealthCare',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #129990 0%, #0d7377 100%); padding: 30px 20px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 28px;">HealthCare</h1>
+            </div>
+            
+            <!-- Main Content -->
+            <div style="padding: 40px 30px; background-color: white; margin: 0 20px;">
+              <h2 style="color: #333; margin-bottom: 20px;">Hello!</h2>
+
+              <p style="color: #666; line-height: 1.6; font-size: 16px; margin-bottom: 25px;">
+                We received a request to reset your password for your HealthCare account. 
+                Click the button below to create a new password.
+              </p>
+              
+              <!-- Reset Button -->
+              <div style="text-align: center; margin: 35px 0;">
+                <a href="${resetURL}" 
+                  style="background: linear-gradient(135deg, #129990 0%, #0d7377 100%); 
+                          color: white; 
+                          padding: 15px 35px; 
+                          text-decoration: none; 
+                          border-radius: 8px; 
+                          display: inline-block;
+                          font-weight: bold;
+                          font-size: 16px;
+                          box-shadow: 0 4px 15px rgba(18, 153, 144, 0.3);">
+                  Reset My Password
+                </a>
+              </div>
+              
+              <p style="color: #999; font-size: 14px; line-height: 1.5; margin-top: 30px;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="${resetURL}" style="color: #129990; word-break: break-all;">${resetURL}</a>
+              </p>
+              
+              <!-- Security Notice -->
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #129990; margin-top: 30px;">
+                <h3 style="color: #333; margin: 0 0 10px 0; font-size: 16px;">Security Notice:</h3>
+                <ul style="color: #666; margin: 0; padding-left: 20px; line-height: 1.6;">
+                  <li>This link will expire in <strong>${TOKEN_CONFIG.TOKEN_EXPIRY.password_reset / 60} minutes</strong></li>
+                  <li>If you didn't request this reset, you can safely ignore this email</li>
+                  <li>Your password won't change until you click the link above</li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background-color: #f8f9fa; padding: 20px; text-align: center; color: #999; font-size: 12px;">
+              <p style="margin: 0;">
+                This email was sent by HealthCare. If you have any questions, please contact our support team.
+              </p>
+              <p style="margin: 10px 0 0 0;">
+                © ${new Date().getFullYear()} HealthCare. All rights reserved.
+              </p>
+            </div>
+          </div>
+        `
+      };
+
+      await transport.sendMail(mailOptions);
+
+      return true;
+    } catch (error) {
+      console.error(`Error in EmailService.sendPasswordResetEmail: ${error.message} ${error.status}`);
+      throw error;
+    }
+  }
+
+  /**
+     * Sends a random password email with the provided password
+     * @param {string} email - recipient email address
+     * @param {string} password - random password
+     * @returns {Promise<boolean>} true if successful
+     * @throws {AppError} if any issue occurs
+     */
+  static async sendRandomPasswordEmail(email, password) {
+    try {
+      if (!email) {
+        throw new AppError("email is required", STATUS_CODES.BAD_REQUEST);
+      }
+      
+      if (typeof email !== 'string') {
+        throw new AppError("email must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (!password) {
+        throw new AppError("password is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (typeof password !== 'string') {
+        throw new AppError("password must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      const mailOptions = {
+        from: EMAIL_USER,
+        to: email,
+        subject: "Your Random Password",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Hello!</h2>
+            <p style="color: #666;">Your random password is: <p>
+            <h3 style="background-color: #f4f4f4; padding: 10px; border-radius: 5px; display: inline-block;">${password}</h3>
+            <p style="color: #666;">Please use this password to log in to your account.</p>
+          </div>
+        `
+      };
+
+      await transport.sendMail(mailOptions);
+
+      return true;
+    } catch (error) {
+      console.error(`Error in EmailService.sendRandomPasswordEmail: ${error.message} ${error.status}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Sends a notification email with the provided details
+   * @param {Object} params - parameters for the notification email
+   * @param {string} params.email - recipient email address
+   * @param {string} params.title - notification title
+   * @param {string} params.message - notification message
+   * @param {string} params.type - notification type (e.g., appointment, medical, system, alert, reminder)
+   * @returns {Promise<boolean>} true if successful
+   * @throws {AppError} if any issue occurs
+   */
+  static async sendNotificationEmail({email, title, message, type}) {
+    try {
+      if (!email) {
+        throw new AppError("email is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (!title) {
+        throw new AppError("title is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (typeof title !== 'string') {
+        throw new AppError("title must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (!message) {
+        throw new AppError("message is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (typeof message !== 'string') {
+        throw new AppError("message must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (!type) {
+        throw new AppError("type is required", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (typeof type !== 'string') {
+        throw new AppError("type must be a string", STATUS_CODES.BAD_REQUEST);
+      }
+
+      if (!VALID_NOTIFICATION_TYPES.includes(type.toLowerCase())) {
+        throw new AppError(`type must be one of the following: ${VALID_NOTIFICATION_TYPES.join(", ")}`, STATUS_CODES.BAD_REQUEST);
+      }
+
+      const typeColors = {
+        appointment: '#1890ff', // Blue
+        medical: '#52c41a',     // Green
+        system: '#722ed1',      // Purple
+        alert: '#f5222d',       // Red
+        reminder: '#fa8c16',    // Orange
+      };
+    
+      // Default to blue if type not recognized
+      const notificationColor = typeColors[type?.toLowerCase()] || '#1890ff';
+
+      // Format the notification date
+      const formattedDate = new Date().toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const mailOptions = {
+        from: EMAIL_USER,
+        to: email,
+        subject: `HealthCare Notification: ${title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #129990 0%, #0d7377 100%); padding: 25px 20px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">HealthCare</h1>
+              <p style="color: white; opacity: 0.9; margin: 5px 0 0 0;">Notification Center</p>
+            </div>
+            
+            <!-- Notification Card -->
+            <div style="padding: 30px; background-color: white; margin: 0 15px; border-radius: 0 0 8px 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);">
+              <!-- Notification Type Badge -->
+              <div style="margin-bottom: 20px;">
+                <span style="background-color: ${notificationColor}; color: white; padding: 5px 12px; border-radius: 16px; font-size: 12px; font-weight: bold; text-transform: uppercase;">${type || 'System'}</span>
+              </div>
+              
+              <!-- Notification Title -->
+              <h2 style="color: #333; margin: 0 0 15px 0; font-size: 20px;">${title}</h2>
+              
+              <!-- Notification Message -->
+              <div style="color: #444; line-height: 1.6; font-size: 16px; background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid ${notificationColor};">
+                ${message}
+              </div>
+              
+              <!-- Timestamp -->
+              <p style="color: #999; font-size: 13px; margin-top: 25px;">
+                <strong>Date:</strong> ${formattedDate}
+              </p>
+              
+              <!-- View All Button -->
+              <div style="text-align: center; margin-top: 35px;">
+                <a href="${FRONTEND_URL}/notifications" 
+                  style="background-color: ${notificationColor}; 
+                          color: white; 
+                          padding: 12px 25px; 
+                          text-decoration: none; 
+                          border-radius: 6px; 
+                          display: inline-block;
+                          font-weight: bold;
+                          font-size: 14px;">
+                  View All Notifications
+                </a>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="padding: 20px; text-align: center; color: #999; font-size: 12px;">
+              <p style="margin: 0;">
+                You're receiving this email because you've enabled email notifications for your HealthCare account.
+              </p>
+              <p style="margin: 10px 0 0 0;">
+                <a href="${FRONTEND_URL}/settings/notifications" style="color: #129990; text-decoration: none;">
+                  Manage notification preferences
+                </a>
+                |
+                <a href="${FRONTEND_URL}" style="color: #129990; text-decoration: none;">
+                  Go to HealthCare
+                </a>
+              </p>
+              <p style="margin: 15px 0 0 0; font-size: 11px;">
+                © ${new Date().getFullYear()} HealthCare. All rights reserved.
+              </p>
+            </div>
+          </div>
+        `
+      };
+
+      await transport.sendMail(mailOptions);
+
+      return true;
+    } catch (error) {
+      console.error(`Error in EmailService.sendNotificationEmail: ${error.message} ${error.status}`);
+      throw error;
+    }
+  }
+};
+
+module.exports = {
+  EmailService
+};

@@ -1,0 +1,1 @@
+export { createHospitalPanelListRepository } from './hospitalPanelListRepository';
