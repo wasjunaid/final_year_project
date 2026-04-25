@@ -95,7 +95,7 @@ router.post(
 
 router.put(
   '/upload/verified/:document_id',
-  allowedRoles([roles.HOSPITAL_LAB_TECHNICIAN]),
+  // allowedRoles([roles.HOSPITAL_LAB_TECHNICIAN]),
   uploadDocument.single('file'),
   uploadDocumentErrorHandler,
   DocumentController.uploadVerifiedDocumentAgainstPlaceholder

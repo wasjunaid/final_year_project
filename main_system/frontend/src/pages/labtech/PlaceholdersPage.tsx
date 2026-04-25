@@ -16,6 +16,7 @@ export const PlaceholdersPage: React.FC<Props> = ({ onSelectPlaceholder }) => {
   useEffect(() => {
     (async () => {
       try {
+        console.log("Fetching placeholders for lab tech...");
         await documentCtrl.fetchPlaceholdersForLabTech();
       } catch (e) {
         // controller exposes error
@@ -34,19 +35,19 @@ export const PlaceholdersPage: React.FC<Props> = ({ onSelectPlaceholder }) => {
     {
       key: 'patient',
       header: 'Patient',
-      render: (d) => <span className="text-gray-600 dark:text-[#a0a0a0]">{(d as any).patientName ?? d.patientId ?? 'N/A'}</span>
+      render: (d) => <span className="text-gray-600 dark:text-dark-text-secondary">{(d as any).patientName ?? d.patientId ?? 'N/A'}</span>
     },
     {
       key: 'appointmentId',
       header: 'Appointment',
-      render: (d) => <span className="text-gray-600 dark:text-[#a0a0a0]">{d.appointmentId ?? ''}</span>
+      render: (d) => <span className="text-gray-600 dark:text-dark-text-secondary">{d.appointmentId ?? ''}</span>
     },
     {
       key: 'createdAt',
       header: 'Created',
       render: (d) => {
         const dt = d.createdAt ? (d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt)) : null;
-        return <span className="text-gray-600 dark:text-[#a0a0a0]">{dt ? dt.toLocaleString() : ''}</span>;
+        return <span className="text-gray-600 dark:text-dark-text-secondary">{dt ? dt.toLocaleString() : ''}</span>;
       }
     },
     {

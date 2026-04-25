@@ -44,7 +44,7 @@ export const UploadAgainstPlaceholderPage: React.FC<Props> = ({ placeholder, onU
     <div className="p-6">
       {documentCtrl.error && <div className="mb-4"><Alert type="error" message={documentCtrl.error} /></div>}
 
-      <div className="bg-white dark:bg-[#2d2d2d] p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4">Upload Verified Document</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <TextInput label="Patient ID" value={String(placeholder.patientId ?? '')} onChange={() => {}} readOnly />

@@ -180,6 +180,7 @@ export const useDocumentController = (): IDocumentController => {
     setLoading(true);
     setError(null);
     try {
+      console.log("Fetching placeholders for lab tech...");
       const data = await documentRepository.getPlaceholdersForLabTech();
       setPlaceholdersForLabTech(data);
       return data;

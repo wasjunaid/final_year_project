@@ -15,7 +15,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   onFileSelect,
   onFileRemove,
   disabled = false,
-  accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif',
+  accept = '.pdf',
   maxSizeMB = 10,
 }) => {
   const [dragActive, setDragActive] = useState(false);
@@ -64,7 +64,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         className={`relative border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
           dragActive
             ? 'border-primary bg-primary/5 dark:bg-primary/10'
-            : 'border-gray-300 dark:border-[#404040] hover:border-primary dark:hover:border-primary'
+            : 'border-gray-300 dark:border-dark-border hover:border-primary dark:hover:border-primary'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <input
@@ -78,20 +78,20 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         
         <Upload className="mx-auto h-12 w-12 text-gray-400 dark:text-[#808080] mb-3" />
         
-        <p className="text-sm text-gray-600 dark:text-[#a0a0a0] mb-1">
+        <p className="text-sm text-gray-600 dark:text-dark-text-secondary mb-1">
           <span className="font-semibold text-primary">Click to upload</span> or drag and drop
         </p>
         <p className="text-xs text-gray-500 dark:text-[#808080]">
-          PDF, DOC, DOCX, JPG, PNG (MAX. {maxSizeMB}MB)
+          PDF (MAX. {maxSizeMB}MB)
         </p>
       </div>
 
       {selectedFile && (
-        <div className="mt-3 flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1a1a1a] rounded-lg border border-gray-200 dark:border-[#404040]">
+        <div className="mt-3 flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg border border-gray-200 dark:border-dark-border">
           <div className="flex items-center gap-2 text-sm">
             <span className="font-medium text-gray-900 dark:text-white">Selected:</span>
             <span className="text-gray-700 dark:text-[#d0d0d0]">{selectedFile.name}</span>
-            <span className="text-gray-500 dark:text-[#a0a0a0]">
+            <span className="text-gray-500 dark:text-dark-text-secondary">
               ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
             </span>
           </div>

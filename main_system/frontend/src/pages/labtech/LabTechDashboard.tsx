@@ -8,10 +8,10 @@ const LabTechDashboard: React.FC = () => {
   const navbarConfig: NavbarConfig = useMemo(() => ({
     title: 'Lab Technician',
     initialActiveTab: 'placeholders',
-    // tabs: [
-    //   { label: 'Placeholders', value: 'placeholders' },
+    tabs: [
+      { label: 'Placeholders', value: 'placeholders' },
     //   { label: 'Upload', value: 'upload' },
-    // ],
+    ],
     showSearch: false,
   }), []);
 
