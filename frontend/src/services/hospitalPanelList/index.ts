@@ -1,1 +1,0 @@
-export { hospitalPanelListService } from './hospitalPanelListService';

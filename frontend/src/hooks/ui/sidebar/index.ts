@@ -1,1 +1,0 @@
-export { useSidebarController } from './useSidebarController';
