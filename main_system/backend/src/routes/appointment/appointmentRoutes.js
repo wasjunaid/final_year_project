@@ -126,6 +126,14 @@ router.put(
 )
 
 router.put(
+    "/update-notes/:appointment_id",
+    allowedRoles([
+        roles.DOCTOR
+    ]),
+    AppointmentController.updateAppointmentNotesForDoctor
+)
+
+router.put(
     "/order-lab-tests/:appointment_id",
     allowedRoles([
         roles.DOCTOR

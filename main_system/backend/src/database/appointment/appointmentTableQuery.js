@@ -19,6 +19,7 @@ const appointmentTableQuery = `
         admission_date DATE,
         discharge_date DATE,
         applied_hospitalization_daily_charge NUMERIC(10, 2) DEFAULT NULL CHECK (applied_hospitalization_daily_charge IS NULL OR applied_hospitalization_daily_charge >= 0),
+        hospitalization_total_charge NUMERIC(10, 2) DEFAULT NULL CHECK (hospitalization_total_charge IS NULL OR hospitalization_total_charge >= 0),
         status VARCHAR(${APPOINTMENT_CONFIG.APPOINTMENT_STATUS_MAX_LENGTH}) CHECK (status IN (${VALID_APPOINTMENT_STATUSES.map(status => `'${status}'`).join(', ')})) DEFAULT '${VALID_APPOINTMENT_STATUSES_OBJECT.PROCESSING}' NOT NULL,
 
         appointment_cost NUMERIC(10, 9) NOT NULL DEFAULT 0 CHECK (appointment_cost >= 0),
@@ -58,6 +59,9 @@ const appointmentTableQuery = `
     ADD COLUMN IF NOT EXISTS applied_hospitalization_daily_charge NUMERIC(10, 2) DEFAULT NULL CHECK (applied_hospitalization_daily_charge IS NULL OR applied_hospitalization_daily_charge >= 0);
 
     ALTER TABLE appointment
+    ADD COLUMN IF NOT EXISTS hospitalization_total_charge NUMERIC(10, 2) DEFAULT NULL CHECK (hospitalization_total_charge IS NULL OR hospitalization_total_charge >= 0);
+
+    ALTER TABLE appointment
     DROP CONSTRAINT IF EXISTS appointment_date_check;
 
     ALTER TABLE appointment
@@ -87,6 +91,7 @@ const appointmentTableQuery = `
         TO_CHAR(a.admission_date, 'YYYY-MM-DD') AS admission_date,
         TO_CHAR(a.discharge_date, 'YYYY-MM-DD') AS discharge_date,
         a.applied_hospitalization_daily_charge,
+        a.hospitalization_total_charge,
         a.status,
         a.appointment_cost,
         a.started_at,

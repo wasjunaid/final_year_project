@@ -5,7 +5,9 @@ import type {
   DoctorFollowUpPayload,
   PatientRescheduleAppointmentPayload, 
   HospitalRescheduleAppointmentPayload, 
-  CompleteDoctorPayload
+  CompleteDoctorPayload,
+  DischargePayload,
+  UpdateNotesDoctorPayload
 } from '../../models/appointment/payload';
 
 // Factory to create appointment controller with DI for repository
@@ -225,15 +227,30 @@ export const createUseAppointmentController = ({ appointmentRepository }: { appo
       }
     };
 
-    const discharge = async (appointmentId: number) => {
+    const discharge = async (appointmentId: number, payload: DischargePayload) => {
       try {
         setLoading(true);
         setError(null);
-        const updated = await appointmentRepository.discharge(appointmentId);
+        const updated = await appointmentRepository.discharge(appointmentId, payload);
         updateAcrossLists(updated);
         return updated;
       } catch (err: any) {
         setError(err?.message || 'Failed to discharge appointment');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const updateDoctorDetails = async (appointmentId: number, payload: UpdateNotesDoctorPayload) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const updated = await appointmentRepository.updateNotes(appointmentId, payload);
+        updateAcrossLists(updated);
+        return updated;
+      } catch (err: any) {
+        setError(err?.message || 'Failed to update appointment details');
         throw err;
       } finally {
         setLoading(false);
@@ -306,6 +323,7 @@ export const createUseAppointmentController = ({ appointmentRepository }: { appo
       start,
       hospitalize,
       discharge,
+      updateDoctorDetails,
       completeDoctor,
       completeLabTests,
 

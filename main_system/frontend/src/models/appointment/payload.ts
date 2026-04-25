@@ -59,3 +59,19 @@ export interface CompleteDoctorPayload {
 export interface StartAppointmentPayload {
   // currently empty but can include location, initial vitals, etc.
 }
+
+export interface UpdateNotesDoctorPayload {
+  history_of_present_illness?: string | null;
+  review_of_systems?: string | null;
+  physical_exam?: string | null;
+  diagnosis?: string | null;
+  plan?: string | null;
+}
+
+export interface DischargePayload {
+  history_of_present_illness?: string | null;
+  review_of_systems?: string | null;
+  physical_exam?: string | null;
+  diagnosis?: string | null;
+  plan?: string | null;
+}

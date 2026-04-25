@@ -30,6 +30,9 @@ export interface AppointmentDto {
   doctor_completed?: boolean | null;
   doctor_completed_at?: string | null;
 
+  applied_hospitalization_daily_charge?: string | number | null;
+  hospitalization_total_charge?: string | number | null;
+
   // lab_test_required?: boolean | null;
   // lab_test_completed?: boolean | null;
   // lab_test_completed_at?: string | null;

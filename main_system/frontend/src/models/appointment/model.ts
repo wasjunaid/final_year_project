@@ -53,6 +53,9 @@ export interface AppointmentModel {
   labTestsCompleted?: boolean;
   labTestsCompletedAt?: string | null;
 
+  appliedHospitalizationDailyCharge?: number | null;
+  hospitalizationTotalCharge?: number | null;
+
   // labTestRequired?: boolean;
   // labTestCompleted?: boolean;
   // labTestCompletedAt?: string | null;

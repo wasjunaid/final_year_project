@@ -6,7 +6,9 @@ import type {
   DoctorFollowUpPayload,
   PatientRescheduleAppointmentPayload, 
   HospitalRescheduleAppointmentPayload, 
-  CompleteDoctorPayload
+  CompleteDoctorPayload,
+  UpdateNotesDoctorPayload,
+  DischargePayload
 } from '../../models/appointment/payload';
 
 const appointmentService = {
@@ -78,10 +80,10 @@ const appointmentService = {
     return resp.data;
   },
 
-  async discharge(appointmentId: number): Promise<ApiResponse<any>> {
-    const resp = await apiClient.put<ApiResponse<any>>(`/appointment/discharge/${appointmentId}`);
-    return resp.data;
-  },
+  // async discharge(appointmentId: number): Promise<ApiResponse<any>> {
+  //   const resp = await apiClient.put<ApiResponse<any>>(`/appointment/discharge/${appointmentId}`);
+  //   return resp.data;
+  // },
 
   // async requireLabTest(appointmentId: number): Promise<ApiResponse<any>> {
   //   const resp = await apiClient.put<ApiResponse<any>>(`/appointment/require-lab-test/${appointmentId}`);
@@ -122,6 +124,20 @@ const appointmentService = {
   //   const resp = await apiClient.put<ApiResponse<any>>(`/appointment/complete-prescription/${appointmentId}`);
   //   return resp.data;
   // },
+
+  async discharge(appointmentId: number, payload: DischargePayload): Promise<ApiResponse<any>> {
+    const resp = await apiClient.put<ApiResponse<any>>(`/appointment/discharge/${appointmentId}`, payload);
+    return resp.data;
+  },
+
+  async updateNotes(appointmentId: number, payload: UpdateNotesDoctorPayload): Promise<ApiResponse<any>> {
+    const resp = await apiClient.put<ApiResponse<any>>(`/appointment/update-notes/${appointmentId}`, payload);
+    const body = resp.data;
+    if (body && typeof body.success === 'undefined') {
+      return { success: true, data: body } as ApiResponse<any>;
+    }
+    return body as ApiResponse<any>;
+  },
 };
 
 export default appointmentService;

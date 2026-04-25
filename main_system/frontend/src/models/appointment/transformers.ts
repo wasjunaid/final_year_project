@@ -41,6 +41,9 @@ export const toAppointmentModel = (d: AppointmentDto): AppointmentModel => {
     // labTestCost: toNumberOrNull((d as any).lab_test_cost ?? null),
     // totalCost: toNumberOrNull((d as any).total_cost ?? null),
 
+    appliedHospitalizationDailyCharge: toNumberOrNull((d as any).applied_hospitalization_daily_charge ?? null),
+    hospitalizationTotalCharge: toNumberOrNull((d as any).hospitalization_total_charge ?? null),
+
     notes,
     appointmentType: toNullableString((d as any).appointment_type ?? null),
     parentAppointmentId: toNumberOrNull((d as any).parent_appointment_id ?? null),

@@ -409,8 +409,15 @@ class AppointmentController {
         try {
             const { person_id } = req.user;
             const { appointment_id } = req.params;
+            const { history_of_present_illness, review_of_systems, physical_exam, diagnosis, plan } = req.body;
 
-            const appointment = await AppointmentService.dischargeAppointment(person_id, appointment_id);
+            const appointment = await AppointmentService.dischargeAppointment(person_id, appointment_id, {
+                history_of_present_illness,
+                review_of_systems,
+                physical_exam,
+                diagnosis,
+                plan,
+            });
 
             return res.status(STATUS_CODES.OK).json({
                 data: appointment,
@@ -420,6 +427,39 @@ class AppointmentController {
             });
         } catch (error) {
             console.error(`Error in AppointmentController.dischargeAppointment: ${error.message} ${error.status}`);
+            return res.status(error.status || STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                data: null,
+                message: error.message || "Internal Server Error",
+                status: error.status || STATUS_CODES.INTERNAL_SERVER_ERROR,
+                success: false
+            });
+        }
+    }
+
+    async updateAppointmentNotesForDoctor(req, res) {
+        try {
+            const { person_id } = req.user;
+            const { appointment_id } = req.params;
+            const { history_of_present_illness, review_of_systems, physical_exam, diagnosis, plan } = req.body;
+
+            const appointment = await AppointmentService.updateAppointmentNotesForDoctor({
+                doctor_id: person_id,
+                appointment_id,
+                history_of_present_illness,
+                review_of_systems,
+                physical_exam,
+                diagnosis,
+                plan,
+            });
+
+            return res.status(STATUS_CODES.OK).json({
+                data: appointment,
+                message: "Appointment notes updated successfully",
+                status: STATUS_CODES.OK,
+                success: true
+            });
+        } catch (error) {
+            console.error(`Error in AppointmentController.updateAppointmentNotesForDoctor: ${error.message} ${error.status}`);
             return res.status(error.status || STATUS_CODES.INTERNAL_SERVER_ERROR).json({
                 data: null,
                 message: error.message || "Internal Server Error",

@@ -1545,7 +1545,13 @@ class AppointmentService {
         }
     }
 
-    static async dischargeAppointment(doctor_id, appointment_id) {
+    static async dischargeAppointment(doctor_id, appointment_id, {
+        history_of_present_illness = null,
+        review_of_systems = null,
+        physical_exam = null,
+        diagnosis = null,
+        plan = null,
+    } = {}) {
         try {
             if (!doctor_id) {
                 throw new AppError("doctor_id is required", STATUS_CODES.BAD_REQUEST);
@@ -1563,38 +1569,251 @@ class AppointmentService {
             await this.validateDoctorScopedAppointmentAction(doctor_id, appointment);
             validateFieldsForDischargeAppointment({ doctor_id, appointment });
 
+            // --- Hospitalization charge calculation ---
+            // Use CURRENT_DATE as discharge date; admission_date must exist at this point
+            const admissionDate = new Date(appointment.admission_date);
+            const dischargeDate = new Date();
+            dischargeDate.setHours(0, 0, 0, 0);
+
+            if (!appointment.admission_date) {
+                throw new AppError(
+                    "Appointment does not have an admission date",
+                    STATUS_CODES.BAD_REQUEST
+                );
+            }
+
+            // At minimum 1 day charge even for same-day discharge
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const daysHospitalized = Math.max(
+                1,
+                Math.ceil((dischargeDate - admissionDate) / msPerDay)
+            );
+
+            const dailyRate = Number(appointment.applied_hospitalization_daily_charge || 0);
+            const hospitalizationTotalCharge = daysHospitalized * dailyRate;
+
+            // --- Persist discharge + notes + hospitalization charge in one atomic update ---
             const query = {
                 text: `UPDATE appointment
                 SET
-                discharge_date = CURRENT_DATE
+                    status                         = '${VALID_APPOINTMENT_STATUSES_OBJECT.COMPLETED}',
+                    completed_at                   = CURRENT_TIMESTAMP,
+                    discharge_date                 = CURRENT_DATE,
+                    history_of_present_illness     = COALESCE($1, history_of_present_illness),
+                    review_of_systems              = COALESCE($2, review_of_systems),
+                    physical_exam                  = COALESCE($3, physical_exam),
+                    diagnosis                      = COALESCE($4, diagnosis),
+                    plan                           = COALESCE($5, plan),
+                    hospitalization_total_charge   = $6
                 WHERE
-                appointment_id = $1
+                    appointment_id = $7
                 RETURNING *`,
-                values: [appointment_id],
+                values: [
+                    history_of_present_illness,
+                    review_of_systems,
+                    physical_exam,
+                    diagnosis,
+                    plan,
+                    hospitalizationTotalCharge,
+                    appointment_id,
+                ],
             };
+
             const result = await DatabaseService.query(query.text, query.values);
             if (result.rowCount === 0) {
-                throw new AppError("failed to discharge appointment", STATUS_CODES.INTERNAL_SERVER_ERROR);
+                throw new AppError(
+                    "Failed to discharge appointment",
+                    STATUS_CODES.INTERNAL_SERVER_ERROR
+                );
             }
+
+            // --- Use final merged values for downstream steps ---
+            // After COALESCE, the DB has the final values — pull from result row
+            const finalRow = result.rows[0];
+
+            // --- Patient medical history ---
+            if (finalRow.diagnosis) {
+                const patientDiagnosis = finalRow.diagnosis.split(',').map(item => item.trim());
+                for (const diag of patientDiagnosis) {
+                    await PatientMedicalHistoryService.insertPatientMedicalHistoryIfNotExists(
+                        appointment.patient_id,
+                        diag,
+                        new Date()
+                    );
+                }
+            }
+
+            // --- Medical coding ---
+            let prescriptions = await PrescriptionService.getPrescriptionsAgainstAppointmentIfExists(
+                appointment.patient_id, appointment_id
+            );
+            if (!prescriptions) prescriptions = [];
+
+            let verifiedDocs = await AppointmentDocumentsService.getVerifiedDocumentsAgainstAppointmentIfExists(appointment_id);
+            if (!verifiedDocs) verifiedDocs = [];
+
+            let unverifiedDocs = await AppointmentDocumentsService.getUnverifiedDocumentsAgainstAppointmentIfExists(appointment_id);
+            if (!unverifiedDocs) unverifiedDocs = [];
+
+            const provider_notes = this.buildProviderNotesForMedicalCoding({
+                history_of_present_illness: finalRow.history_of_present_illness,
+                review_of_systems:          finalRow.review_of_systems,
+                physical_exam:              finalRow.physical_exam,
+                diagnosis:                  finalRow.diagnosis,
+                plan:                       finalRow.plan,
+                prescriptions,
+                verifiedDocs,
+                unverifiedDocs,
+            });
+
+            const codingResponse = await axios.post(
+                `${AI_MEDICAL_CODING_API_BASE_URL}${AI_MEDICAL_CODING_GENERATE_CODES_ENDPOINT}`,
+                { provider_notes }
+            );
+            const { icd_codes, cpt_codes } = codingResponse.data;
+
+            if (icd_codes?.length > 0) {
+                for (const icd_code of icd_codes) {
+                    await AppointmentICDService.insertAppointmentICDCode(
+                        appointment_id, icd_code.code, icd_code.description
+                    );
+                }
+            }
+            if (cpt_codes?.length > 0) {
+                for (const cpt_code of cpt_codes) {
+                    await AppointmentCPTService.insertAppointmentCPTCode(
+                        appointment_id, cpt_code.code, cpt_code.description
+                    );
+                }
+            }
+
+            // --- Bill generation ---
+            // BillService.generateBillAgainstAppointment should read
+            // hospitalization_total_charge from the appointment row and add it
+            // on top of the base appointment_cost when building the bill
+            await BillService.generateBillAgainstAppointment(appointment_id);
 
             await this.recordAppointmentEvent({
                 actor_person_id: doctor_id,
-                logAction: `Appointment ${appointment_id} discharged by doctor ${doctor_id}`,
+                logAction: `Appointment ${appointment_id} discharged and completed by doctor ${doctor_id}; days_hospitalized ${daysHospitalized}; daily_rate ${dailyRate}; hospitalization_total ${hospitalizationTotalCharge}`,
                 notifications: [
                     {
                         person_id: appointment.patient_id,
                         role: VALID_ROLES_OBJECT.PATIENT,
-                        title: "Discharge Completed",
-                        message: `You have been marked as discharged for appointment #${appointment_id}.`,
+                        title: "Discharged",
+                        message: `You have been discharged for appointment #${appointment_id}. A bill has been generated for your ${daysHospitalized} day(s) of hospitalization.`,
                         type: "system",
                         related_id: appointment_id,
                     },
                 ],
             });
 
+            return finalRow;
+        } catch (error) {
+            console.error(
+                `Error in AppointmentService.dischargeAppointment: ${error.message} ${error.status}`
+            );
+            throw error;
+        }
+    }
+
+    /**
+     * Updates clinical notes on an in-progress appointment without completing it.
+     * Intended for use during hospitalization to progressively save doctor notes.
+     * Does NOT trigger billing, medical coding, or status changes.
+     * @param {Object} params
+     * @param {number|string} params.doctor_id
+     * @param {number|string} params.appointment_id
+     * @param {string} [params.history_of_present_illness]
+     * @param {string} [params.review_of_systems]
+     * @param {string} [params.physical_exam]
+     * @param {string} [params.diagnosis]
+     * @param {string} [params.plan]
+     * @returns {Promise<Object>} - The updated appointment object.
+     * @throws {AppError} if any issue occurs
+     */
+    static async updateAppointmentNotesForDoctor({
+        doctor_id,
+        appointment_id,
+        history_of_present_illness = null,
+        review_of_systems = null,
+        physical_exam = null,
+        diagnosis = null,
+        plan = null,
+    }) {
+        try {
+            if (!doctor_id) {
+                throw new AppError("doctor_id is required", STATUS_CODES.BAD_REQUEST);
+            }
+
+            if (!appointment_id) {
+                throw new AppError("appointment_id is required", STATUS_CODES.BAD_REQUEST);
+            }
+
+            const appointment = await this.getAppointmentIfExists(appointment_id);
+            if (!appointment) {
+                throw new AppError("Appointment not found", STATUS_CODES.NOT_FOUND);
+            }
+
+            await this.validateDoctorScopedAppointmentAction(doctor_id, appointment);
+
+            // Only allow note updates on in-progress appointments
+            if (appointment.status !== VALID_APPOINTMENT_STATUSES_OBJECT.IN_PROGRESS) {
+                throw new AppError(
+                    "Notes can only be updated on in-progress appointments",
+                    STATUS_CODES.BAD_REQUEST
+                );
+            }
+
+            // Only meaningful during hospitalization
+            if (appointment.appointment_type !== "hospitalization") {
+                throw new AppError(
+                    "Interim note updates are only allowed for hospitalization appointments",
+                    STATUS_CODES.BAD_REQUEST
+                );
+            }
+
+            // Null fields fall back to whatever is already stored — no accidental overwrites
+            const query = {
+                text: `UPDATE appointment
+                SET
+                    history_of_present_illness = COALESCE($1, history_of_present_illness),
+                    review_of_systems         = COALESCE($2, review_of_systems),
+                    physical_exam             = COALESCE($3, physical_exam),
+                    diagnosis                 = COALESCE($4, diagnosis),
+                    plan                      = COALESCE($5, plan)
+                WHERE
+                    appointment_id = $6
+                RETURNING *`,
+                values: [
+                    history_of_present_illness,
+                    review_of_systems,
+                    physical_exam,
+                    diagnosis,
+                    plan,
+                    appointment_id,
+                ],
+            };
+
+            const result = await DatabaseService.query(query.text, query.values);
+            if (result.rowCount === 0) {
+                throw new AppError(
+                    "Failed to update appointment notes",
+                    STATUS_CODES.INTERNAL_SERVER_ERROR
+                );
+            }
+
+            await this.recordAppointmentEvent({
+                actor_person_id: doctor_id,
+                logAction: `Appointment ${appointment_id} notes updated during hospitalization by doctor ${doctor_id}`,
+                notifications: [], // Silent save — no need to ping the patient for every interim save
+            });
+
             return result.rows[0];
         } catch (error) {
-            console.error(`Error in AppointmentService.dischargeAppointment: ${error.message} ${error.status}`);
+            console.error(
+                `Error in AppointmentService.updateAppointmentNotesForDoctor: ${error.message} ${error.status}`
+            );
             throw error;
         }
     }

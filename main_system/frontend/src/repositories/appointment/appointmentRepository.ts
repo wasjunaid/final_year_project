@@ -1,6 +1,6 @@
 import appointmentService from '../../services/appointment/appointmentService';
 import type { AppointmentModel } from '../../models/appointment/model';
-import type { PatientRescheduleAppointmentPayload, HospitalRescheduleAppointmentPayload, CompleteDoctorPayload, DoctorFollowUpPayload } from '../../models/appointment/payload';
+import type { PatientRescheduleAppointmentPayload, HospitalRescheduleAppointmentPayload, CompleteDoctorPayload, DoctorFollowUpPayload, UpdateNotesDoctorPayload, DischargePayload } from '../../models/appointment/payload';
 import { toAppointmentModels } from '../../models/appointment/transformers';
 import { AppError } from '../../utils/appError';
 
@@ -164,15 +164,27 @@ const appointmentRepository = {
     }
   },
 
-  async discharge(appointmentId: number) {
+  async discharge(appointmentId: number, payload: DischargePayload) {
     try {
-      const resp = await appointmentService.discharge(appointmentId);
+      const resp = await appointmentService.discharge(appointmentId, payload);
       if (!resp.success) throw new AppError({ message: resp.message || 'Failed to discharge appointment', title: 'Discharge Failed' });
       return toAppointmentModels([resp.data])[0];
     } catch (err: any) {
       if (err instanceof AppError) throw err;
       const msg = err?.response?.data?.message || err?.message || 'Failed to discharge appointment';
       throw new AppError({ message: msg, title: 'Discharge Failed' });
+    }
+  },
+
+  async updateNotes(appointmentId: number, payload: UpdateNotesDoctorPayload) {
+    try {
+      const resp = await appointmentService.updateNotes(appointmentId, payload);
+      if (!resp.success) throw new AppError({ message: resp.message || 'Failed to update notes', title: 'Update Failed' });
+      return toAppointmentModels([resp.data])[0];
+    } catch (err: any) {
+      if (err instanceof AppError) throw err;
+      const msg = err?.response?.data?.message || err?.message || 'Failed to update notes';
+      throw new AppError({ message: msg, title: 'Update Failed' });
     }
   },
 

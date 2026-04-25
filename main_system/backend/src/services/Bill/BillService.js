@@ -230,57 +230,93 @@ class BillService {
             }
 
             if (is_claim) {
-                const patient = await PersonService.getPersonIfExists(appointmentDetails.patient_id);
-
-                const doctor = await PersonService.getPersonIfExists(appointmentDetails.doctor_id);
-
-                const icdCodesData = await AppointmentICDService.getAppointmentICDCodesIfExists(appointment_id);
-                const icd_codes = icdCodesData.map(icd => icd.icd_code);
-                const icd_codes_string = icd_codes.join(', ');
-                // const icd_codes_string = "ye ha icd code";
-
-                const cptCodesData = await AppointmentCPTService.getAppointmentCPTCodesIfExists(appointment_id);
-                const cpt_codes = cptCodesData.map(cpt => cpt.cpt_code);
-                const cpt_codes_string = cpt_codes.join(', ');
-                // const cpt_codes_string = "ye ha cpt code";
-
-                const response = await axios.post(`${INSURANCE_BACKEND_BASE_URL}${INSURANCE_BACKEND_SEND_CLAIM_ENDPOINT}`, {
-                    claim_id_in_hospital_system: result.rows[0].bill_id,
-                    insurance_number: personInsurance.insurance_number,
-                    cnic: patient.cnic,
-                    claim_amount: amount,
-                    icd_codes: icd_codes_string,
-                    cpt_codes: cpt_codes_string,
-                    appointment_date: appointmentDetails.date,
-                    hospital_name: appointmentDetails.hospital_name,
-                    doctor_name: `${doctor.first_name} ${doctor.last_name}`
-                });
-                if (!response.data.success) {
-                    throw new AppError("Sending Claim to Insurance Failed", STATUS_CODES.INTERNAL_SERVER_ERROR);
-                }
-
                 try {
-                    await LogService.insertLog(
-                        appointmentDetails.doctor_id,
-                        `Claim sent to insurance backend for bill ${result.rows[0].bill_id} and appointment ${appointment_id}`
-                    );
-                } catch (logError) {
-                    console.error(`Claim success logging failed: ${logError.message}`);
-                }
+                    const patient = await PersonService.getPersonIfExists(appointmentDetails.patient_id);
+                    const doctor = await PersonService.getPersonIfExists(appointmentDetails.doctor_id);
 
-                try {
-                    await NotificationService.insertNotification({
-                        person_id: appointmentDetails.patient_id,
-                        role: VALID_ROLES_OBJECT.PATIENT,
-                        title: "Insurance Claim Submitted",
-                        message: "Your insurance claim has been submitted and is pending insurer decision.",
-                        type: "system",
-                        related_id: appointment_id,
-                        related_table: VALID_TABLES_OBJECT.APPOINTMENT,
-                        sendEmail: false,
+                    const icdCodesData = await AppointmentICDService.getAppointmentICDCodesIfExists(appointment_id);
+                    const icd_codes_string = (icdCodesData || []).map(icd => icd.icd_code).join(', ');
+
+                    const cptCodesData = await AppointmentCPTService.getAppointmentCPTCodesIfExists(appointment_id);
+                    const cpt_codes_string = (cptCodesData || []).map(cpt => cpt.cpt_code).join(', ');
+
+                    const response = await axios.post(`${INSURANCE_BACKEND_BASE_URL}${INSURANCE_BACKEND_SEND_CLAIM_ENDPOINT}`, {
+                        claim_id_in_hospital_system: result.rows[0].bill_id,
+                        insurance_number: personInsurance.insurance_number,
+                        cnic: patient.cnic,
+                        claim_amount: amount,
+                        icd_codes: icd_codes_string,
+                        cpt_codes: cpt_codes_string,
+                        appointment_date: appointmentDetails.date,
+                        hospital_name: appointmentDetails.hospital_name,
+                        doctor_name: `${doctor.first_name} ${doctor.last_name}`
                     });
-                } catch (notificationError) {
-                    console.error(`Claim success notification failed: ${notificationError.message}`);
+
+                    if (!response.data.success) {
+                        throw new Error("Insurance backend rejected the claim");
+                    }
+
+                    try {
+                        await LogService.insertLog(
+                            appointmentDetails.doctor_id,
+                            `Claim sent to insurance backend for bill ${result.rows[0].bill_id} and appointment ${appointment_id}`
+                        );
+                    } catch (logError) {
+                        console.error(`Claim success logging failed: ${logError.message}`);
+                    }
+
+                    try {
+                        await NotificationService.insertNotification({
+                            person_id: appointmentDetails.patient_id,
+                            role: VALID_ROLES_OBJECT.PATIENT,
+                            title: "Insurance Claim Submitted",
+                            message: "Your insurance claim has been submitted and is pending insurer decision.",
+                            type: "system",
+                            related_id: appointment_id,
+                            related_table: VALID_TABLES_OBJECT.APPOINTMENT,
+                            sendEmail: false,
+                        });
+                    } catch (notificationError) {
+                        console.error(`Claim success notification failed: ${notificationError.message}`);
+                    }
+
+                } catch (claimError) {
+                    // Claim sending failed — downgrade to no-claim bill, log it, notify patient
+                    console.error(`Insurance claim failed for appointment ${appointment_id}: ${claimError.message}`);
+
+                    // Update the bill we just inserted to reflect claim failure
+                    try {
+                        await DatabaseService.query(
+                            `UPDATE bill SET is_claim = FALSE, claim_status = NULL WHERE bill_id = $1`,
+                            [result.rows[0].bill_id]
+                        );
+                    } catch (updateError) {
+                        console.error(`Failed to downgrade claim on bill: ${updateError.message}`);
+                    }
+
+                    try {
+                        await LogService.insertLog(
+                            appointmentDetails.doctor_id,
+                            `Claim sending failed for bill ${result.rows[0].bill_id}, appointment ${appointment_id}: ${claimError.message}`
+                        );
+                    } catch (logError) {
+                        console.error(`Claim failure logging failed: ${logError.message}`);
+                    }
+
+                    try {
+                        await NotificationService.insertNotification({
+                            person_id: appointmentDetails.patient_id,
+                            role: VALID_ROLES_OBJECT.PATIENT,
+                            title: "Insurance Claim Could Not Be Sent",
+                            message: "Your bill has been generated but the insurance claim could not be submitted automatically. Please contact the hospital for assistance.",
+                            type: "alert",
+                            related_id: appointment_id,
+                            related_table: VALID_TABLES_OBJECT.APPOINTMENT,
+                            sendEmail: false,
+                        });
+                    } catch (notificationError) {
+                        console.error(`Claim failure notification failed: ${notificationError.message}`);
+                    }
                 }
             } else if (claimSkipReason) {
                 try {

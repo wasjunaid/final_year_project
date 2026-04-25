@@ -18,7 +18,7 @@ import useAppointmentCodingController from '../../hooks/medicalCoding/useAppoint
 // import { AllDocumentsList } from '../documents/components/AllDocumentsList';
 // import { DocumentDetailsView } from '../documents/components/DocumentDetailsView';
 import { AppointmentStatus } from '../../models/appointment/enums';
-import type { CompleteDoctorPayload } from '../../models/appointment/payload';
+import type { CompleteDoctorPayload, DischargePayload, UpdateNotesDoctorPayload } from '../../models/appointment/payload';
 import TabbedCard from '../../components/TabbedComponent';
 import { useMedicalHistoryController, useAllergyController, useFamilyHistoryController, useSurgicalHistoryController } from '../../hooks/patient';
 import AddPrescriptionModal from '../../components/AddPrescriptionModal';
@@ -721,18 +721,18 @@ const AppointmentsDetailsPage: React.FC = () => {
       const ok = await uploadPendingData({ requirePrescriptions: false });
       if (!ok) { setSaving(false); return; }
 
-      const diagnosisString = (local.diagnosisList && local.diagnosisList.length > 0) ? local.diagnosisList.join(', ') : (local.diagnosis ?? null);
-      const payload: CompleteDoctorPayload = {
-        doctor_note: local.notes ?? null,
+      const diagnosisString = (local.diagnosisList && local.diagnosisList.length > 0)
+        ? local.diagnosisList.join(', ')
+        : (local.diagnosis ?? null);
+
+      const payload: UpdateNotesDoctorPayload = {
         history_of_present_illness: local.historyOfPresentIllness ?? null,
         review_of_systems: local.reviewOfSystems ?? null,
         physical_exam: local.physicalExam ?? null,
         diagnosis: diagnosisString ?? null,
         plan: local.plan ?? null,
-        lab_tests_ordered: (localLabTests || []).length > 0 ? true : false,
       };
 
-      // Routes to a different endpoint that only saves details without marking complete
       const updated = await appointmentCtrl.updateDoctorDetails(local.appointmentId, payload);
       setLocal((prev) => ({
         ...prev!,
@@ -760,7 +760,19 @@ const AppointmentsDetailsPage: React.FC = () => {
       const ok = await uploadPendingData({ requirePrescriptions: false });
       if (!ok) { setSaving(false); return; }
 
-      const updated = await appointmentCtrl.discharge(local.appointmentId);
+      const diagnosisString = (local.diagnosisList && local.diagnosisList.length > 0)
+        ? local.diagnosisList.join(', ')
+        : (local.diagnosis ?? null);
+
+      const payload: DischargePayload = {
+        history_of_present_illness: local.historyOfPresentIllness ?? null,
+        review_of_systems: local.reviewOfSystems ?? null,
+        physical_exam: local.physicalExam ?? null,
+        diagnosis: diagnosisString ?? null,
+        plan: local.plan ?? null,
+      };
+
+      const updated = await appointmentCtrl.discharge(local.appointmentId, payload);
       setLocal((prev) => ({
         ...prev!,
         ...updated,
@@ -823,15 +835,17 @@ const AppointmentsDetailsPage: React.FC = () => {
       return;
     }
 
-    if (followUpType === 'hospitalization' && followUpAdmissionDate && followUpDischargeDate) {
-      const admission = new Date(followUpAdmissionDate);
-      const discharge = new Date(followUpDischargeDate);
-      if (discharge < admission) {
-        setErrorMessage('Discharge date cannot be before admission date');
-        setTimeout(() => setErrorMessage(''), 4000);
-        return;
-      }
-    }
+    // if (followUpType === 'hospitalization' && followUpAdmissionDate && followUpDischargeDate) {
+    //   const admission = new Date(followUpAdmissionDate);
+    //   const discharge = new Date(followUpDischargeDate);
+    //   if (discharge < admission) {
+    //     setErrorMessage('Discharge date cannot be before admission date');
+    //     setTimeout(() => setErrorMessage(''), 4000);
+    //     return;
+    //   }
+    // }
+    
+    setFollowUpType('opd'); // for now, we are only allowing OPD follow-ups; this can be expanded in the future as needed
 
     setSaving(true);
     try {
@@ -2083,7 +2097,7 @@ const AppointmentsDetailsPage: React.FC = () => {
                     value={followUpTime}
                     onChange={(e) => setFollowUpTime(e.target.value)}
                   />
-                  <Dropdown
+                  {/*<Dropdown
                     label="Follow-up Type"
                     options={[
                       { value: 'opd', label: 'OPD' },
@@ -2107,7 +2121,7 @@ const AppointmentsDetailsPage: React.FC = () => {
                         onChange={(e) => setFollowUpDischargeDate(e.target.value)}
                       />
                     </>
-                  )}
+                  )}*/}
                   <TextInput
                     label="Follow-up Reason"
                     value={followUpReason}
