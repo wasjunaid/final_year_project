@@ -51,17 +51,16 @@ const PersonsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5 flex items-center justify-between gap-3">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5 flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Persons</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage person records linked to insurance entities.</p>
           </div>
           <Button variant="primary" onClick={() => setOpenForm(true)}>
-            <Plus size={16} />
             Add Person
           </Button>
         </div>

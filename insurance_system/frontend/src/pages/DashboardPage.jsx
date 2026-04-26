@@ -210,11 +210,11 @@ const DashboardPage = () => {
     : getInsuranceSubAdminStats();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5 mb-5">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5 mb-5">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Welcome back, {user?.email} ({capitalizeFirstLetter(user?.role)})
@@ -230,7 +230,7 @@ const DashboardPage = () => {
             {displayStats.map((stat) => {
               const Icon = stat.icon;
               return (
-                <div key={stat.title} className="rounded-xl border border-gray-200 dark:border-[#404040] bg-white dark:bg-[#2d2d2d] p-4 shadow-sm">
+                <div key={stat.title} className="rounded-xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-secondary p-4 shadow-sm">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-300 flex items-center justify-center mb-3">
                     <Icon size={20} />
                   </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import Header from '../components/common/Header';
 import Sidebar from '../components/common/Sidebar';
 import Alert from '../components/ui/Alert';
@@ -104,16 +104,16 @@ const InsurancePanelPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5 flex items-center justify-between gap-3">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5 flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Insurance Panel Hospitals</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage hospitals in your insurance panel network.</p>
           </div>
-          <Button variant="primary" onClick={() => setOpenDialog(true)}><Plus size={16} /> Add Hospital</Button>
+          <Button variant="primary" onClick={() => setOpenDialog(true)}>Add Hospital</Button>
         </div>
 
         <Alert type="info" message="Manage the list of hospitals that are part of your insurance company's panel network." />
@@ -123,7 +123,7 @@ const InsurancePanelPage = () => {
         {loading ? (
           <div className="flex justify-center py-10"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" /></div>
         ) : (
-          <div className="bg-white dark:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] rounded-xl overflow-hidden">
+          <div className="bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-xl overflow-hidden">
             <div className="overflow-auto">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-100 dark:bg-[#252525]">
@@ -143,7 +143,7 @@ const InsurancePanelPage = () => {
                     <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">No hospitals in panel list</td></tr>
                   ) : (
                     paginatedPanelList.map((panel) => (
-                      <tr key={panel.insurance_panel_list_id} className="border-t border-gray-100 dark:border-[#3a3a3a]">
+                      <tr key={panel.insurance_panel_list_id} className="border-t border-gray-100 dark:border-dark-bg-tertiary">
                         <td className="px-3 py-2">{panel.insurance_panel_list_id}</td>
                         <td className="px-3 py-2">{panel.hospital_id}</td>
                         <td className="px-3 py-2">{panel.hospital_name}</td>
@@ -174,7 +174,7 @@ const InsurancePanelPage = () => {
 
       {openDialog && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-[#404040] bg-white dark:bg-[#2d2d2d] p-5">
+          <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-secondary p-5">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Add Hospital to Panel</h3>
             <Dropdown
               label="Hospital"
@@ -198,4 +198,3 @@ const InsurancePanelPage = () => {
 };
 
 export default InsurancePanelPage;
-

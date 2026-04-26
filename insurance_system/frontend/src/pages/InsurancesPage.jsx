@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import Header from '../components/common/Header';
 import Sidebar from '../components/common/Sidebar';
 import Alert from '../components/ui/Alert';
@@ -237,7 +237,7 @@ const InsurancesPage = () => {
     }
 
     return (
-      <div className="bg-white dark:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-xl overflow-hidden">
         <div className="overflow-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-100 dark:bg-[#252525]">
@@ -252,7 +252,7 @@ const InsurancesPage = () => {
                 <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">No insurances found</td></tr>
               ) : (
                 paginatedInsurances.map((insurance) => (
-                  <tr key={insurance.insurance_number} className="border-t border-gray-100 dark:border-[#3a3a3a]">
+                  <tr key={insurance.insurance_number} className="border-t border-gray-100 dark:border-dark-bg-tertiary">
                     <td className="px-3 py-2">{insurance.insurance_number}</td>
                     <td className="px-3 py-2">{getPlanName(insurance.insurance_plan_id)}</td>
                     <td className="px-3 py-2">{insurance.policy_holder_name}</td>
@@ -290,7 +290,7 @@ const InsurancesPage = () => {
     }
 
     return (
-      <div className="bg-white dark:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-xl overflow-hidden">
         <div className="overflow-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-100 dark:bg-[#252525]">
@@ -305,7 +305,7 @@ const InsurancesPage = () => {
                 <tr><td colSpan={6} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">No plans found</td></tr>
               ) : (
                 paginatedPlans.map((plan) => (
-                  <tr key={plan.insurance_plan_id} className="border-t border-gray-100 dark:border-[#3a3a3a]">
+                  <tr key={plan.insurance_plan_id} className="border-t border-gray-100 dark:border-dark-bg-tertiary">
                     <td className="px-3 py-2">{plan.insurance_plan_id}</td>
                     <td className="px-3 py-2">{plan.name}</td>
                     <td className="px-3 py-2">{plan.description}</td>
@@ -336,11 +336,11 @@ const InsurancesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Insurance Management</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage policies and insurance plans.</p>
         </div>
@@ -350,15 +350,15 @@ const InsurancesPage = () => {
 
         {isInsuranceStaff && (
           <div className="space-y-4">
-            <div className="flex gap-2 border-b border-gray-200 dark:border-[#404040] pb-2">
+            <div className="flex gap-2 border-b border-gray-200 dark:border-dark-border pb-2">
               <button
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${tabValue === 0 ? 'bg-primary text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#3a3a3a]'}`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${tabValue === 0 ? 'bg-primary text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary'}`}
                 onClick={() => setTabValue(0)}
               >
                 Insurances
               </button>
               <button
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${tabValue === 1 ? 'bg-primary text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#3a3a3a]'}`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${tabValue === 1 ? 'bg-primary text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary'}`}
                 onClick={() => setTabValue(1)}
               >
                 Plans
@@ -369,7 +369,7 @@ const InsurancesPage = () => {
               <>
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Insurance Policies</h2>
-                  <Button variant="primary" onClick={() => handleOpenDialog(null, 'insurance')}><Plus size={16} /> Add Insurance</Button>
+                  <Button variant="primary" onClick={() => handleOpenDialog(null, 'insurance')}> Add Insurance</Button>
                 </div>
                 {renderInsurances()}
               </>
@@ -379,7 +379,7 @@ const InsurancesPage = () => {
               <>
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Insurance Plans</h2>
-                  <Button variant="primary" onClick={() => handleOpenDialog(null, 'plan')}><Plus size={16} /> Add Plan</Button>
+                  <Button variant="primary" onClick={() => handleOpenDialog(null, 'plan')}> Add Plan</Button>
                 </div>
                 {renderPlans()}
               </>
@@ -390,7 +390,7 @@ const InsurancesPage = () => {
 
       {openDialog && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl rounded-xl border border-gray-200 dark:border-[#404040] bg-white dark:bg-[#2d2d2d] p-5">
+          <div className="w-full max-w-2xl rounded-xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-secondary p-5">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               {(editingItem?.insurance_number || editingItem?.insurance_plan_id) ? `Edit ${editingItem.type}` : `Add ${editingItem?.type}`}
             </h3>

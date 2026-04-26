@@ -69,7 +69,7 @@ const UsersPage = () => {
   }, [otherUsers, userPage]);
 
   const renderTable = (rows, totalItems, currentPage, setCurrentPage, emptyText, label) => (
-    <div className="bg-white dark:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-xl overflow-hidden">
       <div className="overflow-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100 dark:bg-[#252525]">
@@ -85,7 +85,7 @@ const UsersPage = () => {
               <tr><td colSpan={4} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">{emptyText}</td></tr>
             ) : (
               rows.map((user) => (
-                <tr key={user.user_id} className="border-t border-gray-100 dark:border-[#3a3a3a]">
+                <tr key={user.user_id} className="border-t border-gray-100 dark:border-dark-bg-tertiary">
                   <td className="px-3 py-2">{user.user_id}</td>
                   <td className="px-3 py-2">{user.email}</td>
                   <td className="px-3 py-2 capitalize">{user.role || 'N/A'}</td>
@@ -93,7 +93,7 @@ const UsersPage = () => {
                     {user.email === 'superadmin@example.com' ? (
                       <span className="text-xs text-gray-500 dark:text-gray-400">Protected</span>
                     ) : (
-                      <Button size="sm" variant="danger" onClick={() => handleDeleteUser(user.user_id)}><Trash2 size={14} /> Delete</Button>
+                      <Button size="sm" variant="danger" onClick={() => handleDeleteUser(user.user_id)}>Delete</Button>
                     )}
                   </td>
                 </tr>
@@ -114,11 +114,11 @@ const UsersPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Users Management</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">View and manage registered users.</p>
         </div>

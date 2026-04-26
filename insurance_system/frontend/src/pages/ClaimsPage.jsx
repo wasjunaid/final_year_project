@@ -127,11 +127,11 @@ const ClaimsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Claims</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Claims are submitted from external systems. You can view and update their status here.
@@ -142,7 +142,7 @@ const ClaimsPage = () => {
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
         {success && <Alert type="success" message={success} onClose={() => setSuccess('')} />}
 
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-3">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-3">
           <div className="flex flex-wrap gap-2">
             {CLAIM_STATUS_TABS.map((tab) => {
               const isActive = activeStatusTab === tab;
@@ -178,7 +178,7 @@ const ClaimsPage = () => {
             />
 
             {selectedClaim && (
-              <div className="mt-4 bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-4">
+              <div className="mt-4 bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-4">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Claim Detail #{selectedClaim.claim_id}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                   <div><span className="text-gray-500 dark:text-gray-400">Hospital Claim ID:</span> {selectedClaim.claim_id_in_hospital_system || '-'}</div>

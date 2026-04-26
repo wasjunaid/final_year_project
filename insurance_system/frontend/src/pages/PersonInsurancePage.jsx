@@ -124,16 +124,16 @@ const PersonInsurancePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5 flex items-center justify-between gap-3">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5 flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Person Insurance</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Link persons with insurance policies.</p>
           </div>
-          <Button variant="primary" onClick={() => setOpenDialog(true)}><Plus size={16} /> Add Person Insurance</Button>
+          <Button variant="primary" onClick={() => setOpenDialog(true)}>Add Person Insurance</Button>
         </div>
 
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
@@ -142,10 +142,10 @@ const PersonInsurancePage = () => {
         {loading ? (
           <div className="flex justify-center py-10"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" /></div>
         ) : (
-          <div className="bg-white dark:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] rounded-xl overflow-hidden">
+          <div className="bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-xl overflow-hidden">
             <div className="overflow-auto">
               <table className="min-w-full text-sm">
-                <thead className="bg-gray-100 dark:bg-[#252525]">
+                <thead className="bg-gray-100 dark:bg-dark-bg-tertiary">
                   <tr>
                     {['Person Insurance ID', 'CNIC', 'Person Name', 'Insurance Number', 'Policy Holder', 'Relationship', 'Actions'].map((h) => (
                       <th key={h} className="px-3 py-2 text-left font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">{h}</th>
@@ -157,7 +157,7 @@ const PersonInsurancePage = () => {
                     <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">No person insurances found</td></tr>
                   ) : (
                     paginatedPersonInsurances.map((personInsurance) => (
-                      <tr key={personInsurance.person_insurance_id} className="border-t border-gray-100 dark:border-[#3a3a3a]">
+                      <tr key={personInsurance.person_insurance_id} className="border-t border-gray-100 dark:border-dark-bg-tertiary">
                         <td className="px-3 py-2">{personInsurance.person_insurance_id}</td>
                         <td className="px-3 py-2 whitespace-nowrap">{formatCNICDisplay(personInsurance.cnic)}</td>
                         <td className="px-3 py-2">{getPersonName(personInsurance.cnic)}</td>
@@ -187,7 +187,7 @@ const PersonInsurancePage = () => {
 
       {openDialog && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-xl rounded-xl border border-gray-200 dark:border-[#404040] bg-white dark:bg-[#2d2d2d] p-5">
+          <div className="w-full max-w-xl rounded-xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-secondary p-5">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Add Person Insurance</h3>
             <div className="grid grid-cols-1 gap-3">
               <Dropdown

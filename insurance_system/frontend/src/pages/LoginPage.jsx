@@ -32,8 +32,8 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 dark:from-[#1a1a1a] dark:via-[#212131] dark:to-[#20243a] flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl border border-gray-200 dark:border-[#404040] bg-white dark:bg-[#2d2d2d] p-6 shadow-xl">
+    <div className="min-h-screen bg-linear-to-br from-slate-100 via-blue-50 to-indigo-100 dark:from-dark-bg dark:via-[#212131] dark:to-[#20243a] flex items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-2xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-secondary p-6 shadow-xl">
         <div className="text-center mb-6">
           <div className="mx-auto h-12 w-12 rounded-xl bg-primary/10 text-primary dark:text-blue-300 flex items-center justify-center mb-3">
             <Shield size={24} />

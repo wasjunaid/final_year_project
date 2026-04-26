@@ -99,11 +99,11 @@ const PaymentHistoryPage = () => {
   }, [allTransactions, currentPage]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Payment History</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Track blockchain insurance payment transactions.</p>
         </div>
@@ -111,7 +111,7 @@ const PaymentHistoryPage = () => {
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
         {!walletAddress ? (
-          <section className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-8 text-center space-y-3">
+          <section className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-8 text-center space-y-3">
             <div className="flex justify-center text-gray-400"><Wallet size={42} /></div>
             <p className="text-gray-600 dark:text-gray-400">No wallet address configured</p>
             <Button variant="primary" onClick={openSetWallet}>Set Wallet Address</Button>
@@ -119,7 +119,7 @@ const PaymentHistoryPage = () => {
         ) : (
           <>
             {history && (
-              <section className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5 space-y-4">
+              <section className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Transaction History</h2>
@@ -141,7 +141,7 @@ const PaymentHistoryPage = () => {
               </section>
             )}
 
-            <section className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-0 overflow-hidden">
+            <section className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-0 overflow-hidden">
               {loading ? (
                 <div className="flex justify-center py-10"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" /></div>
               ) : history && history.transactions.length > 0 ? (
@@ -158,7 +158,7 @@ const PaymentHistoryPage = () => {
                       {paginatedTransactions.map((tx, index) => {
                         const { date, time } = formatDate(tx.date);
                         return (
-                          <tr key={index} className="border-t border-gray-100 dark:border-[#3a3a3a]">
+                          <tr key={index} className="border-t border-gray-100 dark:border-dark-bg-tertiary">
                             <td className="px-3 py-2 font-mono text-xs">{formatAddress(tx.from)}</td>
                             <td className="px-3 py-2">
                               <div className="flex items-center gap-2 font-mono text-xs">
@@ -193,7 +193,7 @@ const PaymentHistoryPage = () => {
 
       {openWalletModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-[#404040] bg-white dark:bg-[#2d2d2d] p-5">
+          <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-secondary p-5">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Set Wallet Address</h3>
             <TextInput
               label="Ethereum Address"

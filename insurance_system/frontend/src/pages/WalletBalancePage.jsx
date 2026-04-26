@@ -69,18 +69,18 @@ const WalletBalancePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Header />
       <Sidebar />
-      <main className="pt-20 md:pl-[17rem] px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-        <div className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5">
+      <main className="pt-20 md:pl-68 px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Wallet Balance</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Monitor your insurance wallet address and balance.</p>
         </div>
 
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
-        <section className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5 space-y-4">
+        <section className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center"><Wallet size={24} /></div>
             <div>
@@ -97,7 +97,7 @@ const WalletBalancePage = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="rounded-lg border border-gray-200 dark:border-[#404040] bg-gray-50 dark:bg-[#252525] p-3 flex items-center justify-between gap-3">
+              <div className="rounded-lg border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-[#252525] p-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-mono break-all text-gray-800 dark:text-gray-200">{walletAddress}</p>
                 <Button size="sm" variant="outline" onClick={openSetWallet}>Change</Button>
               </div>
@@ -107,7 +107,7 @@ const WalletBalancePage = () => {
         </section>
 
         {walletAddress && (
-          <section className="bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-200 dark:border-[#404040] p-5 space-y-4">
+          <section className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Wallet Balance</h2>
               <Button size="sm" variant="outline" onClick={handleRefresh} disabled={loading}>
@@ -137,7 +137,7 @@ const WalletBalancePage = () => {
 
       {openWalletModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-[#404040] bg-white dark:bg-[#2d2d2d] p-5">
+          <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-secondary p-5">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Set Wallet Address</h3>
             <TextInput
               label="Ethereum Address"
