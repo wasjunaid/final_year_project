@@ -113,25 +113,25 @@ const HospitalDashboard: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/15 dark:to-dark-bg-secondary rounded-xl shadow-md border border-blue-100 dark:border-dark-border p-4">
+        <div className="bg-linear-to-br from-blue-50 to-white dark:from-blue-900/15 dark:to-dark-bg-secondary rounded-xl shadow-md border border-blue-100 dark:border-dark-border p-4">
           <div className="text-xs text-blue-700/80 dark:text-blue-300/90">Appointments</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{appointmentCount}</div>
           <div className="text-sm text-blue-700/70 dark:text-blue-300/80">Today: {upcomingCount}</div>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/15 dark:to-dark-bg-secondary rounded-xl shadow-md border border-emerald-100 dark:border-dark-border p-4">
+        <div className="bg-linear-to-br from-emerald-50 to-white dark:from-emerald-900/15 dark:to-dark-bg-secondary rounded-xl shadow-md border border-emerald-100 dark:border-dark-border p-4">
           <div className="text-xs text-emerald-700/80 dark:text-emerald-300/90">Staff</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{staffCount}</div>
           <div className="text-sm text-emerald-700/70 dark:text-emerald-300/80">Active staff</div>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/15 dark:to-dark-bg-secondary rounded-xl shadow-md border border-amber-100 dark:border-dark-border p-4">
+        <div className="bg-linear-to-br from-amber-50 to-white dark:from-amber-900/15 dark:to-dark-bg-secondary rounded-xl shadow-md border border-amber-100 dark:border-dark-border p-4">
           <div className="text-xs text-amber-700/80 dark:text-amber-300/90">Lab Tests</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{labTestCount}</div>
           <div className="text-sm text-amber-700/70 dark:text-amber-300/80">Available lab tests</div>
         </div>
 
-        <div className="bg-gradient-to-br from-violet-50 to-white dark:from-violet-900/15 dark:to-dark-bg-secondary rounded-xl shadow-md border border-violet-100 dark:border-dark-border p-4">
+        <div className="bg-linear-to-br from-violet-50 to-white dark:from-violet-900/15 dark:to-dark-bg-secondary rounded-xl shadow-md border border-violet-100 dark:border-dark-border p-4">
           <div className="text-xs text-violet-700/80 dark:text-violet-300/90">Doctors</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{doctorsCount}</div>
           <div className="text-sm text-violet-700/70 dark:text-violet-300/80">Associated doctors</div>

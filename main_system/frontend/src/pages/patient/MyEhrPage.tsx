@@ -12,6 +12,7 @@ import type { MedicalHistory } from '../../models/patient/medicalHistory/model';
 import type { Allergy } from '../../models/patient/allergy/model';
 import type { FamilyHistory } from '../../models/patient/familyHistory/model';
 import type { SurgicalHistory } from '../../models/patient/surgicalHistory/model';
+import { AddHistoryForm } from './PatientHealthHistoryPage/components';
 
 const MyEhrPage: React.FC = () => {
   const navbarConfig: NavbarConfig = useMemo(() => ({
@@ -22,6 +23,7 @@ const MyEhrPage: React.FC = () => {
       { label: 'Allergies', value: 'allergies' },
       { label: 'Family History', value: 'family-history' },
       { label: 'Surgical History', value: 'surgical-history' },
+      { label: 'Add History', value: 'add' },
     ],
   }), []);
 
@@ -152,6 +154,7 @@ const MyEhrPage: React.FC = () => {
           />
         </div>
       )}
+      {activeTab === 'add' && <AddHistoryForm />}
     </div>
   );
 };

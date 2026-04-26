@@ -213,7 +213,7 @@ export const SystemAnalyticsDashboard: React.FC = () => {
             return (
               <div
                 key={card.title}
-                className={`bg-gradient-to-br ${style.gradient} rounded-xl shadow-md border border-gray-200 dark:border-dark-border p-4`}
+                className={`bg-linear-to-br ${style.gradient} rounded-xl shadow-md border border-gray-200 dark:border-dark-border p-4`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>

@@ -112,7 +112,7 @@ const PatientHealthHistoryPage: React.FC = () => {
       ))}
 
       {/* Medical History */}
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md border p-6">
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md border p-6">
         <h3 className="text-lg font-bold mb-3">Medical History</h3>
         <div className="flex gap-2 flex-wrap">
           <TextInput label="Condition" value={conditionName} onChange={(e) => setConditionName(e.target.value)} />
@@ -128,7 +128,7 @@ const PatientHealthHistoryPage: React.FC = () => {
       </div>
 
       {/* Allergies */}
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md border p-6">
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md border p-6">
         <h3 className="text-lg font-bold mb-3">Allergies</h3>
         <div className="flex gap-2">
           <TextInput label="Allergy" value={allergyName} onChange={(e) => setAllergyName(e.target.value)} />
@@ -143,7 +143,7 @@ const PatientHealthHistoryPage: React.FC = () => {
       </div>
 
       {/* Family History */}
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md border p-6">
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md border p-6">
         <h3 className="text-lg font-bold mb-3">Family History</h3>
         <div className="flex gap-2">
           <TextInput label="Condition" value={familyCondition} onChange={(e) => setFamilyCondition(e.target.value)} />
@@ -158,7 +158,7 @@ const PatientHealthHistoryPage: React.FC = () => {
       </div>
 
       {/* Surgical History */}
-      <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md border p-6">
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md border p-6">
         <h3 className="text-lg font-bold mb-3">Surgical History</h3>
         <div className="flex gap-2 flex-wrap">
           <TextInput label="Surgery" value={surgeryName} onChange={(e) => setSurgeryName(e.target.value)} />
