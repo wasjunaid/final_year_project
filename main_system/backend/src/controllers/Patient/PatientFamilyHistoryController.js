@@ -1,5 +1,4 @@
 const { STATUS_CODES } = require("../../utils/statusCodesUtil");
-const { AppError } = require("../../classes/AppErrorClass");
 const { PatientFamilyHistoryService } = require("../../services/Patient/PatientFamilyHistoryService");
 
 class PatientFamilyHistoryController {
@@ -9,7 +8,12 @@ class PatientFamilyHistoryController {
 
             const familyHistory = await PatientFamilyHistoryService.getPatientFamilyHistoryIfExists(person_id);
             if (!familyHistory || familyHistory.length === 0) {
-                throw new AppError('No family history found for the patient', STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: 'No family history found for this patient',
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({
@@ -35,7 +39,12 @@ class PatientFamilyHistoryController {
 
             const familyHistory = await PatientFamilyHistoryService.getPatientFamilyHistoryIfExists(person_id);
             if (!familyHistory || familyHistory.length === 0) {
-                throw new AppError('No family history found for the patient', STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: 'No family history found for this patient',
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({

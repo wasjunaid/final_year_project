@@ -10,7 +10,13 @@ class LabTestController {
 
             const labTests = await LabTestService.getAllLabTestsIfExists(person_id, role);
             if (!labTests) {
-                throw new AppError("No lab tests found", STATUS_CODES.NOT_FOUND);
+                // throw new AppError("No lab tests found", STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: "No lab tests found",
+                    status: STATUS_CODES.OK,
+                    success: true,
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({

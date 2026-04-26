@@ -9,7 +9,13 @@ class PatientMedicalHistoryController {
 
             const medicalHistory = await PatientMedicalHistoryService.getPatientMedicalHistoryIfExists(person_id);
             if (!medicalHistory || medicalHistory.length === 0) {
-                throw new AppError('No medical history found for the patient', STATUS_CODES.NOT_FOUND);
+                // throw new AppError('No medical history found for the patient', STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: 'No medical history found for this patient',
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({
@@ -35,7 +41,13 @@ class PatientMedicalHistoryController {
 
             const medicalHistory = await PatientMedicalHistoryService.getPatientMedicalHistoryIfExists(person_id);
             if (!medicalHistory || medicalHistory.length === 0) {
-                throw new AppError('No medical history found for the patient', STATUS_CODES.NOT_FOUND);
+                // throw new AppError('No medical history found for the patient', STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: 'No medical history found for this patient',
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({

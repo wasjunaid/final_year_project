@@ -10,7 +10,13 @@ class HospitalPanelListController {
 
             const hospitalPanelList = await HospitalPanelListService.getHospitalPanelListIfExists(person_id);
             if (!hospitalPanelList) {
-                throw new AppError("No hospital panel list found", STATUS_CODES.NOT_FOUND);
+                // throw new AppError("No hospital panel list found", STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: "No hospital panel list found",
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({

@@ -9,7 +9,13 @@ class PatientSurgicalHistoryController {
 
             const surgicalHistory = await PatientSurgicalHistoryService.getPatientSurgicalHistoryIfExists(person_id);
             if (!surgicalHistory || surgicalHistory.length === 0) {
-                throw new AppError('No surgical history found for the patient', STATUS_CODES.NOT_FOUND);
+                // throw new AppError('No surgical history found for the patient', STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: 'No surgical history found for this patient',
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({
@@ -35,7 +41,13 @@ class PatientSurgicalHistoryController {
 
             const surgicalHistory = await PatientSurgicalHistoryService.getPatientSurgicalHistoryIfExists(person_id);
             if (!surgicalHistory || surgicalHistory.length === 0) {
-                throw new AppError('No surgical history found for the patient', STATUS_CODES.NOT_FOUND);
+                // throw new AppError('No surgical history found for the patient', STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: 'No surgical history found for this patient',
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({
