@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { DashboardSummaryDto } from '../../services/systemAdminUserManagement/dashboardStatsService';
 import { dashboardStatsService } from '../../services/systemAdminUserManagement/dashboardStatsService';
+import { useNavbarController } from '../../hooks/ui/navbar';
 
 type AnalyticsCard = {
   title: string;
@@ -24,6 +25,9 @@ type AnalyticsCard = {
 export const SystemAnalyticsDashboard: React.FC = () => {
   const [summary, setSummary] = useState<DashboardSummaryDto | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const navbarConfig = useMemo(() => ({ title: 'System Analytics' }), []);
+  useNavbarController(navbarConfig);
 
   useEffect(() => {
     const loadSummary = async () => {
@@ -195,10 +199,10 @@ export const SystemAnalyticsDashboard: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col min-h-full">
-      <div className="mb-4">
+      {/*<div className="mb-4">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Analytics</h1>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Centralized metrics dashboard for your role scope.</p>
-      </div>
+      </div>*/}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {cards.map((card) => (
