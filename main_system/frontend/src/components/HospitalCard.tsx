@@ -15,7 +15,7 @@ const HospitalCard: React.FC<Props> = ({ hospital}) => {
   const phone = hospital.phone ?? hospital.contact ?? '';
 
   return (
-    <div className="bg-white dark:bg-[#2b2b2b] rounded-xl shadow-md border p-4 border-gray-200 dark:border-[#404040]">
+    <div className="bg-white dark:bg-[#2b2b2b] rounded-xl shadow-md border p-4 border-gray-200 dark:border-dark-border">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-semibold">{name.toUpperCase()}</div>

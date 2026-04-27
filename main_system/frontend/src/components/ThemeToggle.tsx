@@ -15,7 +15,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ variant = 'icon', className =
     return (
       <button
         onClick={toggleTheme}
-        className={`p-2 hover:bg-gray-100 dark:hover:bg-[#3a3a3a] rounded-lg transition-colors ${className}`}
+        className={`p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-lg transition-colors ${className}`}
         title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       >
@@ -28,7 +28,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ variant = 'icon', className =
     return (
       <button
         onClick={toggleTheme}
-        className={`flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-[#3a3a3a] hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors ${className}`}
+        className={`flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-dark-bg-tertiary hover:bg-gray-200 dark:hover:bg-dark-bg-secondary rounded-lg transition-colors ${className}`}
         aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       >
         {isDark ? (
@@ -49,10 +49,10 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ variant = 'icon', className =
   // Labeled Switch variant - for sidebar
   if (variant === 'labeled-switch') {
     return (
-      <div className={`flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl hover:bg-gray-100 dark:hover:bg-[#3a3a3a] transition-colors ${className}`}>
+      <div className={`flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary transition-colors ${className}`}>
         <div className="flex items-center gap-2">
-          {isDark ? <Moon size={18} className="text-gray-700 dark:text-[#e5e5e5]" /> : <Sun size={18} className="text-gray-700 dark:text-[#e5e5e5]" />}
-          <span className="text-sm font-medium text-gray-700 dark:text-[#e5e5e5]">Dark mode</span>
+          {isDark ? <Moon size={18} className="text-gray-700 dark:text-dark-text-primary" /> : <Sun size={18} className="text-gray-700 dark:text-dark-text-primary" />}
+          <span className="text-sm font-medium text-gray-700 dark:text-dark-text-primary">Dark mode</span>
         </div>
         <button
           onClick={toggleTheme}

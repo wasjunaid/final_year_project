@@ -19,7 +19,7 @@ const DoctorCard: React.FC<Props> = ({ doctor }) => {
 
 
   return (
-    <div className="bg-white dark:bg-[#2b2b2b] rounded-xl shadow-md border border-gray-200 dark:border-[#404040] p-4 md:p-6">
+    <div className="bg-white dark:bg-[#2b2b2b] rounded-xl shadow-md border border-gray-200 dark:border-dark-border p-4 md:p-6">
       <div className="flex items-start gap-4">
         <div className="flex-1">
           <h4 className="text-lg font-semibold">{name}</h4>

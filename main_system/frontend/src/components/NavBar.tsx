@@ -76,7 +76,7 @@ const Navbar: React.FC<NavbarProps> = ({ config, isMobileOpen, onMobileToggle })
   }, [isSearchExpanded, localSearchQuery]);
 
   return (
-    <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md p-3 md:p-4 mb-3 md:mb-4 border border-gray-200 dark:border-[#404040]">
+    <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md p-3 md:p-4 mb-3 md:mb-4 border border-gray-200 dark:border-dark-border">
       <div className="flex justify-between items-center min-h-10">
         {/* Left: Mobile Menu + Title */}
         <div className="flex items-center gap-3 md:gap-6">
@@ -98,11 +98,11 @@ const Navbar: React.FC<NavbarProps> = ({ config, isMobileOpen, onMobileToggle })
           )}
           <div>
             {title && (
-              <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-[#e5e5e5]">{title}</h1>
+              <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-dark-text">{title}</h1>
             )}
             {subtitle && (
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-gray-500 dark:text-[#a0a0a0]">{subtitle}</span>
+                <span className="text-xs text-gray-500 dark:text-dark-text-secondary">{subtitle}</span>
               </div>
             )}
           </div>
@@ -125,7 +125,7 @@ const Navbar: React.FC<NavbarProps> = ({ config, isMobileOpen, onMobileToggle })
                       placeholder={searchPlaceholder}
                       value={localSearchQuery}
                       onChange={(e) => handleSearchChange(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-[#404040] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white dark:bg-[#3a3a3a] dark:text-[#e5e5e5]"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white dark:bg-dark-bg-tertiary dark:text-dark-text"
                     />
                   </div>
                   <button
@@ -159,7 +159,7 @@ const Navbar: React.FC<NavbarProps> = ({ config, isMobileOpen, onMobileToggle })
                     className={`tab relative pb-1 text-sm md:text-base transition-all duration-300 font-medium ${
                       isActive
                         ? 'text-primary dark:text-white border-b-2 border-primary dark:border-white'
-                        : 'text-gray-600 dark:text-[#a0a0a0] hover:text-gray-800 dark:hover:text-[#e5e5e5]'
+                        : 'text-gray-600 dark:text-dark-text-secondary hover:text-gray-800 dark:hover:text-dark-text'
                     }`}
                     style={{
                       transition: 'all 0.3s ease-in-out',

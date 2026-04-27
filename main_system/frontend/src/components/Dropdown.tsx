@@ -133,7 +133,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(({
   return (
     <div ref={ref} className={`${widthStyle} ${containerClassName}`} style={widthStyles}>
       {label && (
-        <label className={`block text-sm font-semibold text-gray-700 dark:text-[#e5e5e5] mb-2 ${labelClassName}`}>
+        <label className={`block text-sm font-semibold text-gray-700 dark:text-dark-text mb-2 ${labelClassName}`}>
           {label}
           {/* {required && <span className="text-red-500 ml-1">*</span>} */}
         </label>
@@ -157,9 +157,9 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(({
         >
           <span className={
             disabled 
-              ? 'text-gray-500 dark:text-[#e5e5e5]' 
+              ? 'text-gray-500 dark:text-dark-text' 
               : selectedOption 
-                ? 'text-gray-900 dark:text-[#e5e5e5]' 
+                ? 'text-gray-900 dark:text-dark-text' 
                 : 'text-gray-400 dark:text-gray-500'
           }>
             {selectedOption ? selectedOption.label : placeholder}
@@ -172,10 +172,10 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(({
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className={`absolute z-50 mt-1 w-full bg-white dark:bg-[#3a3a3a] border border-gray-300 dark:border-[#404040] rounded-lg shadow-lg overflow-hidden`}>
+          <div className={`absolute z-50 mt-1 w-full bg-white dark:bg-dark-bg-tertiary border border-gray-300 dark:border-dark-border rounded-lg shadow-lg overflow-hidden`}>
             {/* Search Input */}
             {searchable && (
-              <div className="p-2 border-b border-gray-200 dark:border-[#404040]">
+              <div className="p-2 border-b border-gray-200 dark:border-dark-border">
                 <div className="relative">
                   {/* <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" /> */}
                   <input
@@ -184,7 +184,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={searchPlaceholder}
-                    className="w-full pl-9 pr-3 p-2.5 md:p-3 border border-gray-300 dark:border-[#404040] rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base bg-white dark:bg-[#3a3a3a] dark:text-[#e5e5e5]"
+                    className="w-full pl-9 pr-3 p-2.5 md:p-3 border border-gray-300 dark:border-dark-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base bg-white dark:bg-dark-bg-tertiary dark:text-dark-text"
                   />
                 </div>
               </div>
@@ -203,7 +203,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(({
                     className={`px-3 py-2.5 cursor-pointer transition-colors text-sm md:text-base ${
                       option.value === value
                         ? 'bg-primary text-white'
-                        : 'hover:bg-gray-50 dark:hover:bg-[#2d2d2d] dark:text-[#e5e5e5]'
+                        : 'hover:bg-gray-50 dark:hover:bg-dark-bg-secondary dark:text-dark-text'
                     }`}
                     onClick={() => handleSelect(option.value)}
                     role="option"
@@ -229,7 +229,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(({
       )}
 
       {helperText && !error && (
-        <p id={`${props.id}-helper`} className="mt-1 text-xs text-gray-500 dark:text-[#a0a0a0]">
+        <p id={`${props.id}-helper`} className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">
           {helperText}
         </p>
       )}

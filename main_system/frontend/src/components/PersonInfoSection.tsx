@@ -36,8 +36,8 @@ const PersonInfoSection: React.FC<PersonInfoSectionProps> = ({
   const phoneDisplayValue = getFormattedPhone();
 
   return (
-    <div className="bg-white dark:bg-[#2d2d2d] rounded-xl shadow-md border border-gray-200 dark:border-[#404040] p-4 md:p-6">
-      <h3 className="text-lg font-bold text-gray-800 dark:text-[#e5e5e5] mb-4">
+    <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md border border-gray-200 dark:border-dark-border p-4 md:p-6">
+      <h3 className="text-lg font-bold text-gray-800 dark:text-dark-text mb-4">
         Personal Information
       </h3>
 

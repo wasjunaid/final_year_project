@@ -7,7 +7,6 @@ import {
   Bell, 
   User, 
   GitPullRequest,
-  FileText,
   Database,
   Wallet,
   CreditCard,
@@ -26,7 +25,6 @@ import { PatientDocumentsPage } from '../patient/PatientDocumentsPage';
 import { PatientInsurancePage } from '../patient/PatientInsurancePage';
 import { AccessRequestsPage } from '../accessRequest';
 import AppointmentsDashboard from '../appointments/AppointmentsDashboard';
-import MyEhrPage from '../patient/MyEhrPage';
 import BlockchainHistoryPage from '../blockchainHistory/BlockchainHistoryPage';
 import WalletSettingsPage from '../wallet/WalletSettingsPage';
 import PaymentHistoryPage from '../payment/PaymentHistoryPage';
@@ -42,7 +40,7 @@ const PatientPortal: React.FC = () => {
       { icon: Calendar, label: 'Appointments', route: 'appointments' },
       // { icon: TestTube, label: 'Lab Results', route: 'lab-tests' },
       { icon: FolderOpen, label: 'My Health', route: 'health' },
-      { icon: FileText, label: 'My EHR', route: 'my-ehr' },
+      // { icon: FileText, label: 'My EHR', route: 'my-ehr' },
       { icon: FolderOpen, label: 'Medical Records', route: 'documents' },
       { icon: Pill, label: 'My Prescriptions', route: 'prescriptions' },
       { icon: Shield, label: 'Insurance', route: 'insurance' },
@@ -63,8 +61,8 @@ const PatientPortal: React.FC = () => {
         return <AppointmentsDashboard />
       case 'lab-tests':
         return <div className="p-6"><h1 className="text-2xl font-bold">Lab tests - Coming Soon</h1></div>;
-      case 'my-ehr':
-        return <MyEhrPage />;
+      // case 'my-ehr':
+      //   return <MyEhrPage />;
       case 'insurance':
         return <PatientInsurancePage />;
       case 'documents':

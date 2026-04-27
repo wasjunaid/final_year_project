@@ -31,7 +31,7 @@ const BasePortal: React.FC<BasePortalProps> = ({
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-[#1a1a1a]">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-dark-bg">
       {/* Floating Sidebar */}
       <Sidebar 
         config={sidebarConfig} 

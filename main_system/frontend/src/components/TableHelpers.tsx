@@ -7,8 +7,8 @@ export const StackedCell: React.FC<{
   tertiary?: React.ReactNode;
 }> = ({ primary, secondary, tertiary }) => (
   <div>
-    <div className="font-semibold text-gray-800 dark:text-[#e5e5e5]">{primary}</div>
-    {secondary && <div className="text-sm text-gray-600 dark:text-[#a0a0a0] mt-1">{secondary}</div>}
+    <div className="font-semibold text-gray-800 dark:text-dark-text-primary">{primary}</div>
+    {secondary && <div className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">{secondary}</div>}
     {tertiary && <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">{tertiary}</div>}
   </div>
 );

@@ -29,9 +29,9 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
     <>
       {/* Sidebar */}
       <aside
-        className={`bg-white dark:bg-[#2d2d2d] ${
+        className={`bg-white dark:bg-dark-bg-secondary ${
           sidebarCollapsed ? 'w-20' : 'w-64'
-        } p-3 flex flex-col gap-3 rounded-xl fixed left-2 top-2 md:left-3 md:top-3 h-[calc(100vh-1rem)] md:h-[calc(100vh-1.5rem)] transition-all duration-300 z-50 overflow-y-auto overflow-x-hidden shadow-md border border-gray-200 dark:border-[#404040] ${
+        } p-3 flex flex-col gap-3 rounded-xl fixed left-2 top-2 md:left-3 md:top-3 h-[calc(100vh-1rem)] md:h-[calc(100vh-1.5rem)] transition-all duration-300 z-50 overflow-y-auto overflow-x-hidden shadow-md border border-gray-200 dark:border-dark-border ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
@@ -43,14 +43,14 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
               {!sidebarCollapsed && (
                 <>
                   <div className="flex-1">
-                    <div className="font-bold text-sm text-gray-800 dark:text-[#e5e5e5]">
+                    <div className="font-bold text-sm text-gray-800 dark:text-dark-text">
                       {config.portalName}
                     </div>
                   </div>
                   {/* Collapse button - inline when expanded */}
                   <button
                     onClick={toggleSidebar}
-                    className="flex w-6 h-6 rounded-full hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-colors items-center justify-center text-xs shrink-0"
+                    className="flex w-6 h-6 rounded-full hover:bg-gray-200 dark:hover:bg-dark-bg-tertiary transition-colors items-center justify-center text-xs shrink-0"
                     title="Collapse sidebar"
                   >
                     <ChevronLeft size={18} />
@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
             {sidebarCollapsed && (
               <button
                 onClick={toggleSidebar}
-                className="flex w-full h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:shadow-sm transition-colors items-center justify-center text-xs mt-3"
+                className="flex w-full h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary hover:shadow-sm transition-colors items-center justify-center text-xs mt-3"
                 title="Expand sidebar"
               >
                 <Menu size={18} />
@@ -84,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
                   className={`nav-item flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all relative group ${
                     isActive
                       ? 'bg-primary text-white shadow-md'
-                      : 'text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:shadow-sm'
+                      : 'text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary hover:shadow-sm'
                   } ${sidebarCollapsed ? 'justify-center' : ''}`}
                   title={sidebarCollapsed ? item.label : ''}
                 >
@@ -103,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
                   )}
                   {/* Red dot indicator when collapsed */}
                   {sidebarCollapsed && item.badge && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#2d2d2d]" />
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-dark-bg-secondary" />
                   )}
                 </button>
               );
@@ -111,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
           </nav>
 
           {/* Bottom Navigation */}
-          <div className="border-t border-gray-300 dark:border-[#404040] pt-3 mt-3">
+          <div className="border-t border-gray-300 dark:border-dark-border pt-3 mt-3">
             <div className="flex flex-col gap-1.5">
               {config.bottomNavItems.map((item) => {
                 const Icon = item.icon;
@@ -124,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
                     className={`nav-item flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all relative group ${
                       isActive
                         ? 'bg-primary text-white shadow-md'
-                        : 'text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:shadow-sm'
+                        : 'text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary hover:shadow-sm'
                     } ${sidebarCollapsed ? 'justify-center' : ''}`}
                     title={sidebarCollapsed ? item.label : ''}
                   >
@@ -143,7 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({ config, isMobileOpen, onMobileToggle 
                     )}
                     {/* Red dot indicator when collapsed and has badge */}
                     {sidebarCollapsed && item.badge && (
-                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#2d2d2d]" />
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-dark-bg-secondary" />
                     )}
                   </button>
                 );

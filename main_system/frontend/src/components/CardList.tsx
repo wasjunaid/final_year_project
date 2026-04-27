@@ -146,7 +146,7 @@ const CardList = <T extends Record<string, any>>({
 
   // Shimmer loading effect for a single card
   const ShimmerCard = () => (
-    <div className="animate-pulse bg-white dark:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] rounded-lg p-4">
+    <div className="animate-pulse bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg p-4">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div>
         <div className="flex-1 space-y-3">
@@ -159,7 +159,7 @@ const CardList = <T extends Record<string, any>>({
   );
 
   return (
-    <div className="bg-white dark:bg-[#2d2d2d] rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
+    <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
       {/* Cards Container */}
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {loading ? (
@@ -185,7 +185,7 @@ const CardList = <T extends Record<string, any>>({
               {emptyComponent || (
                 <>
                   {emptyIcon && <div className="mb-3">{emptyIcon}</div>}
-                  <p className="text-gray-500 dark:text-[#a0a0a0]">{emptyMessage}</p>
+                  <p className="text-gray-500 dark:text-dark-text-secondary">{emptyMessage}</p>
                 </>
               )}
             </div>
@@ -204,9 +204,9 @@ const CardList = <T extends Record<string, any>>({
 
       {/* Pagination Controls */}
       {paginationData && paginationData.totalPages > 1 && (
-        <div className="px-4 py-3 bg-gray-50 dark:bg-[#252424] border-t border-gray-200 dark:border-[#404040]">
+        <div className="px-4 py-3 bg-gray-50 dark:bg-[#252424] border-t border-gray-200 dark:border-dark-border">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="text-sm text-gray-600 dark:text-[#a0a0a0]">
+            <div className="text-sm text-gray-600 dark:text-dark-text-secondary">
               {paginationData.loadedPages !== undefined ? (
                 // Progressive pagination - show loaded count
                 <>
@@ -230,7 +230,7 @@ const CardList = <T extends Record<string, any>>({
               <button
                 onClick={() => paginationData.onPageChange(paginationData.currentPage - 1)}
                 disabled={paginationData.currentPage === 1 || loading || isLoadingMore}
-                className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-dark-bg text-gray-700 dark:text-dark-text rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 title="Previous page"
               >
                 <ChevronLeft size={18} />
@@ -248,7 +248,7 @@ const CardList = <T extends Record<string, any>>({
                       className={`px-2 md:px-3 py-1 rounded-lg text-sm transition-colors disabled:cursor-not-allowed ${
                         page === paginationData.currentPage
                           ? 'bg-primary text-white'
-                          : 'bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] hover:bg-gray-300 dark:hover:bg-gray-600'
+                          : 'bg-gray-200 dark:bg-dark-bg text-gray-700 dark:text-dark-text hover:bg-gray-300 dark:hover:bg-gray-600'
                       }`}
                     >
                       {page}
@@ -259,7 +259,7 @@ const CardList = <T extends Record<string, any>>({
               <button
                 onClick={() => paginationData.onPageChange(paginationData.currentPage + 1)}
                 disabled={paginationData.currentPage === paginationData.totalPages || loading || isLoadingMore}
-                className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-[#1a1a1a] text-gray-700 dark:text-[#e5e5e5] rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                className="px-2 md:px-3 py-1 bg-gray-200 dark:bg-dark-bg text-gray-700 dark:text-dark-text rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 title="Next page"
               >
                 <ChevronRight size={18} />

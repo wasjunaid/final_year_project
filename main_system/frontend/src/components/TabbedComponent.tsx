@@ -70,13 +70,13 @@ const TabbedCard: React.FC<TabbedCardProps> = ({ tabs, defaultTab, className = '
   return (
     <div className={`bg-white dark:bg-[#2b2b2b] p-4 rounded-lg shadow ${className}`}>
       {/* Tab Headers */}
-      <div className="border-b border-gray-200 dark:border-[#404040] relative">
+      <div className="border-b border-gray-200 dark:border-dark-border relative">
         {/* Left scroll button */}
         {canScrollLeft && (
           <button
             type="button"
             onClick={() => scrollBy(-200)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white dark:bg-[#2b2b2b] shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-[#404040]"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white dark:bg-[#2b2b2b] shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-dark-border"
             style={{ marginLeft: 4 }}
           >
             <ChevronLeft size={18} />
@@ -96,7 +96,7 @@ const TabbedCard: React.FC<TabbedCardProps> = ({ tabs, defaultTab, className = '
                 className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors shrink-0 ${
                   activeTab === tab.id
                     ? 'text-primary dark:text-white border-b-2 border-primary dark:border-white'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-[#3a3a3a]'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-dark-bg-tertiary'
                 }`}
               >
                 {tab.label}
@@ -110,7 +110,7 @@ const TabbedCard: React.FC<TabbedCardProps> = ({ tabs, defaultTab, className = '
           <button
             type="button"
             onClick={() => scrollBy(200)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white dark:bg-[#2b2b2b] shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-[#404040]"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white dark:bg-[#2b2b2b] shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-dark-border"
             style={{ marginRight: 4 }}
           >
             <ChevronRight size={18} />

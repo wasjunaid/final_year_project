@@ -24,7 +24,7 @@ const PatientEhrPage: React.FC = () => {
     actions: [
       {
         label: 'Back',
-        icon: ArrowLeft,
+        // icon: ArrowLeft,
         onClick: () => {
           // clear selection and go back to access requests
           setSelectedPatientId(null);
@@ -442,7 +442,7 @@ const PatientEhrPage: React.FC = () => {
   }
 
   return (
-    <div className='flex flex-1 min-h-full'>
+    <div className='flex flex-col flex-1 w-full'>
       {error && <Alert type="error" title="EHR Unavailable" message={error} className="mb-4" />}
 
       {ehrData && (
