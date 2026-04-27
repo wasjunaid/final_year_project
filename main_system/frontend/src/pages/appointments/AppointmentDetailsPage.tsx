@@ -14,9 +14,6 @@ import { useSidebarController } from '../../hooks/ui/sidebar';
 import { ROLES } from '../../constants/profile';
 import type { AppointmentModel } from '../../models/appointment/model';
 import useAppointmentCodingController from '../../hooks/medicalCoding/useAppointmentCodingController';
-// import { DocumentModel } from '../../models/document';
-// import { AllDocumentsList } from '../documents/components/AllDocumentsList';
-// import { DocumentDetailsView } from '../documents/components/DocumentDetailsView';
 import { AppointmentStatus } from '../../models/appointment/enums';
 import type { CompleteDoctorPayload, DischargePayload, UpdateNotesDoctorPayload } from '../../models/appointment/payload';
 import TabbedCard from '../../components/TabbedComponent';
@@ -25,6 +22,15 @@ import AddPrescriptionModal from '../../components/AddPrescriptionModal';
 import { usePrescriptionController } from '../../hooks/prescription';
 import BillSection from './components/BillSection';
 import accessRequestService from '../../services/accessRequest/accessRequestService';
+
+// Shape for a lab test placeholder that has already been persisted to the backend
+interface PersistedLabTest {
+  documentId: string;
+  labTestId: number;
+  name: string;
+  description?: string;
+  cost?: number | null;
+}
 
 const splitPrescriptionInstructionParts = (instruction?: string | null): string[] => {
   if (!instruction) return [];
@@ -54,10 +60,13 @@ const AppointmentsDetailsPage: React.FC = () => {
   const documentCtrl = useDocumentController();
   const codingCtrl = useAppointmentCodingController();
   const [selectedLabTestId, setSelectedLabTestId] = useState<string>('');
+  // Newly added lab tests (not yet sent to backend)
   const [localLabTests, setLocalLabTests] = useState<LabTest[]>([]);
+  // Already-persisted lab test placeholders fetched from backend
+  const [persistedLabTests, setPersistedLabTests] = useState<PersistedLabTest[]>([]);
+  // documentIds of persisted lab tests the doctor wants to remove
+  const [removedPersistedDocIds, setRemovedPersistedDocIds] = useState<string[]>([]);
   const [labTestSearch, setLabTestSearch] = useState('');
-  // const [selectedDocument, setSelectedDocument] = useState<DocumentModel | null>(null);
-  // const [showPlaceholdersPanel, setShowPlaceholdersPanel] = useState(false);
   const [activeUploadFor, setActiveUploadFor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -229,11 +238,10 @@ const AppointmentsDetailsPage: React.FC = () => {
     };
   }, [selectedAppointmentId, appointment, isPatient, isDoctor, appointmentCtrl]);
 
-  // If this is the patient view, automatically fetch placeholders for this patient when the appointment is loaded
+  // Fetch placeholders for patient view
   useEffect(() => {
     if (!isPatient) return;
     if (!local) return;
-    // fetch placeholders so patient can see them in the appointment view
     (async () => {
       try {
         await documentCtrl.fetchPlaceholdersForPatient();
@@ -243,7 +251,51 @@ const AppointmentsDetailsPage: React.FC = () => {
     })();
   }, [isPatient, local?.appointmentId]);
 
-  // Load already-saved prescriptions for this appointment so queued and persisted items are clearly separated.
+  // Fetch placeholders for doctor view so we can show already-saved lab tests
+  useEffect(() => {
+    if (!isDoctor) return;
+    if (!local?.appointmentId) return;
+    (async () => {
+      try {
+        await documentCtrl.fetchPlaceholdersForPatient();
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, [isDoctor, local?.appointmentId]);
+
+  // Derive persisted lab tests from placeholders whenever placeholders change (doctor view)
+  useEffect(() => {
+    if (!isDoctor) return;
+    if (!local?.appointmentId) return;
+    const all = documentCtrl.placeholdersForPatient || [];
+    const forThisAppointment = all.filter(
+      (p: any) =>
+        Number(p.appointmentId) === Number(local.appointmentId) &&
+        String(p.document_type ?? p.documentType ?? '').toLowerCase() === 'lab test'
+    );
+    const mapped: PersistedLabTest[] = forThisAppointment.map((p: any) => ({
+      documentId: String(p.documentId),
+      labTestId: Number(p.labTestId ?? 0),
+      name: String(p.labTestName ?? p.originalName ?? ''),
+      description: p.detail ?? undefined,
+      cost: p.cost ?? null,
+    }));
+    setPersistedLabTests(mapped);
+    // Also clear any pending removals that no longer exist in persisted list
+    setRemovedPersistedDocIds((prev) =>
+      prev.filter((id) => mapped.some((lt) => lt.documentId === id))
+    );
+  }, [documentCtrl.placeholdersForPatient, local?.appointmentId, isDoctor]);
+
+  // Reset local lab test state when switching appointments
+  useEffect(() => {
+    setLocalLabTests([]);
+    setRemovedPersistedDocIds([]);
+    setLabTestSearch('');
+  }, [local?.appointmentId]);
+
+  // Load already-saved prescriptions for this appointment
   useEffect(() => {
     if (!local?.appointmentId) return;
     (async () => {
@@ -356,9 +408,21 @@ const AppointmentsDetailsPage: React.FC = () => {
   const canCreateFollowUp = (isDoctor && (doctorCanComplete || isCompleted)) || (isPatient && isCompleted);
 
   const normalizedLabTestSearch = labTestSearch.trim().toLowerCase();
+
+  // Filter persisted lab tests (excluding ones marked for removal) by search
+  const visiblePersistedLabTests = persistedLabTests
+    .filter((lt) => !removedPersistedDocIds.includes(lt.documentId))
+    .filter((lt) => {
+      if (!normalizedLabTestSearch) return true;
+      return [lt.name, lt.description ?? '', String(lt.cost ?? '')].some((v) =>
+        v.toLowerCase().includes(normalizedLabTestSearch)
+      );
+    });
+
+  // Filter newly added lab tests by search
   const filteredLocalLabTests = (localLabTests || []).filter((lt) => {
     if (!normalizedLabTestSearch) return true;
-    return [lt.name, lt.description, String(lt.cost ?? '')].some((value) =>
+    return [lt.name, lt.description ?? '', String(lt.cost ?? '')].some((value) =>
       String(value || '').toLowerCase().includes(normalizedLabTestSearch)
     );
   });
@@ -514,7 +578,29 @@ const AppointmentsDetailsPage: React.FC = () => {
       if (!continueWithout) return false;
     }
 
-    // Upload lab test placeholders
+    // Remove persisted lab tests that the doctor marked for removal
+    if (removedPersistedDocIds.length > 0) {
+      const removalErrors: string[] = [];
+      for (const docId of removedPersistedDocIds) {
+        try {
+          // NOTE: implement documentCtrl.removeLabTestPlaceholder(docId) on your backend.
+          // Expected signature: removeLabTestPlaceholder(documentId: string): Promise<void>
+          await (documentCtrl as any).removeLabTestPlaceholder(docId);
+        } catch (err: any) {
+          const name = persistedLabTests.find((lt) => lt.documentId === docId)?.name ?? docId;
+          removalErrors.push(`Remove '${name}': ${err?.message || String(err)}`);
+        }
+      }
+
+      if (removalErrors.length > 0) {
+        setErrorMessage(`Failed to remove lab tests: ${removalErrors.join(' ; ')}`);
+        return false;
+      }
+
+      setRemovedPersistedDocIds([]);
+    }
+
+    // Upload ONLY newly added lab tests (localLabTests) — never re-send persisted ones
     if ((localLabTests || []).length > 0) {
       const placeholderErrors: string[] = [];
       for (const lt of localLabTests) {
@@ -536,6 +622,8 @@ const AppointmentsDetailsPage: React.FC = () => {
         setErrorMessage(`Failed to create placeholders: ${placeholderErrors.join(' ; ')}`);
         return false;
       }
+
+      setLocalLabTests([]);
     }
 
     return true;
@@ -689,7 +777,7 @@ const AppointmentsDetailsPage: React.FC = () => {
         physical_exam: local.physicalExam ?? null,
         diagnosis: diagnosisString ?? null,
         plan: local.plan ?? null,
-        lab_tests_ordered: (localLabTests || []).length > 0 ? true : false,
+        lab_tests_ordered: (localLabTests || []).length > 0 || persistedLabTests.length > 0 ? true : false,
       };
 
       const updated = await appointmentCtrl.completeDoctor(local.appointmentId, payload);
@@ -741,6 +829,14 @@ const AppointmentsDetailsPage: React.FC = () => {
         doctorName: updated.doctorName || prev?.doctorName,
         hospitalName: updated.hospitalName || prev?.hospitalName,
       }));
+
+      // Refresh placeholders so persistedLabTests reflects the newly uploaded ones
+      try {
+        await documentCtrl.fetchPlaceholdersForPatient();
+      } catch (e) {
+        // ignore
+      }
+
       setSuccessMessage('Details updated successfully');
       setTimeout(() => setSuccessMessage(''), 4000);
     } catch (err: any) {
@@ -751,7 +847,7 @@ const AppointmentsDetailsPage: React.FC = () => {
     }
   };
 
-  // Discharge — completes a hospitalization appointment (same backend as completeDoctor)
+  // Discharge — completes a hospitalization appointment
   const handleDischarge = async () => {
     if (!local) return;
     if (!confirm('Confirm discharge patient and complete this appointment?')) return;
@@ -834,18 +930,8 @@ const AppointmentsDetailsPage: React.FC = () => {
       setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
-
-    // if (followUpType === 'hospitalization' && followUpAdmissionDate && followUpDischargeDate) {
-    //   const admission = new Date(followUpAdmissionDate);
-    //   const discharge = new Date(followUpDischargeDate);
-    //   if (discharge < admission) {
-    //     setErrorMessage('Discharge date cannot be before admission date');
-    //     setTimeout(() => setErrorMessage(''), 4000);
-    //     return;
-    //   }
-    // }
     
-    setFollowUpType('opd'); // for now, we are only allowing OPD follow-ups; this can be expanded in the future as needed
+    setFollowUpType('opd'); // for now, we are only allowing OPD follow-ups
 
     setSaving(true);
     try {
@@ -916,22 +1002,6 @@ const AppointmentsDetailsPage: React.FC = () => {
 
   // Build tabs for clinical details
   const clinicalTabs = [
-    // {
-    //   id: 'history',
-    //   label: 'History',
-    //   content: (
-    //     <div className="space-y-4">
-    //       <TextInput
-    //         label="History of Present Illness"
-    //         value={local.historyOfPresentIllness ?? ''}
-    //         onChange={(e) => updateLocalField({ historyOfPresentIllness: e.target.value })}
-    //         multiline
-    //         rows={4}
-    //         disabled={!doctorCanComplete}
-    //       />
-    //     </div>
-    //   )
-    // },
     {
       id: 'doctor-notes',
       label: 'Doctor Notes',
@@ -1128,7 +1198,7 @@ const AppointmentsDetailsPage: React.FC = () => {
     });
   }
 
-  // Add patient health history tabs only if doctor and appointment is in progress
+  // Add patient health history + lab test tabs only if doctor and appointment is in progress
   if (isDoctor && (local.status === AppointmentStatus.in_progress || local.status === 'in progress')) {
     clinicalTabs.push(
       {
@@ -1136,6 +1206,7 @@ const AppointmentsDetailsPage: React.FC = () => {
         label: 'Lab Tests',
         content: (
           <div className="space-y-4">
+            {/* Add new lab test */}
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <Dropdown
@@ -1155,6 +1226,14 @@ const AppointmentsDetailsPage: React.FC = () => {
                     if (!selectedLabTestId) return;
                     const lt = (labTests || []).find((x) => String(x.labTestId) === String(selectedLabTestId));
                     if (!lt) return;
+                    // Don't add if already persisted
+                    const alreadyPersisted = persistedLabTests.some((p) => p.labTestId === lt.labTestId);
+                    if (alreadyPersisted) {
+                      setErrorMessage('This lab test is already saved for this appointment.');
+                      setTimeout(() => setErrorMessage(''), 3000);
+                      return;
+                    }
+                    // Don't add duplicates in local list
                     setLocalLabTests((prev) => (prev.find((p) => p.labTestId === lt.labTestId) ? prev : [...prev, lt]));
                     setSelectedLabTestId('');
                   }}
@@ -1165,10 +1244,11 @@ const AppointmentsDetailsPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Search */}
             <div className="flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
               <div className="flex-1">
                 <TextInput
-                  label="Search selected lab tests"
+                  label="Search lab tests"
                   value={labTestSearch}
                   onChange={(e) => setLabTestSearch(e.target.value)}
                   placeholder="Search name, description, or cost"
@@ -1183,30 +1263,106 @@ const AppointmentsDetailsPage: React.FC = () => {
               )}
             </div>
 
-            <div className="space-y-3">
-              {(localLabTests || []).length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">No lab tests added yet.</p>
+            {/* Already saved lab tests */}
+            {persistedLabTests.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Already Saved</h4>
+                {visiblePersistedLabTests.length === 0 && normalizedLabTestSearch ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No saved lab tests match your search.</p>
+                ) : visiblePersistedLabTests.length === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">All saved lab tests have been marked for removal.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {visiblePersistedLabTests.map((lt) => (
+                      <div
+                        key={lt.documentId}
+                        className="flex items-start justify-between gap-3 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 p-3 rounded-lg"
+                      >
+                        <div>
+                          <div className="font-medium text-gray-800 dark:text-gray-200">{lt.name}</div>
+                          {(lt.description || lt.cost != null) && (
+                            <div className="text-sm text-gray-500">
+                              {lt.description ?? ''}{lt.cost != null ? ` • Cost: ${lt.cost}` : ''}
+                            </div>
+                          )}
+                        </div>
+                        {doctorCanComplete && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              if (!confirm(`Remove "${lt.name}" from this appointment? This will be sent to the backend on next save.`)) return;
+                              setRemovedPersistedDocIds((prev) => [...prev, lt.documentId]);
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Show pending removal notice */}
+                {removedPersistedDocIds.length > 0 && (
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3">
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      <strong>{removedPersistedDocIds.length}</strong> lab test{removedPersistedDocIds.length > 1 ? 's' : ''} marked for removal.
+                      {' '}These will be deleted from the backend when you save.
+                    </p>
+                    <button
+                      className="text-xs text-amber-700 dark:text-amber-300 underline mt-1"
+                      onClick={() => setRemovedPersistedDocIds([])}
+                    >
+                      Undo all removals
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Newly added (not yet saved) lab tests */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Queued — Will Be Saved on Next Update
+              </h4>
+              {localLabTests.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No new lab tests queued.</p>
               ) : filteredLocalLabTests.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">No selected lab tests match your search.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No queued lab tests match your search.</p>
               ) : (
-                filteredLocalLabTests.map((lt) => (
-                  <div key={lt.labTestId} className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded">
-                    <div>
-                      <div className="font-medium text-gray-800 dark:text-gray-200">{lt.name}</div>
-                      <div className="text-sm text-gray-500">{lt.description ?? ''} {lt.cost != null ? `• Cost: ${lt.cost}` : ''}</div>
-                    </div>
-                    {doctorCanComplete && (
+                <div className="space-y-2">
+                  {filteredLocalLabTests.map((lt) => (
+                    <div
+                      key={lt.labTestId}
+                      className="flex items-start justify-between gap-3 bg-white dark:bg-[#2a2a2a] border border-blue-200 dark:border-blue-700 p-3 rounded-lg"
+                    >
                       <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-800 dark:text-gray-200">{lt.name}</span>
+                          {/* NEW badge */}
+                          <span className="px-2 py-0.5 text-xs font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full">
+                            New
+                          </span>
+                        </div>
+                        {(lt.description || lt.cost != null) && (
+                          <div className="text-sm text-gray-500">
+                            {lt.description ?? ''}{lt.cost != null ? ` • Cost: ${lt.cost}` : ''}
+                          </div>
+                        )}
+                      </div>
+                      {doctorCanComplete && (
                         <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => setLocalLabTests((prev) => prev.filter((p) => p.labTestId !== lt.labTestId))}
                         >
                           Remove
                         </Button>
-                      </div>
-                    )}
-                  </div>
-                ))
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -1426,7 +1582,6 @@ const AppointmentsDetailsPage: React.FC = () => {
                         setTimeout(() => setErrorMessage(''), 3000);
                         return;
                       }
-                      // validate date is not in the future
                       const sd = new Date(newMedicalHistory.diagnosis_date);
                       const today = new Date();
                       sd.setHours(0,0,0,0);
@@ -1494,8 +1649,6 @@ const AppointmentsDetailsPage: React.FC = () => {
                       }
                       setPendingAllergies((prev) => [...prev, { allergy_name: newAllergy.allergy_name }]);
                       setNewAllergy({ allergy_name: '' });
-                      // setSuccessMessage('Allergy queued to upload on completion');
-                      // setTimeout(() => setSuccessMessage(''), 3000);
                     }}
                   >
                     Add
@@ -1550,8 +1703,6 @@ const AppointmentsDetailsPage: React.FC = () => {
                       }
                       setPendingFamilyHistory((prev) => [...prev, { condition_name: newFamilyHistory.condition_name }]);
                       setNewFamilyHistory({ condition_name: '' });
-                      // setSuccessMessage('Family history queued to upload on completion');
-                      // setTimeout(() => setSuccessMessage(''), 3000);
                     }}
                   >
                     Add
@@ -1610,12 +1761,10 @@ const AppointmentsDetailsPage: React.FC = () => {
                         setTimeout(() => setErrorMessage(''), 3000);
                         return;
                       }
-                      // validate surgery date not in future
                       if (newSurgicalHistory.surgery_date) {
                         try {
                           const sd = new Date(newSurgicalHistory.surgery_date);
                           const today = new Date();
-                          // normalize to date-only comparison
                           sd.setHours(0,0,0,0);
                           today.setHours(0,0,0,0);
                           if (sd.getTime() > today.getTime()) {
@@ -1624,7 +1773,6 @@ const AppointmentsDetailsPage: React.FC = () => {
                             return;
                           }
                         } catch (e) {
-                          // if invalid date, block
                           setErrorMessage('Invalid surgery date');
                           setTimeout(() => setErrorMessage(''), 3000);
                           return;
@@ -1632,8 +1780,6 @@ const AppointmentsDetailsPage: React.FC = () => {
                       }
                       setPendingSurgicalHistory((prev) => [...prev, { surgery_name: newSurgicalHistory.surgery_name, surgery_date: newSurgicalHistory.surgery_date || undefined }]);
                       setNewSurgicalHistory({ surgery_name: '', surgery_date: '' });
-                      // setSuccessMessage('Surgical history queued to upload on completion');
-                      // setTimeout(() => setSuccessMessage(''), 3000);
                     }}
                   >
                     Add
@@ -1664,6 +1810,73 @@ const AppointmentsDetailsPage: React.FC = () => {
         )
       }
     );
+  }
+
+  // "Requested Lab Tests" tab — visible to patients on completed appointments
+  if (isPatient && isCompleted) {
+    const allPlaceholders = documentCtrl.placeholdersForPatient || [];
+    const appointmentPlaceholders = allPlaceholders.filter(
+      (p: any) => Number(p.appointmentId) === Number(local.appointmentId)
+    );
+
+    clinicalTabs.push({
+      id: 'requested-lab-tests',
+      label: 'Requested Lab Tests',
+      content: (
+        <div className="space-y-4">
+          {/* Hidden file input for uploading results */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={async (e) => {
+              const files = e.target.files;
+              const docId = activeUploadFor;
+              if (!docId || !files || files.length === 0) return;
+              const file = files[0];
+              try {
+                await documentCtrl.uploadUnverifiedDocumentAgainstPlaceholder(docId, file, `Patient upload for ${docId}`);
+                await documentCtrl.fetchPlaceholdersForPatient();
+              } catch (err) {
+                // controller will set error
+              } finally {
+                setActiveUploadFor(null);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+              }
+            }}
+          />
+
+          {appointmentPlaceholders.length === 0 ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No lab tests were requested for this appointment.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {appointmentPlaceholders.map((ph: any) => (
+                <div
+                  key={ph.documentId}
+                  className="flex items-center justify-between gap-3 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 p-4 rounded-lg"
+                >
+                  <div>
+                    <div className="font-medium text-gray-800 dark:text-gray-200">
+                      {ph.labTestName ?? ph.originalName}
+                    </div>
+                    {ph.detail && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{ph.detail}</div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={ph.isVerified ? 'success' : 'warning'}>
+                      {ph.isVerified ? 'Verified' : 'Pending'}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    });
   }
 
   // Add bill tab for completed appointments
@@ -1709,7 +1922,6 @@ const AppointmentsDetailsPage: React.FC = () => {
           <div className="bg-white dark:bg-[#2b2b2b] p-6 rounded-lg shadow">
             <div className="flex items-center justify-between mb-4">
               <div className='flex items-center gap-2'>
-                {/* <Button variant='secondary' icon={ArrowBigLeftIcon} onClick={() => setActiveTab("appointments")} /> */}
                 <h2 className="text-xl font-semibold">Appointment #{local.appointmentId}</h2>
               </div>
               <Badge variant={local.status === 'completed' ? 'success' : local.status === 'processing' ? 'warning' : 'info'}>
@@ -1744,7 +1956,6 @@ const AppointmentsDetailsPage: React.FC = () => {
               )}
             </div>
 
-            {/* If patient can reschedule, show reason input here instead of prompt */}
             {isPatient && canReschedule && (
               <div className="mt-4">
                 <TextInput
@@ -1763,19 +1974,16 @@ const AppointmentsDetailsPage: React.FC = () => {
                 value={local.notes ?? ''}
                 onChange={(e) => updateLocalField({ notes: e.target.value })}
                 disabled={true}
-                // disabled={!doctorCanComplete}
                 multiline
                 rows={4}
               />
             </div>
-
-            {/* Clinical fields moved to a dedicated card below for better UI */}
           </div>
         </div>
 
         {/* Clinical Details Tabbed Card */}
         {showClinicalDetails && (
-          <TabbedCard tabs={clinicalTabs} defaultTab="history" />
+          <TabbedCard tabs={clinicalTabs} defaultTab="doctor-notes" />
         )}
 
         {/* Linked follow-up appointments */}
@@ -1806,76 +2014,6 @@ const AppointmentsDetailsPage: React.FC = () => {
             </div>
           </div>
         )}
-
-        {/* Patient placeholders (lab-test placeholders) - shown after appointment complete or when patient requests */}
-        {((documentCtrl.placeholdersForPatient || []).length > 0)  && local.status === 'completed' && (
-          <div className="bg-white dark:bg-[#2b2b2b] p-4 mt-4 rounded-lg shadow">
-            <h3 className="font-semibold mb-2">Lab Test Placeholders</h3>
-
-            {/* Hidden file input used to upload patient results against a placeholder */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              onChange={async (e) => {
-                const files = e.target.files;
-                const docId = activeUploadFor;
-                if (!docId || !files || files.length === 0) return;
-                const file = files[0];
-                try {
-                  await documentCtrl.uploadUnverifiedDocumentAgainstPlaceholder(docId, file, `Patient upload for ${docId}`);
-                  // refresh placeholders for this patient
-                  await documentCtrl.fetchPlaceholdersForPatient();
-                } catch (err) {
-                  // controller will set error
-                } finally {
-                  setActiveUploadFor(null);
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                }
-              }}
-            />
-
-            {/* show only placeholders for this appointment */}
-            {(() => {
-              const all = documentCtrl.placeholdersForPatient || [];
-              const filtered = all.filter((p) => Number(p.appointmentId) === Number(local.appointmentId));
-              if (filtered.length === 0) {
-                return <p className="text-sm text-gray-500 dark:text-gray-400">No lab test placeholders for this appointment.</p>;
-              }
-
-              return (
-                <div className="space-y-3">
-                  {filtered.map((ph) => (
-                    <div key={ph.documentId} className="flex items-center justify-between gap-3 bg-white/5 p-3 rounded">
-                      <div>
-                        <div className="font-medium text-gray-800 dark:text-gray-200">{ph.labTestName ?? ph.originalName}</div>
-                        <div className="text-sm text-gray-500">{ph.detail ?? ''}</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={ph.isVerified ? 'success' : 'warning'}>{ph.isVerified ? 'Verified' : 'Pending'}</Badge>
-                        {/* <Button size='sm' variant="outline" onClick={() => setSelectedDocument(ph)}>View</Button> */}
-                        {/* <Button size='sm' variant="secondary" onClick={() => documentCtrl.downloadDocument(ph.documentId, ph.originalName)}>Download</Button> */}
-                        {/* {!ph.isVerified && (
-                          <Button
-                            size='sm'
-                            variant="primary"
-                            onClick={() => {
-                              setActiveUploadFor(ph.documentId);
-                              if (fileInputRef.current) fileInputRef.current.click();
-                            }}
-                            loading={documentCtrl.isUploading && activeUploadFor === ph.documentId}
-                          >
-                            Upload Result
-                          </Button>
-                        )} */}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-          </div>
-        )}
       </div>
 
       {/* Right: side cards */}
@@ -1887,7 +2025,6 @@ const AppointmentsDetailsPage: React.FC = () => {
             <p className="text-sm text-gray-500">Cost, date & time (editable when permitted)</p>
           </div>
 
-          {/* Editable fields */}
           <div className="grid grid-cols-1 gap-3">
             <TextInput
               label="Appointment Cost"
@@ -1914,9 +2051,6 @@ const AppointmentsDetailsPage: React.FC = () => {
             />
           </div>
 
-          {/* (Reset moved to Quick Actions) */}
-
-          {/* If user can reschedule (patient/doctor) and not frontdesk, show hint that they can edit here */}
           {!writeableByFrontdesk && canReschedule && (
             <div className="text-sm text-gray-600">
               You can edit date & time here and then press "Reschedule" in Quick Actions to submit.
@@ -1950,14 +2084,11 @@ const AppointmentsDetailsPage: React.FC = () => {
             )
           )}
 
-          {/* Reset (Quick Actions) - visible during reschedule or when user made changes */}
           {((hasChanges && isFrontDesk) || (isPatient && canReschedule) || (isDoctor && canReschedule)) && (
             <div className="flex flex-col gap-2">
               <Button variant="outline" onClick={() => {
                 if (!appointment) return;
                 setLocal({ ...appointment });
-                // setSuccessMessage('Changes reset');
-                // setTimeout(() => setSuccessMessage(''), 3000);
               }}>
                 Reset
               </Button>
@@ -1967,9 +2098,6 @@ const AppointmentsDetailsPage: React.FC = () => {
           {/* Processing: frontdesk actions */}
           {local.status === 'processing' && isFrontDesk && (
             <div className="flex flex-col gap-2">
-              {/* <Button onClick={handleSaveChanges} loading={saving}>
-                Save Changes
-              </Button> */}
               <Button variant="success" onClick={handleApprove} loading={saving}>
                 Approve
               </Button>
@@ -2004,7 +2132,6 @@ const AppointmentsDetailsPage: React.FC = () => {
           {isInProgress && isDoctor && (
             <div className="flex flex-col gap-2">
               {isHospitalization ? (
-                // Hospitalization appointment — Update Details + Discharge
                 <>
                   <Button variant='primary' onClick={handleUpdateDetails} loading={saving}>
                     Update Details
@@ -2017,7 +2144,6 @@ const AppointmentsDetailsPage: React.FC = () => {
                   </div>
                 </>
               ) : (
-                // Regular appointment — Save & Complete + Hospitalize
                 <>
                   <Button variant='success' onClick={handleSaveDoctorNote} loading={saving}>
                     Save & Complete
@@ -2037,7 +2163,7 @@ const AppointmentsDetailsPage: React.FC = () => {
             <div className="text-sm text-gray-600">Appointment is in progress. Only the doctor can add notes and complete it.</div>
           )}
 
-          {/* Doctor follow-up creation */}
+          {/* Follow-up creation */}
           {canCreateFollowUp && (
             <div className="mt-2 border-t border-gray-200 dark:border-gray-700 pt-3 space-y-3">
               <div className="flex items-center justify-between">
@@ -2097,31 +2223,6 @@ const AppointmentsDetailsPage: React.FC = () => {
                     value={followUpTime}
                     onChange={(e) => setFollowUpTime(e.target.value)}
                   />
-                  {/*<Dropdown
-                    label="Follow-up Type"
-                    options={[
-                      { value: 'opd', label: 'OPD' },
-                      { value: 'hospitalization', label: 'Hospitalization' },
-                    ]}
-                    value={followUpType}
-                    onChange={(v) => setFollowUpType(v as 'opd' | 'hospitalization')}
-                  />
-                  {followUpType === 'hospitalization' && (
-                    <>
-                      <TextInput
-                        label="Admission Date (optional)"
-                        type="date"
-                        value={followUpAdmissionDate}
-                        onChange={(e) => setFollowUpAdmissionDate(e.target.value)}
-                      />
-                      <TextInput
-                        label="Discharge Date (optional)"
-                        type="date"
-                        value={followUpDischargeDate}
-                        onChange={(e) => setFollowUpDischargeDate(e.target.value)}
-                      />
-                    </>
-                  )}*/}
                   <TextInput
                     label="Follow-up Reason"
                     value={followUpReason}
@@ -2147,46 +2248,6 @@ const AppointmentsDetailsPage: React.FC = () => {
               )}
             </div>
           )}
-
-          {/* Show a direct action to mark lab tests complete for patients when not completed yet */}
-          {/* {isPatient && (local.labTestsCompleted !== true) && local.status === 'completed' && (
-            <Button variant="success" onClick={async () => {
-                setSaving(true);
-                try {
-                  const updated = await appointmentCtrl.completeLabTests(local.appointmentId);
-                  setLocal((prev) => ({ ...prev!, ...updated }));
-                  setSuccessMessage('Lab tests marked complete');
-                  setTimeout(() => setSuccessMessage(''), 4000);
-                } catch (err: any) {
-                  setErrorMessage(err?.message || 'Failed to mark lab tests complete');
-                  setTimeout(() => setErrorMessage(''), 4000);
-                } finally {
-                  setSaving(false);
-                }
-              }}
-              loading={saving}
-            >
-              Mark Lab Tests Complete
-            </Button>
-          )} */}
-
-          {/* Patient quick action: show/complete lab tests for this appointment */}
-          {/* {isPatient && (
-            <div className="mt-2">
-              <Button
-                onClick={async () => {
-                  try {
-                    await documentCtrl.fetchPlaceholdersForPatient();
-                  } catch (e) {
-                    // ignore
-                  }
-                  setShowPlaceholdersPanel((s) => !s);
-                }}
-              >
-                {showPlaceholdersPanel ? 'Hide Lab Test Placeholders' : 'Complete Lab Tests'}
-              </Button>
-            </div>
-          )} */}
         </div>
       </div>
       </div>
