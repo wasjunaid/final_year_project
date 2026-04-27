@@ -8,7 +8,13 @@ class PersonController {
         try {
             const persons = await PersonService.getPersonsIfExists();
             if (!persons) {
-                throw new AppError("No persons found", STATUS_CODES.NOT_FOUND);
+                // throw new AppError("No persons found", STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: "No persons found",
+                    status: STATUS_CODES.OK,
+                    success: true,
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({

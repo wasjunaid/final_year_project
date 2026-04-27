@@ -10,7 +10,13 @@ class InsurancePlanController {
 
             const insurancePlans = await InsurancePlanService.getInsurancePlansIfExists(user_id);
             if (!insurancePlans) {
-                throw new AppError("No insurance plans found", STATUS_CODES.NOT_FOUND);
+                // throw new AppError("No insurance plans found", STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: "No insurance plans found",
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({

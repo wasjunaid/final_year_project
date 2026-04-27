@@ -10,7 +10,13 @@ class InsurancePanelListController {
 
             const panels = await InsurancePanelListService.getInsurancePanelListIfExists(user_id);
             if (!panels) {
-                throw new AppError("No insurance panels found", STATUS_CODES.NOT_FOUND);
+                // throw new AppError("No insurance panels found", STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: "No insurance panels found",
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({
