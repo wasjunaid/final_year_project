@@ -11,7 +11,13 @@ class PatientInsuranceController {
 
             const patient_insurances = await PatientInsuranceService.getAllPatientInsurancesIfExists(person_id);
             if (!patient_insurances) {
-                throw new AppError("No patient insurances found", STATUS_CODES.NOT_FOUND);
+                // throw new AppError("No patient insurances found", STATUS_CODES.NOT_FOUND);
+                return res.status(STATUS_CODES.OK).json({
+                    data: [],
+                    message: "No patient insurances found",
+                    status: STATUS_CODES.OK,
+                    success: true
+                });
             }
 
             return res.status(STATUS_CODES.OK).json({

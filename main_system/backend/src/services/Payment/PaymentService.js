@@ -127,7 +127,7 @@ class PaymentService {
             }
 
             // Convert amount to string for ethers.parseEther
-            const amountString = String(amount);
+            const amountString = amountFloat.toFixed(18).replace(/\.?0+$/, '');
 
             console.log(`[Payment] Patient ${person_id} (${patient_wallet_address}) paying ${amountString} ETH to hospital ${hospital_id} for claim ${claim_id}`);
 
