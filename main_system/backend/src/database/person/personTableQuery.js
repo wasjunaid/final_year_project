@@ -3,7 +3,7 @@ const { NAME_MAX_LENGTH, CNIC_MAX_LENGTH, GENDER_MAX_LENGTH, VALID_GENDERS } = r
 
 const personTableQuery = `
     CREATE TABLE IF NOT EXISTS person (
-        person_id SERIAL PRIMARY KEY,
+        person_id INTEGER PRIMARY KEY,
         email VARCHAR(${EMAIL_CONFIG.MAX_LENGTH}) UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         first_name VARCHAR(${NAME_MAX_LENGTH}),
@@ -19,6 +19,10 @@ const personTableQuery = `
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+    
+    -- Migration: drop SERIAL default if this table already exists with SERIAL
+    -- ALTER TABLE person ALTER COLUMN person_id DROP DEFAULT;
+    -- DROP SEQUENCE IF EXISTS person_person_id_seq;
 
     DROP VIEW IF EXISTS person_view;
 
