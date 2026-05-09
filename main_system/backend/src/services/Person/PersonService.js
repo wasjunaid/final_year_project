@@ -6,6 +6,7 @@ const { EmailService } = require("../Email/EmailService");
 const { AddressService } = require("../Address/AddressService");
 const { ContactService } = require("../Contact/ContactService");
 const { LogService } = require("../Log/LogService");
+const { BlacklistService } = require("../System/BlacklistService");
 
 class PersonService {
     /**
@@ -73,7 +74,16 @@ class PersonService {
     }
 
     /**
+     * Generates a random person ID (3–4 digits: 100–9999)
+     * @returns {number}
+     */
+    static generateRandomPersonId() {
+        return Math.floor(Math.random() * 99900) + 100; // 100 to 9999
+    }
+
+    /**
      * Inserts a new person into the database if not exists.
+     * Checks blacklist and assigns alternative ID if needed.
      * @param {string} email - The email of the person.
      * @param {string} password - The password of the person.
      * @param {Object} optionalFields - Additional fields for the person.
@@ -85,52 +95,137 @@ class PersonService {
             const {
                 first_name = null,
                 last_name = null,
-                is_verified = true // revert to false this is for testing purposes only
+                is_verified = true
             } = optionalFields;
+
+            console.log(`Attempting to insert person with email: ${email}`);
 
             let randomPassword = false;
 
             if (!email) {
                 throw new AppError("Email is required", STATUS_CODES.BAD_REQUEST);
             }
-            
+
             if (!password) {
-                // password = Math.random().toString(36).slice(-12);
                 randomPassword = true;
-                password = "Test@123"; // revert this is for testing purposes only
+                password = "Test@123";  //TODO: update this to random password generator during production
             }
 
             const hashedPassword = await hashPasswordUtil(password, { validateStrength: !randomPassword });
 
-            const query = {
-                text: `INSERT INTO person
-                (email, password_hash, first_name, last_name, is_verified)
-                VALUES
-                ($1, $2, $3, $4, $5)
-                ON CONFLICT (email)
-                DO
-                UPDATE
-                SET
-                email = EXCLUDED.email
-                RETURNING *, 
-                (CASE WHEN xmax = 0 THEN false ELSE true END) AS email_existed`,
-                values: [email, hashedPassword, first_name, last_name, is_verified]
-            };
-            const result = await DatabaseService.query(query.text, query.values);
-            if (result.rowCount === 0) {
-                throw new AppError(`Error inserting person`, STATUS_CODES.INTERNAL_SERVER_ERROR);
+            // Generate a random ID and retry on conflict until a free one is found
+            let person = null;
+            let insertAttempts = 100;
+
+            while (insertAttempts > 0) {
+                const randomPersonId = PersonService.generateRandomPersonId();
+
+                const query = {
+                    text: `INSERT INTO person
+                        (person_id, email, password_hash, first_name, last_name, is_verified)
+                        VALUES
+                        ($1, $2, $3, $4, $5, $6)
+                        ON CONFLICT (email)
+                        DO UPDATE
+                        SET email = EXCLUDED.email
+                        RETURNING *,
+                        (CASE WHEN xmax = 0 THEN false ELSE true END) AS email_existed`,
+                    values: [randomPersonId, email, hashedPassword, first_name, last_name, is_verified]
+                };
+
+                try {
+                    const result = await DatabaseService.query(query.text, query.values);
+                    if (result.rowCount > 0) {
+                        person = result.rows[0];
+                        break; // success
+                    }
+                } catch (err) {
+                    // If person_id collides with an existing row, retry with a new random ID
+                    if (err.code === '23505' && err.constraint?.includes('person_id')) {
+                        insertAttempts--;
+                        continue;
+                    }
+                    throw err;
+                }
+
+                insertAttempts--;
             }
 
-            const person = result.rows[0];
+            if (!person) {
+                throw new AppError('Could not find an available person ID after multiple attempts', STATUS_CODES.INTERNAL_SERVER_ERROR);
+            }
+
             const emailExisted = person.email_existed;
+            const assignedPersonId = person.person_id;
+
+            // [BLACKLIST CHECK] Check if the assigned person_id is blacklisted
+            if (!emailExisted && assignedPersonId) {
+                const isBlacklisted = await BlacklistService.isPersonBlacklisted(assignedPersonId);
+
+                if (isBlacklisted) {
+                    console.log(`[Blacklist] Person ID ${assignedPersonId} is blacklisted. Finding alternative random ID...`);
+
+                    const blacklistedIds = await BlacklistService.getAllBlacklistedIds();
+                    const blacklistedSet = new Set(blacklistedIds);
+
+                    let alternativePersonId = null;
+                    let maxAttempts = 10000;
+
+                    while (maxAttempts > 0) {
+                        const candidateId = PersonService.generateRandomPersonId();
+
+                        // Skip if blacklisted
+                        if (blacklistedSet.has(candidateId)) {
+                            maxAttempts--;
+                            continue;
+                        }
+
+                        // Check if this person_id already exists in the person table
+                        const existsResult = await DatabaseService.query(
+                            `SELECT 1 FROM person WHERE person_id = $1 LIMIT 1`,
+                            [candidateId]
+                        );
+
+                        if (existsResult.rowCount === 0) {
+                            alternativePersonId = candidateId;
+                            break; // Found a free, non-blacklisted ID
+                        }
+
+                        maxAttempts--;
+                    }
+
+                    if (!alternativePersonId) {
+                        throw new AppError(
+                            'Could not find available person ID (too many blocked or taken IDs)',
+                            STATUS_CODES.INTERNAL_SERVER_ERROR
+                        );
+                    }
+
+                    const txResults = await DatabaseService.transaction([
+                        {
+                            text: `UPDATE person SET person_id = $1 WHERE person_id = $2 RETURNING *`,
+                            params: [alternativePersonId, assignedPersonId]
+                        }
+                    ]);
+
+                    const updateResult = txResults[0];
+                    if (updateResult.rowCount === 0) {
+                        throw new AppError('Failed to reassign person ID', STATUS_CODES.INTERNAL_SERVER_ERROR);
+                    }
+
+                    person = updateResult.rows[0];
+                    console.log(`[Blacklist] ✓ Person reassigned from ID ${assignedPersonId} to ${alternativePersonId}`);
+                }
+            }
 
             if (randomPassword && !emailExisted) {
                 await EmailService.sendRandomPasswordEmail(email, password);
             }
 
             delete person.email_existed;
-
             delete person.password_hash;
+
+            console.log(`Person create with id: ${person.email} ${person.person_id}`);
 
             return person;
         } catch (error) {
