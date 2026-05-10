@@ -13,6 +13,7 @@ const { PatientEHRService } = require('../Patient/PatientEHRService');
 const { uploadToIPFS } = require('../../utils/ipfs');
 const { canonicalizePatientData } = require('../../utils/canonicalize');
 const { ethers } = require('ethers');
+const { BlacklistService } = require('../System/BlacklistService');
 
 class EHRAccessService {
     /**
@@ -243,45 +244,63 @@ class EHRAccessService {
                 throw new AppError('patient_id is required', STATUS_CODES.BAD_REQUEST);
             }
 
-            const existingAccess = await this.getEHRAccessIfExistsUsingPatientAndDoctorID(patient_id, doctor_id);
-
-            if (existingAccess && existingAccess.status === VALID_EHR_ACCESS_STATUSES_OBJECT.GRANTED) {
-                return existingAccess;
+            let ehrAccess = await this.getEHRAccessIfExistsUsingPatientAndDoctorID(patient_id, doctor_id);
+            if (!ehrAccess) {
+                ehrAccess = await this.insertEHRAccessIfNotExists(patient_id, doctor_id);
             }
-
-            if (existingAccess && existingAccess.status === VALID_EHR_ACCESS_STATUSES_OBJECT.REQUESTED) {
-                return existingAccess;
-            }
-
-            // Insert/get EHR access record
-            const ehrAccess = await this.insertEHRAccessIfNotExists(patient_id, doctor_id);
             if (!ehrAccess) {
                 throw new AppError('Failed to create or retrieve EHR access record', STATUS_CODES.INTERNAL_SERVER_ERROR);
             }
 
-            // ✅ ADD BLOCKCHAIN CALL
-            console.log('[EHR Request] Calling blockchain requestAccess...');
             const blockchainService = new EthereumAccessControlService();
+            const onChainGrant = await blockchainService.getAccessGrantFromBlockchain(patient_id, doctor_id);
+            const onChainStatus = Number(onChainGrant?.status ?? 0);
+
+            // 0=NONE, 1=REQUESTED, 2=GRANTED, 3=DENIED, 4=REVOKED
+            if (onChainStatus === 1) {
+                const syncRequested = await DatabaseService.query(
+                    `UPDATE ehr_access SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE ehr_access_id = $2 RETURNING *`,
+                    [VALID_EHR_ACCESS_STATUSES_OBJECT.REQUESTED, ehrAccess.ehr_access_id]
+                );
+                return syncRequested.rows[0];
+            }
+
+            if (onChainStatus === 2) {
+                const syncGranted = await DatabaseService.query(
+                    `UPDATE ehr_access SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE ehr_access_id = $2 RETURNING *`,
+                    [VALID_EHR_ACCESS_STATUSES_OBJECT.GRANTED, ehrAccess.ehr_access_id]
+                );
+                return syncGranted.rows[0];
+            }
+
+            if (onChainStatus === 4) {
+                // Deployed contract does not allow requestAccess from REVOKED state.
+                await DatabaseService.query(
+                    `UPDATE ehr_access SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE ehr_access_id = $2 RETURNING *`,
+                    [VALID_EHR_ACCESS_STATUSES_OBJECT.REVOKED, ehrAccess.ehr_access_id]
+                );
+                throw new AppError(
+                    'Access is currently revoked on blockchain and cannot be requested again through request flow.',
+                    STATUS_CODES.CONFLICT
+                );
+            }
+
+            // Allowed request transition on-chain: NONE (0) or DENIED (3)
+            console.log('[EHR Request] Calling blockchain requestAccess...');
             const txResult = await blockchainService.requestAccess(patient_id, doctor_id);
             console.log('[EHR Request] ✓ Blockchain transaction:', txResult.txHash);
 
-            // Update status with blockchain tx hash
-            const query = {
-                text: `UPDATE ehr_access
+            const updated = await DatabaseService.query(
+                `UPDATE ehr_access
                     SET status = $1,
                         blockchain_tx_hash = $2,
                         updated_at = CURRENT_TIMESTAMP
-                    WHERE ehr_access_id = $3
-                    RETURNING *`,
-                values: [
-                    VALID_EHR_ACCESS_STATUSES_OBJECT.REQUESTED,
-                    txResult.txHash,
-                    ehrAccess.ehr_access_id
-                ]
-            };
-            const result = await DatabaseService.query(query.text, query.values);
+                 WHERE ehr_access_id = $3
+                 RETURNING *`,
+                [VALID_EHR_ACCESS_STATUSES_OBJECT.REQUESTED, txResult.txHash, ehrAccess.ehr_access_id]
+            );
 
-            return result.rows[0];
+            return updated.rows[0];
         } catch (error) {
             console.error(`Error in EHRAccessService.requestEHRAccess: ${error.message}`);
             throw error;
@@ -312,34 +331,59 @@ class EHRAccessService {
                 throw new AppError('EHR access does not belong to the specified patient', STATUS_CODES.FORBIDDEN);
             }
 
-            // ✅ ADD BLOCKCHAIN CALL
-            console.log('[EHR Deny] Calling blockchain denyAccess...');
             const blockchainService = new EthereumAccessControlService();
-            const txResult = await blockchainService.denyAccess(patient_id, ehrAccess.doctor_id);
-            console.log('[EHR Deny] ✓ Blockchain transaction:', txResult.txHash);
+            const onChainGrant = await blockchainService.getAccessGrantFromBlockchain(patient_id, ehrAccess.doctor_id);
+            const onChainStatus = Number(onChainGrant?.status ?? 0);
 
-            // Update PostgreSQL with blockchain transaction
-            const query = {
-                text: `UPDATE ehr_access
-                SET status = $1, 
-                    blockchain_tx_hash = $2,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE ehr_access_id = $3 AND patient_id = $4
-                RETURNING *`,
-                values: [
-                    VALID_EHR_ACCESS_STATUSES_OBJECT.DENIED,
-                    txResult.txHash,
-                    ehr_access_id,
-                    patient_id
-                ]
-            };
-            const result = await DatabaseService.query(query.text, query.values);
-            
-            if (result.rowCount === 0) {
-                throw new AppError('Failed to deny EHR access', STATUS_CODES.INTERNAL_SERVER_ERROR);
+            // 1=REQUESTED -> deny on-chain
+            if (onChainStatus === 1) {
+                console.log('[EHR Deny] Calling blockchain denyAccess...');
+                const txResult = await blockchainService.denyAccess(patient_id, ehrAccess.doctor_id);
+                console.log('[EHR Deny] ✓ Blockchain transaction:', txResult.txHash);
+
+                const result = await DatabaseService.query(
+                    `UPDATE ehr_access
+                        SET status = $1,
+                            blockchain_tx_hash = $2,
+                            updated_at = CURRENT_TIMESTAMP
+                      WHERE ehr_access_id = $3 AND patient_id = $4
+                      RETURNING *`,
+                    [VALID_EHR_ACCESS_STATUSES_OBJECT.DENIED, txResult.txHash, ehr_access_id, patient_id]
+                );
+
+                if (result.rowCount === 0) {
+                    throw new AppError('Failed to deny EHR access', STATUS_CODES.INTERNAL_SERVER_ERROR);
+                }
+                return result.rows[0];
             }
 
-            return result.rows[0];
+            // Already denied on chain -> idempotent success, sync DB
+            if (onChainStatus === 3) {
+                const result = await DatabaseService.query(
+                    `UPDATE ehr_access
+                        SET status = $1,
+                            updated_at = CURRENT_TIMESTAMP
+                      WHERE ehr_access_id = $2 AND patient_id = $3
+                      RETURNING *`,
+                    [VALID_EHR_ACCESS_STATUSES_OBJECT.DENIED, ehr_access_id, patient_id]
+                );
+
+                if (result.rowCount === 0) {
+                    throw new AppError('Failed to sync denied EHR access', STATUS_CODES.INTERNAL_SERVER_ERROR);
+                }
+                return result.rows[0];
+            }
+
+            const statusMap = {
+                0: 'none',
+                2: 'granted',
+                4: 'revoked'
+            };
+            const current = statusMap[onChainStatus] || 'unknown';
+            throw new AppError(
+                `Cannot deny access while blockchain status is '${current}'. Only 'requested' can be denied.`,
+                STATUS_CODES.CONFLICT
+            );
         } catch (error) {
             console.error(`Error in EHRAccessService.denyEHRAccess: ${error.message}`);
             throw error;
@@ -661,11 +705,38 @@ class EHRAccessService {
                 return filteredHistory;
             }
 
+            // [BLACKLIST FILTER] Get all blacklisted person IDs and filter them out
+            console.log('[EHR History] Checking blacklist for', uniquePersonIds.length, 'unique person IDs...');
+            const blacklistedIds = await BlacklistService.getAllBlacklistedIds();
+            const blacklistedSet = new Set(blacklistedIds);
+            
+            // Filter out any records that contain blacklisted person IDs
+            filteredHistory = filteredHistory.filter(log => {
+                const patientBlacklisted = log.patientId && blacklistedSet.has(log.patientId);
+                const doctorBlacklisted = log.doctorId && blacklistedSet.has(log.doctorId);
+                
+                if (patientBlacklisted || doctorBlacklisted) {
+                    console.log(`[EHR History] Filtering out blacklisted record: patientId=${log.patientId}, doctorId=${log.doctorId}`);
+                    return false;
+                }
+                return true;
+            });
+
+            // Get person details only for non-blacklisted IDs
+            const remainingPersonIds = [...new Set(
+                filteredHistory.flatMap((log) => [log.patientId, log.doctorId]).filter(Boolean)
+            )];
+
+            if (remainingPersonIds.length === 0) {
+                console.log('[EHR History] All records were filtered due to blacklist');
+                return filteredHistory;
+            }
+
             const peopleQuery = {
                 text: `SELECT person_id, first_name, last_name, email
                     FROM person_view
                     WHERE person_id = ANY($1::int[])`,
-                values: [uniquePersonIds],
+                values: [remainingPersonIds],
             };
             const peopleResult = await DatabaseService.query(peopleQuery.text, peopleQuery.values);
 
