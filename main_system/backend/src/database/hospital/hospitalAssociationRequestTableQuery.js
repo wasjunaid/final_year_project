@@ -4,7 +4,7 @@ const hospitalAssociationRequestTableQuery = `
     CREATE TABLE IF NOT EXISTS hospital_association_request (
         hospital_association_request_id SERIAL PRIMARY KEY,
         hospital_id INTEGER REFERENCES hospital(hospital_id) ON DELETE CASCADE,
-        person_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE,
+        person_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE ON UPDATE CASCADE,
         role VARCHAR(${HOSPITAL_ASSOCIATION_REQUEST_ROLES_MAX_LENGTH}) CHECK (role IN (${VALID_HOSPITAL_ASSOCIATION_REQUEST_ROLES
           .map((role) => `'${role}'`)
           .join(", ")})) NOT NULL,

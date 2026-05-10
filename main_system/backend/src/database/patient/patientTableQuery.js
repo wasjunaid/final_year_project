@@ -8,7 +8,7 @@ const {
 
 const patientTableQuery = `
     CREATE TABLE IF NOT EXISTS patient (
-        patient_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE PRIMARY KEY,
+        patient_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE ON UPDATE CASCADE PRIMARY KEY,
         emergency_contact_id INTEGER REFERENCES contact(contact_id) DEFAULT NULL,
         blood_group VARCHAR(${BLOOD_GROUP_MAX_LENGTH}) CHECK (blood_group IN (${VALID_BLOOD_GROUPS.map(blood_group => `'${blood_group}'`).join(', ')})) DEFAULT NULL,
 

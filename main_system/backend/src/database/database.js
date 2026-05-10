@@ -15,6 +15,7 @@ const { logTableQuery } = require("./log/logTableQuery");
 const { EHRAccessTable } = require("./EHR/EHRAccessTableQuery");
 const { insuranceCompanyTableQuery } = require("./insurance/insuranceCompanyTableQuery");
 const { systemAdminTableQuery } = require("./system/systemAdminTableQuery");
+const { blacklistTableQuery } = require("./system/blacklistTableQuery");
 const { hospitalStaffTableQuery } = require("./hospital/hospitalStaffTableQuery");
 const { medicineTableQuery } = require("./medicine/medicineTableQuery");
 const { prescriptionTableQuery } = require("./prescription/prescriptionTableQuery");
@@ -88,6 +89,20 @@ const database = async () => {
         await pool.query(personTableQuery);
         console.log("Person Table Initialized");
 
+        // Ensure person_id sequence is in sync with current max(person_id) if a sequence exists
+        try {
+            const seqRes = await pool.query("SELECT pg_get_serial_sequence('person','person_id') AS seq;");
+            const seqName = seqRes.rows?.[0]?.seq;
+            if (seqName) {
+                await pool.query(`SELECT setval('${seqName}', COALESCE((SELECT MAX(person_id) FROM person), 0), true);`);
+                console.log("Person sequence synchronized");
+            } else {
+                console.log("No person_id sequence detected; skipping sequence synchronization");
+            }
+        } catch (seqErr) {
+            console.warn("Warning: Failed to synchronize person_id sequence:", seqErr.message || seqErr);
+        }
+
         await pool.query(tokenTableQuery);
         console.log("Token Table Initialized");
 
@@ -128,6 +143,9 @@ const database = async () => {
 
         await pool.query(systemAdminTableQuery);
         console.log("System Admin Table Initialized");
+
+        await pool.query(blacklistTableQuery);
+        console.log("Blacklist Table Initialized");
 
         await pool.query(medicineTableQuery);
         console.log("Medicine Table Initialized");

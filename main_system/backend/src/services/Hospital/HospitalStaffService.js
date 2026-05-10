@@ -298,6 +298,18 @@ class HospitalStaffService {
 
             const person = await PersonService.insertPersonIfNotExists(email);
 
+            const existingHospitalStaff = await this.getHospitalStaffIfExists(person.person_id);
+            if (existingHospitalStaff) {
+                if (
+                    existingHospitalStaff.hospital_id === hospital_id &&
+                    existingHospitalStaff.role === role
+                ) {
+                    return existingHospitalStaff;
+                }
+
+                throw new AppError("Hospital staff already exists", STATUS_CODES.CONFLICT);
+            }
+
             const query = {
                 text: `INSERT INTO hospital_staff
                 (hospital_staff_id, hospital_id, role)

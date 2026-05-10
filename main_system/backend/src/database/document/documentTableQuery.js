@@ -11,7 +11,7 @@ const documentTableQuery = `
         ipfs_hash TEXT,
         document_type VARCHAR(${UNVERIFIED_DOCUMENT_TYPE_MAX_LENGTH}) CHECK (document_type IN (${VALID_UNVERIFIED_DOCUMENT_TYPES.map(type => `'${type}'`).join(', ')})) DEFAULT NULL,
 
-        uploaded_by INTEGER REFERENCES person(person_id) DEFAULT NULL,
+        uploaded_by INTEGER REFERENCES person(person_id) ON UPDATE CASCADE DEFAULT NULL,
         appointment_id INTEGER REFERENCES appointment(appointment_id) DEFAULT NULL,
         lab_test_id INTEGER REFERENCES lab_test(lab_test_id) DEFAULT NULL,
         lab_test_cost NUMERIC(10, 9) DEFAULT NULL,

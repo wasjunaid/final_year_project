@@ -5,7 +5,7 @@ const {
 
 const tokenTableQuery = `
     CREATE TABLE IF NOT EXISTS token (
-        person_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE,
+        person_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE ON UPDATE CASCADE,
         token TEXT NOT NULL UNIQUE,
         expires_at TIMESTAMP NOT NULL,
         token_type VARCHAR(${TOKEN_CONFIG.TOKEN_TYPE_MAX_LENGTH}) CHECK (token_type IN (${VALID_TOKEN_TYPES.map(token_type => `'${token_type}'`).join(', ')})) NOT NULL,

@@ -9,7 +9,7 @@ const {
 const notificationTableQuery = `
     CREATE TABLE IF NOT EXISTS notification (
         notification_id SERIAL PRIMARY KEY,
-        person_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE,
+        person_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE ON UPDATE CASCADE,
         role VARCHAR(${AUTH_CONFIG.ROLE_MAX_LENGTH}) NOT NULL,
         title VARCHAR(${NOTIFICATION_CONFIG.NOTIFICATION_TITLE_MAX_LENGTH}) NOT NULL,
         message TEXT NOT NULL,

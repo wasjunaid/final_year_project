@@ -2,7 +2,7 @@ const { DOCTOR_LICENSE_NUMBER_MAX_LENGTH, DOCTOR_SPECIALIZATION_MAX_LENGTH, DOCT
 
 const doctorTableQuery = `
     CREATE TABLE IF NOT EXISTS doctor (
-        doctor_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE PRIMARY KEY,
+        doctor_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE ON UPDATE CASCADE PRIMARY KEY,
         license_number VARCHAR(${DOCTOR_LICENSE_NUMBER_MAX_LENGTH}) UNIQUE,
         specialization VARCHAR(${DOCTOR_SPECIALIZATION_MAX_LENGTH}),
         years_of_experience INTEGER CHECK (years_of_experience >= 0 AND years_of_experience <= ${DOCTOR_YEARS_OF_EXPERIENCE_MAX}),

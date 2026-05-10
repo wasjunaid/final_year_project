@@ -5,7 +5,7 @@ const {
 
 const systemAdminTableQuery = `
     CREATE TABLE IF NOT EXISTS system_admin (
-        system_admin_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE PRIMARY KEY,
+        system_admin_id INTEGER REFERENCES person(person_id) ON DELETE CASCADE ON UPDATE CASCADE PRIMARY KEY,
         role VARCHAR(${SYSTEM_CONFIG.SYSTEM_ADMIN_ROLE_MAX_LENGTH}) CHECK (role IN (${VALID_SYSTEM_ADMIN_ROLES.map(role => `'${role}'`).join(', ')})) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
