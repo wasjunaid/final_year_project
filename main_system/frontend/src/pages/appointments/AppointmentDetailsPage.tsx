@@ -3,6 +3,7 @@ import TextInput from '../../components/TextInput';
 import Alert from '../../components/Alert';
 import Dropdown from '../../components/Dropdown';
 import Button from '../../components/Button';
+import Table from '../../components/Table';
 import { Badge } from '../../components/TableHelpers';
 import { useAppointmentController } from '../../hooks/appointment';
 import { useDoctorController } from '../../hooks/doctor';
@@ -22,6 +23,7 @@ import AddPrescriptionModal from '../../components/AddPrescriptionModal';
 import { usePrescriptionController } from '../../hooks/prescription';
 import BillSection from './components/BillSection';
 import accessRequestService from '../../services/accessRequest/accessRequestService';
+import accessRequestRepository from '../../repositories/accessRequest/accessRequestRepository';
 
 // Shape for a lab test placeholder that has already been persisted to the backend
 interface PersistedLabTest {
@@ -1195,6 +1197,301 @@ const AppointmentsDetailsPage: React.FC = () => {
           })()}
         </div>
       )
+    });
+  }
+
+  // Add EHR tab for doctor to view patient EHR during appointment
+  if (isDoctor && local?.patientId) {
+    clinicalTabs.push({
+      id: 'ehr',
+      label: 'Patient EHR',
+      content: (() => {
+        const accessStatus = ehrAccessStatusForPatient?.toLowerCase();
+        const isGranted = accessStatus === 'granted';
+        const isDenied = accessStatus === 'denied';
+        const isRequested = accessStatus === 'requested';
+        const isNotRequested = !accessStatus || accessStatus === 'null' || accessStatus === '';
+
+        return (
+          <div className="space-y-4">
+            {/* Access Status Section */}
+            <div className={`p-4 rounded-lg border ${
+              isGranted ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' :
+              isDenied ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' :
+              isRequested ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800' :
+              'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={`font-semibold ${
+                    isGranted ? 'text-green-800 dark:text-green-200' :
+                    isDenied ? 'text-red-800 dark:text-red-200' :
+                    isRequested ? 'text-yellow-800 dark:text-yellow-200' :
+                    'text-blue-800 dark:text-blue-200'
+                  }`}>
+                    {isGranted ? '✓ Access Granted' :
+                     isDenied ? '✗ Access Denied' :
+                     isRequested ? '⏳ Request Pending' :
+                     '→ No Request Sent'}
+                  </span>
+                </div>
+                {(isNotRequested || isDenied) && (
+                  <Button
+                    onClick={handleRequestEhrAccess}
+                    disabled={requestingEhrAccess || isRequested}
+                    size="sm"
+                  >
+                    {isRequested ? 'Request Pending...' : isDenied ? 'Renew Request' : 'Request Access'}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* EHR Content - Only show if granted */}
+            {isGranted ? (
+              <div>
+                {/* EHR Sub-tabs */}
+                <TabbedCard 
+                  tabs={[
+                    {
+                      id: 'ehr-overview',
+                      label: 'Overview',
+                      content: (() => {
+                        const [ehrData, setEhrData] = React.useState<any | null>(null);
+                        const [ehrLoading, setEhrLoading] = React.useState(false);
+
+                        React.useEffect(() => {
+                          const loadEhr = async () => {
+                            if (!local?.patientId) return;
+                            setEhrLoading(true);
+                            try {
+                              const data = await accessRequestRepository.fetchPatientEhr(local.patientId);
+                              setEhrData(data);
+                            } catch (err) {
+                              console.error('Failed to load EHR:', err);
+                            } finally {
+                              setEhrLoading(false);
+                            }
+                          };
+                          loadEhr();
+                        }, [local?.patientId]);
+
+                        if (ehrLoading) {
+                          return (
+                            <div className="flex items-center justify-center py-8">
+                              <div className="text-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                                <p className="text-sm text-gray-500">Loading EHR...</p>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (!ehrData?.data) {
+                          return <Alert type="error" message="Failed to load patient EHR" />;
+                        }
+
+                        return (
+                          <div className="space-y-4">
+                            {/* Verification Status */}
+                            {ehrData?.verification && (
+                              <div className={`p-4 rounded-lg ${
+                                ehrData.verification.verified 
+                                  ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+                                  : 'bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
+                              }`}>
+                                <span className={`font-semibold ${
+                                  ehrData.verification.verified ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'
+                                }`}>
+                                  {ehrData.verification.verified ? '✓ Verified' : '⚠ Unverified'}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Patient Info */}
+                            {ehrData?.data?.patient && (
+                              <div className="bg-white dark:bg-[#2a2a2a] rounded-lg shadow p-4">
+                                <h3 className="font-semibold mb-3">Patient Information</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                  <div><p className="text-gray-500">Blood Group</p><p className="font-medium">{ehrData.data.patient.blood_group || '-'}</p></div>
+                                  <div><p className="text-gray-500">Smoking</p><p className="font-medium capitalize">{ehrData.data.patient.smoking || '-'}</p></div>
+                                  <div><p className="text-gray-500">Alcohol</p><p className="font-medium capitalize">{ehrData.data.patient.alcohol || '-'}</p></div>
+                                  <div><p className="text-gray-500">Drug Use</p><p className="font-medium capitalize">{ehrData.data.patient.drug_use || '-'}</p></div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Summary Cards */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              <div className="bg-white dark:bg-[#2a2a2a] rounded-lg p-3">
+                                <p className="text-xs text-gray-500">Medical Conditions</p>
+                                <p className="text-2xl font-bold">{ehrData?.data?.medicalHistory?.length || 0}</p>
+                              </div>
+                              <div className="bg-white dark:bg-[#2a2a2a] rounded-lg p-3">
+                                <p className="text-xs text-gray-500">Allergies</p>
+                                <p className="text-2xl font-bold">{ehrData?.data?.allergies?.length || 0}</p>
+                              </div>
+                              <div className="bg-white dark:bg-[#2a2a2a] rounded-lg p-3">
+                                <p className="text-xs text-gray-500">Surgeries</p>
+                                <p className="text-2xl font-bold">{ehrData?.data?.surgicalHistory?.length || 0}</p>
+                              </div>
+                              <div className="bg-white dark:bg-[#2a2a2a] rounded-lg p-3">
+                                <p className="text-xs text-gray-500">Appointments</p>
+                                <p className="text-2xl font-bold">{ehrData?.data?.appointmentHistory?.length || 0}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()
+                    },
+                    {
+                      id: 'ehr-medical-history',
+                      label: 'Medical History',
+                      content: (() => {
+                        const [ehrData, setEhrData] = React.useState<any | null>(null);
+
+                        React.useEffect(() => {
+                          const loadEhr = async () => {
+                            if (!local?.patientId) return;
+                            try {
+                              const data = await accessRequestRepository.fetchPatientEhr(local.patientId);
+                              setEhrData(data);
+                            } catch (err) {
+                              console.error('Failed to load EHR:', err);
+                            }
+                          };
+                          loadEhr();
+                        }, [local?.patientId]);
+
+                        return (
+                          <Table
+                            columns={[
+                              { key: 'condition', header: 'Condition', render: (row: any) => row.condition_name || '-' },
+                              { key: 'date', header: 'Diagnosis Date', render: (row: any) => row.diagnosis_date ? new Date(row.diagnosis_date).toLocaleDateString() : '-' },
+                            ]}
+                            data={ehrData?.data?.medicalHistory || []}
+                            loading={false}
+                            itemsPerPage={10}
+                            emptyMessage="No medical history found"
+                          />
+                        );
+                      })()
+                    },
+                    {
+                      id: 'ehr-allergies',
+                      label: 'Allergies',
+                      content: (() => {
+                        const [ehrData, setEhrData] = React.useState<any | null>(null);
+
+                        React.useEffect(() => {
+                          const loadEhr = async () => {
+                            if (!local?.patientId) return;
+                            try {
+                              const data = await accessRequestRepository.fetchPatientEhr(local.patientId);
+                              setEhrData(data);
+                            } catch (err) {
+                              console.error('Failed to load EHR:', err);
+                            }
+                          };
+                          loadEhr();
+                        }, [local?.patientId]);
+
+                        return (
+                          <Table
+                            columns={[
+                              { key: 'allergy', header: 'Allergy', render: (row: any) => row.allergy_name || '-' },
+                            ]}
+                            data={ehrData?.data?.allergies || []}
+                            loading={false}
+                            itemsPerPage={10}
+                            emptyMessage="No allergies found"
+                          />
+                        );
+                      })()
+                    },
+                    {
+                      id: 'ehr-surgical-history',
+                      label: 'Surgical History',
+                      content: (() => {
+                        const [ehrData, setEhrData] = React.useState<any | null>(null);
+
+                        React.useEffect(() => {
+                          const loadEhr = async () => {
+                            if (!local?.patientId) return;
+                            try {
+                              const data = await accessRequestRepository.fetchPatientEhr(local.patientId);
+                              setEhrData(data);
+                            } catch (err) {
+                              console.error('Failed to load EHR:', err);
+                            }
+                          };
+                          loadEhr();
+                        }, [local?.patientId]);
+
+                        return (
+                          <Table
+                            columns={[
+                              { key: 'surgery', header: 'Surgery', render: (row: any) => row.surgery_name || '-' },
+                              { key: 'date', header: 'Surgery Date', render: (row: any) => row.surgery_date ? new Date(row.surgery_date).toLocaleDateString() : '-' },
+                            ]}
+                            data={ehrData?.data?.surgicalHistory || []}
+                            loading={false}
+                            itemsPerPage={10}
+                            emptyMessage="No surgical history found"
+                          />
+                        );
+                      })()
+                    },
+                    {
+                      id: 'ehr-prescriptions',
+                      label: 'Prescriptions',
+                      content: (() => {
+                        const [ehrData, setEhrData] = React.useState<any | null>(null);
+
+                        React.useEffect(() => {
+                          const loadEhr = async () => {
+                            if (!local?.patientId) return;
+                            try {
+                              const data = await accessRequestRepository.fetchPatientEhr(local.patientId);
+                              setEhrData(data);
+                            } catch (err) {
+                              console.error('Failed to load EHR:', err);
+                            }
+                          };
+                          loadEhr();
+                        }, [local?.patientId]);
+
+                        return (
+                          <Table
+                            columns={[
+                              { key: 'medicine', header: 'Medicine', render: (row: any) => row.medicine_name || '-' },
+                              { key: 'dosage', header: 'Dosage', render: (row: any) => row.dosage || '-' },
+                              { key: 'instruction', header: 'Instructions', render: (row: any) => row.instruction || '-' },
+                            ]}
+                            data={ehrData?.data?.currentPrescriptions || []}
+                            loading={false}
+                            itemsPerPage={10}
+                            emptyMessage="No prescriptions found"
+                          />
+                        );
+                      })()
+                    },
+                  ]}
+                  defaultTab="ehr-overview"
+                />
+              </div>
+            ) : (
+              <div className="bg-gray-50 dark:bg-[#2a2a2a] rounded-lg p-6 text-center">
+                <p className="text-gray-600 dark:text-gray-400">
+                  {isDenied ? 'The patient has denied access to their EHR. You can request access again.' :
+                   isRequested ? 'Waiting for patient to approve your access request...' :
+                   'Request EHR access to view patient records during this appointment.'}
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      })()
     });
   }
 

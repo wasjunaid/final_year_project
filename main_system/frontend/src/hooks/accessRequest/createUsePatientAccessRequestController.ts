@@ -60,9 +60,9 @@ export const createUsePatientAccessRequestController = ({ repository = accessReq
         setSuccess(null);
         await repository.revokeRequest(id);
         setRequests((p) => p.filter((r: any) => r.accessRequestId !== id));
-        setSuccess('Request denied');
+        setSuccess('Request revoked');
       } catch (err: any) {
-        setError(err.message || 'Failed to deny request');
+        setError(err.message || 'Failed to revoke request');
         throw err;
       } finally {
         setLoading(false);

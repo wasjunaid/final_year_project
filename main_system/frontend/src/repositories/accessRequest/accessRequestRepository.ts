@@ -3,6 +3,32 @@ import type { AccessRequestModel, BlockchainHistoryRecordModel } from '../../mod
 import { toAccessRequestModels, toBlockchainHistoryRecordModels } from '../../models/accessRequest/transformers';
 import { AppError } from '../../utils/appError';
 
+const normalizeAccessRequestError = (error: any, fallbackTitle: string, fallbackMessage: string) => {
+  const status = error?.response?.status;
+  const message = (error?.response?.data?.message || error?.message || fallbackMessage || '').toString();
+
+  if (status === 409 && /request flow|revoked on blockchain|cannot be requested again|invalid status for request/i.test(message)) {
+    return new AppError({
+      title: 'Request Not Allowed',
+      message: 'This EHR access was revoked and cannot be renewed from the current flow. Please ask the patient to create a fresh request or use the appointment EHR tab if available.',
+    });
+  }
+
+  if (status === 409 && /cannot deny|only requested requests can be denied|invalid status transition/i.test(message)) {
+    return new AppError({
+      title: 'Deny Not Allowed',
+      message: 'This access request is no longer in a pending state, so it cannot be denied.',
+    });
+  }
+
+  if (error instanceof AppError) return error;
+
+  return new AppError({
+    title: fallbackTitle,
+    message,
+  });
+};
+
 export const accessRequestRepository = {
   async fetchRequestsForPatient(): Promise<AccessRequestModel[]> {
     try {
@@ -36,9 +62,7 @@ export const accessRequestRepository = {
       if (!resp.success) throw new AppError({ message: resp.message || 'Failed to create request', title: 'Creation Failed' });
       return toAccessRequestModels([resp.data])[0];
     } catch (error: any) {
-      if (error instanceof AppError) throw error;
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to create request';
-      throw new AppError({ message: errorMessage, title: 'Creation Failed' });
+      throw normalizeAccessRequestError(error, 'Creation Failed', 'Failed to create request');
     }
   },
 
@@ -47,9 +71,7 @@ export const accessRequestRepository = {
       const resp = await accessRequestService.acceptRequest(id);
       if (!resp.success) throw new AppError({ message: resp.message || 'Failed to accept', title: 'Accept Failed' });
     } catch (error: any) {
-      if (error instanceof AppError) throw error;
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to accept';
-      throw new AppError({ message: errorMessage, title: 'Accept Failed' });
+      throw normalizeAccessRequestError(error, 'Accept Failed', 'Failed to accept');
     }
   },
 
@@ -58,20 +80,16 @@ export const accessRequestRepository = {
       const resp = await accessRequestService.denyRequest(id);
       if (!resp.success) throw new AppError({ message: resp.message || 'Failed to deny', title: 'Deny Failed' });
     } catch (error: any) {
-      if (error instanceof AppError) throw error;
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to deny';
-      throw new AppError({ message: errorMessage, title: 'Deny Failed' });
+      throw normalizeAccessRequestError(error, 'Deny Failed', 'Failed to deny');
     }
   },
 
   async revokeRequest(id: number) {
     try {
       const resp = await accessRequestService.revokeRequest(id);
-      if (!resp.success) throw new AppError({ message: resp.message || 'Failed to deny', title: 'Deny Failed' });
+      if (!resp.success) throw new AppError({ message: resp.message || 'Failed to revoke', title: 'Revoke Failed' });
     } catch (error: any) {
-      if (error instanceof AppError) throw error;
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to deny';
-      throw new AppError({ message: errorMessage, title: 'Deny Failed' });
+      throw normalizeAccessRequestError(error, 'Revoke Failed', 'Failed to revoke');
     }
   },
 
@@ -80,9 +98,7 @@ export const accessRequestRepository = {
       const resp = await accessRequestService.deleteRequest(id);
       if (!resp.success) throw new AppError({ message: resp.message || 'Failed to delete', title: 'Deletion Failed' });
     } catch (error: any) {
-      if (error instanceof AppError) throw error;
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete';
-      throw new AppError({ message: errorMessage, title: 'Deletion Failed' });
+      throw normalizeAccessRequestError(error, 'Deletion Failed', 'Failed to delete');
     }
   },
 

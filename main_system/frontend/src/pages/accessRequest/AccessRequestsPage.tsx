@@ -42,7 +42,7 @@ const AccessRequestsPage: React.FC = () => {
   const patientController = usePatientAccessController();
 
   const { requests, loading, error, success, fetchRequestsForDoctor, createRequest, cancelRequest } = doctorController;
-  const { requests: patientRequests, loading: patientLoading, error: patientError, success: patientSuccess, fetchRequestsForPatient, acceptRequest, denyRequest, deleteRequest: patientDeleteRequest } = patientController;
+  const { requests: patientRequests, loading: patientLoading, error: patientError, success: patientSuccess, fetchRequestsForPatient, acceptRequest, denyRequest, revokeRequest } = patientController;
 
   // removed fetch from controller and called here as patient is not supposed to call doctors controller and vice versa
   useEffect(()=>{
@@ -77,7 +77,7 @@ const AccessRequestsPage: React.FC = () => {
     const buttons: any[] = [];
 
     if (status === AccessRequestStatus.requested) {
-      buttons.push({ label: 'Cancel', variant: 'danger', onClick: async () => await cancelRequest(row.accessRequestId) });
+      // buttons.push({ label: 'Cancel', variant: 'danger', onClick: async () => await cancelRequest(row.accessRequestId) });
     } else if (status === AccessRequestStatus.granted) {
       buttons.push({ label: 'View', variant: 'secondary', onClick: () => fetchAndShowEhr(row.patientId), disabled: !row.patientId });
       // buttons.push({ label: 'End', variant: 'danger', onClick: async () => await endRequest(row.accessRequestId) }); //TODO: Implement end request on backend and integrate
@@ -105,15 +105,15 @@ const AccessRequestsPage: React.FC = () => {
     } else if (status === AccessRequestStatus.granted) {
       buttons.push(
         // TODO: Implement patient's own EHR view - currently shows alert
-        { label: 'View', variant: 'secondary', onClick: () => handleViewOwnEhr(), disabled: !row.documentId },
-        { label: 'Revoke', variant: 'danger', onClick: async () => await patientDeleteRequest(row.accessRequestId) }
+        // { label: 'View', variant: 'secondary', onClick: () => handleViewOwnEhr(), disabled: !row.documentId },
+        { label: 'Revoke', variant: 'danger', onClick: async () => await revokeRequest(row.accessRequestId) }
       );
     } else if (status === AccessRequestStatus.denied || status === AccessRequestStatus.revoked) {
       // TODO: Implement Renew request feature from patient side (normally doctor always requests first)
       // This button is currently disabled and non-functional
-      buttons.push(
-        { label: 'Renew', variant: 'primary', onClick: async () => {/* await renewPatientRequest(row.acceptRequestId) */}, disabled: true }
-      );
+      // buttons.push(
+      //   { label: 'Renew', variant: 'primary', onClick: async () => {/* await renewPatientRequest(row.acceptRequestId) */}, disabled: true }
+      // );
     } else {
       // unknown status - no actions
     }
