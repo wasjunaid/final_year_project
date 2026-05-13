@@ -2,7 +2,7 @@ const { DatabaseService } = require("../DatabaseService");
 const { STATUS_CODES } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../classes/AppErrorClass");
 const { UserService } = require("../User/UserService");
-const { SuperAdminService } = require("../System/SuperAdminService");
+const { SuperAdminService } = require("../System/superAdminService");
 const { VALID_ROLES_OBJECT, VALID_INSURANCE_STAFF_ROLES } = require("../../utils/validConstantsUtil");
 const { validateEmail } = require("../../utils/emailUtil");
 

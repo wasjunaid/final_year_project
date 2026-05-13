@@ -2,7 +2,7 @@ const { STATUS_CODES } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../classes/AppErrorClass");
 const { JWTService } = require("./JWTService");
 const { UserService } = require("../User/UserService");
-const { SuperAdminService } = require("../System/SuperAdminService");
+const { SuperAdminService } = require("../System/superAdminService");
 const { InsuranceStaffService } = require("../Insurance/InsuranceStaffService");
 const { VALID_ROLES_OBJECT, VALID_ROLES_FOR_SIGN_IN, VALID_INSURANCE_STAFF_ROLES } = require("../../utils/validConstantsUtil");
 
