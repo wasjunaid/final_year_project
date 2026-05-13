@@ -42,7 +42,7 @@ const startServer = async () => {
         await createDefaultSuperAdmin();
 
         app.use(cors({
-            origin: 'http://localhost:6173',
+            origin: process.env.FRONTEND_URL || 'http://localhost:6173',
             credentials: true
         }));
         app.use(express.json());
