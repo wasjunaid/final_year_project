@@ -2,7 +2,7 @@ const { DatabaseService } = require("../DatabaseService");
 const { STATUS_CODES } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../classes/AppErrorClass");
 const { DB_ERROR_CODES } = require("../../utils/databaseErrorCodesUtil");
-const { SystemAdminService } = require("../System/SystemAdminService");
+const { SystemAdminService } = require("../System/systemAdminService");
 const { HospitalStaffService } = require("./HospitalStaffService"); 
 const { VALID_ROLES_OBJECT } = require("../../validations/auth/authValidations");
 const {

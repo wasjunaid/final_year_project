@@ -11,7 +11,7 @@ const { VALID_ROLES_OBJECT } = require("../../validations/auth/authValidations")
 const { VALID_SYSTEM_ADMIN_ROLES } = require("../../validations/system/systemValidations");
 const {VALID_HOSPITAL_STAFF_ROLES } = require("../../utils/validConstantsUtil");
 const { HospitalStaffService } = require("../Hospital/HospitalStaffService");
-const { SystemAdminService } = require("../System/SystemAdminService");
+const { SystemAdminService } = require("../System/systemAdminService");
 const { MedicalCoderService } = require("../MedicalCoder/MedicalCoderService");
 const { LogService } = require("../Log/LogService");
 

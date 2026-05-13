@@ -1,6 +1,6 @@
 const { STATUS_CODES } = require("../../utils/statusCodesUtil");
 const { AppError } = require("../../classes/AppErrorClass");
-const { SystemAdminService } = require("../../services/System/SystemAdminService");
+const { SystemAdminService } = require("../../services/System/systemAdminService");
 
 class SystemAdminController {
     async getAllSystemAdminsIfExists(req, res) {

@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { database } = require("./src/database/database");
-const { createDefaultSuperAdmin } = require("./src/services/System/SystemAdminService");
+const { createDefaultSuperAdmin } = require("./src/services/System/systemAdminService");
 const { sendAppointmentReminders } = require("./src/services/Notification/NotificationService");
 const { PORT, ENABLE_APPOINTMENT_REMINDER_CRON } = require("./src/config/backendConfig");
 

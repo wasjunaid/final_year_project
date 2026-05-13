@@ -15,7 +15,7 @@ const {
 } = require("../../validations/system/systemValidations");
 const { VALID_HOSPITAL_STAFF_ROLES } = require("../../utils/validConstantsUtil");
 const { HospitalStaffService } = require("../Hospital/HospitalStaffService");
-const { SystemAdminService } = require("../System/SystemAdminService");
+const { SystemAdminService } = require("../System/systemAdminService");
 const { MedicalCoderService } = require("../MedicalCoder/MedicalCoderService");
 const { NotificationService } = require("../Notification/NotificationService");
 const { validateFieldsForSignUp, validateFieldsForSignIn } = require("../../validations/auth/authValidations")
